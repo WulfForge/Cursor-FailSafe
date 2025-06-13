@@ -228,4 +228,26 @@ describe('FailSafe UI', () => {
             assert.ok(true);
         });
     });
+
+    describe('Failsafe: Dashboard Regression Protection', () => {
+        it('should include all key dashboard sections', async () => {
+            await ui.initialize();
+            const dashboardData = ui.getDashboardData();
+            const content = ui.generateDashboardContent(dashboardData);
+            // Check for all key sections
+            const requiredSections = [
+                'Current Task',
+                'Next Task',
+                'Progress Overview',
+                'Deviations & Issues',
+                'Recommendations',
+                'Feasibility Analysis',
+                'Accountability Report',
+                'Quick Actions'
+            ];
+            for (const section of requiredSections) {
+                assert.ok(content.includes(section), `Dashboard missing section: ${section}`);
+            }
+        });
+    });
 }); 

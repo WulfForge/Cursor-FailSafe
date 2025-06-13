@@ -63,6 +63,10 @@ class FailSafeExtension {
         this.logger.info('FailSafe extension activating...');
         // Register commands
         await this.commands.registerCommands(this.context);
+        // Register sidebar
+        this.ui.registerSidebar(this.context);
+        // Register simulation command
+        this.ui.registerSimulationCommand(this.context);
         // Initialize components
         await this.initializeComponents();
         // Set up AI request interception

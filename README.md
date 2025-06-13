@@ -272,6 +272,19 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Discussions**: [GitHub Discussions](https://github.com/WulfForge/Cursor-FailSafe/discussions)
 - **Documentation**: [Wiki](https://github.com/WulfForge/Cursor-FailSafe/wiki)
 
+## 🧪 Demo & Testing: Simulate FailSafe Events
+
+FailSafe includes a built-in simulation command for easy testing and demonstration of its logging and sidebar features.
+
+### How to Use
+1. Open the Command Palette (`Ctrl+Shift+P`).
+2. Type `FailSafe: Simulate Event` and select it.
+3. Choose an event to simulate (Validation Passed, Validation Failed, Block, Enforcement, Timeout).
+4. The event will be logged and appear in the FailSafe sidebar under "Recent Actions".
+5. The status bar will update to reflect the simulated state.
+
+This feature is ideal for demos, testing, and verifying that FailSafe's passive monitoring and UI are working as expected.
+
 ---
 
 **Made with ❤️ for the Cursor community**

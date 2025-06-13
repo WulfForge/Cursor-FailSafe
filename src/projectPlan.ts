@@ -31,6 +31,16 @@ export class ProjectPlan {
     private projectFile: string;
     private linearMode: boolean = true; // Enforce linear progression
     private lastActivity: Date = new Date();
+    private lastLLMValidation: {
+        result: {
+            score: number,
+            grade: string,
+            summary: string,
+            suggestions: string[]
+        } | null,
+        timestamp: Date | null,
+        planHash: string | null
+    } = { result: null, timestamp: null, planHash: null };
 
     constructor(logger: Logger) {
         this.logger = logger;
@@ -719,5 +729,117 @@ export class ProjectPlan {
             }
             return false;
         });
+    }
+
+    private getPlanHash(tasks: Task[]): string {
+        // Simple hash: JSON string of task ids, names, and statuses
+        return JSON.stringify(tasks.map(t => ({ id: t.id, name: t.name, status: t.status })));
+    }
+
+    public getLLMValidationState(): {
+        isCurrent: boolean,
+        lastTimestamp: Date | null,
+        result: any
+    } {
+        const allTasks = Array.from(this.tasks.values());
+        const currentHash = this.getPlanHash(allTasks);
+        return {
+            isCurrent: this.lastLLMValidation.planHash === currentHash,
+            lastTimestamp: this.lastLLMValidation.timestamp,
+            result: this.lastLLMValidation.result
+        };
+    }
+
+    public async validatePlanWithLLM(): Promise<void> {
+        const allTasks = Array.from(this.tasks.values());
+        const planHash = this.getPlanHash(allTasks);
+        const llmResults = await this.llmReviewPlan(allTasks);
+        this.lastLLMValidation = {
+            result: llmResults,
+            timestamp: new Date(),
+            planHash
+        };
+    }
+
+    // Update validatePlan to use lastLLMValidation if current
+    public async validatePlan(): Promise<{
+        status: 'missing' | 'empty' | 'invalid' | 'in_progress' | 'complete',
+        ruleResults: string[],
+        llmResults: {
+            score: number,
+            grade: string,
+            summary: string,
+            suggestions: string[]
+        } | null,
+        recommendations: string[],
+        llmIsCurrent: boolean,
+        llmTimestamp: Date | null
+    }> {
+        // Rule-based checks
+        const allTasks = Array.from(this.tasks.values());
+        const ruleResults: string[] = [];
+        let status: 'missing' | 'empty' | 'invalid' | 'in_progress' | 'complete' = 'in_progress';
+        if (allTasks.length === 0) {
+            status = 'missing';
+            ruleResults.push('No project plan found.');
+        } else if (allTasks.every(t => t.status === TaskStatus.COMPLETED)) {
+            status = 'complete';
+            ruleResults.push('All tasks are complete.');
+        } else if (allTasks.some(t => !t.name || !t.description)) {
+            status = 'invalid';
+            ruleResults.push('Some tasks are missing names or descriptions.');
+        } else if (allTasks.length > 0 && allTasks.every(t => t.status === TaskStatus.NOT_STARTED)) {
+            status = 'empty';
+            ruleResults.push('Project plan exists but no tasks have been started.');
+        } else {
+            status = 'in_progress';
+            ruleResults.push('Project plan is in progress.');
+        }
+        // Use last LLM validation if current
+        const llmState = this.getLLMValidationState();
+        const llmResults = llmState.isCurrent ? llmState.result : null;
+        const llmIsCurrent = llmState.isCurrent;
+        const llmTimestamp = llmState.lastTimestamp;
+        // Recommendations (combine rule and LLM suggestions)
+        const recommendations = [
+            ...this.generateRecommendations(),
+            ...(llmResults ? llmResults.suggestions : [])
+        ];
+        return { status, ruleResults, llmResults, recommendations, llmIsCurrent, llmTimestamp };
+    }
+
+    // Placeholder for LLM review
+    private async llmReviewPlan(tasks: Task[]): Promise<{
+        score: number,
+        grade: string,
+        summary: string,
+        suggestions: string[]
+    }> {
+        // In production, call your LLM API here
+        // For now, return a mock result
+        if (tasks.length === 0) {
+            return {
+                score: 0,
+                grade: 'F',
+                summary: 'No plan to review.',
+                suggestions: ['Create a project plan to begin.']
+            };
+        }
+        // Example: if all tasks are complete, give A+
+        if (tasks.every(t => t.status === TaskStatus.COMPLETED)) {
+            return {
+                score: 100,
+                grade: 'A+',
+                summary: 'All tasks are complete. Project finished successfully.',
+                suggestions: []
+            };
+        }
+        // Otherwise, return a generic review
+        return {
+            score: 80,
+            grade: 'B',
+            summary: 'Plan is generally good, but could be improved. Consider reviewing task dependencies and clarity.',
+            suggestions: ['Review task dependencies for possible improvements.', 'Clarify task descriptions where needed.']
+        };
     }
 } 

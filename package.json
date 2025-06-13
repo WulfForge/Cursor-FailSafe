@@ -2,7 +2,7 @@
   "name": "failsafe-cursor",
   "displayName": "FailSafe: AI Development Extension for Cursor",
   "description": "Time-aware, validation-driven AI development assistant for Cursor. By MythologIQ.",
-  "version": "1.1.0",
+  "version": "1.2.2",
   "publisher": "MythologIQ",
   "engines": {
     "vscode": "^1.74.0"

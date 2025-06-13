@@ -36,6 +36,69 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UI = void 0;
 const vscode = __importStar(require("vscode"));
 const types_1 = require("./types");
+// Sidebar Tree Item
+class FailSafeTreeItem extends vscode.TreeItem {
+    constructor(label, collapsibleState = vscode.TreeItemCollapsibleState.None, command) {
+        super(label, collapsibleState);
+        this.label = label;
+        this.collapsibleState = collapsibleState;
+        this.command = command;
+    }
+}
+// Sidebar Tree Data Provider
+class FailSafeSidebarProvider {
+    constructor(ui) {
+        this._onDidChangeTreeData = new vscode.EventEmitter();
+        this.onDidChangeTreeData = this._onDidChangeTreeData.event;
+        this.ui = ui;
+    }
+    refresh() {
+        this._onDidChangeTreeData.fire();
+    }
+    getTreeItem(element) {
+        return element;
+    }
+    async getChildren(element) {
+        if (!element) {
+            const items = [];
+            // Plan validation
+            const planValidation = await this.ui.projectPlan.validatePlan();
+            let color = '🟢';
+            if (planValidation.status === 'missing') {
+                color = '🔴';
+            }
+            else if (!planValidation.llmIsCurrent) {
+                color = '🟡';
+            }
+            items.push(new FailSafeTreeItem(`${color} Plan: ${planValidation.status.toUpperCase()}`));
+            if (!planValidation.llmIsCurrent) {
+                items.push(new FailSafeTreeItem('Validate Plan with AI', vscode.TreeItemCollapsibleState.None, {
+                    command: 'failsafe.validatePlanWithAI',
+                    title: 'Validate Plan with AI',
+                    arguments: []
+                }));
+            }
+            // Status
+            items.push(new FailSafeTreeItem(`Status: ${this.ui.statusBarState.toUpperCase()}`));
+            // Recent actions
+            const recent = this.ui.actionLog.slice(-5).reverse();
+            if (recent.length > 0) {
+                items.push(new FailSafeTreeItem('Recent Actions', vscode.TreeItemCollapsibleState.Collapsed));
+            }
+            // Show Dashboard button
+            items.push(new FailSafeTreeItem('Show Dashboard', vscode.TreeItemCollapsibleState.None, {
+                command: 'failsafe.showDashboard',
+                title: 'Show Dashboard',
+                arguments: []
+            }));
+            return Promise.resolve(items);
+        }
+        else if (element.label === 'Recent Actions') {
+            return Promise.resolve(this.ui.actionLog.slice(-5).reverse().map(a => new FailSafeTreeItem(`${a.timestamp}: ${a.description}`)));
+        }
+        return Promise.resolve([]);
+    }
+}
 class UI {
     constructor(projectPlan, taskEngine, logger) {
         this.disposables = [];
@@ -198,10 +261,32 @@ class UI {
      */
     async showDashboard() {
         try {
-            const dashboard = this.getDashboardData();
-            const content = this.generateDashboardContent(dashboard);
+            // Plan validation
+            const planValidation = await this.projectPlan.validatePlan();
+            let color = '🟢';
+            if (planValidation.status === 'missing') {
+                color = '🔴';
+            }
+            else if (!planValidation.llmIsCurrent) {
+                color = '🟡';
+            }
+            const llmStatus = planValidation.llmIsCurrent
+                ? `LLM validation current (last run: ${planValidation.llmTimestamp?.toLocaleString() || 'never'})`
+                : 'LLM validation missing or outdated';
+            const dashboardContent = [
+                `# ${color} FailSafe Project Dashboard`,
+                `**Plan Status:** ${planValidation.status.toUpperCase()}`,
+                `**Rule-based Validation:** ${planValidation.ruleResults.join(' ')}`,
+                `**LLM Review:** ${planValidation.llmResults ? `${planValidation.llmResults.grade} (${planValidation.llmResults.score}/100) - ${planValidation.llmResults.summary}` : 'Not available'}`,
+                `**LLM Status:** ${llmStatus}`,
+                '',
+                planValidation.recommendations.length > 0 ? '## Recommendations' : '',
+                ...planValidation.recommendations.map(r => `- ${r}`),
+                '',
+                !planValidation.llmIsCurrent ? '---\n[Validate Plan with AI](command:failsafe.validatePlanWithAI)' : ''
+            ].filter(Boolean).join('\n');
             const document = await vscode.workspace.openTextDocument({
-                content,
+                content: dashboardContent,
                 language: 'markdown'
             });
             await vscode.window.showTextDocument(document);
@@ -211,6 +296,11 @@ class UI {
             this.logger.error('Error showing dashboard', error);
             vscode.window.showErrorMessage('Failed to show dashboard');
         }
+    }
+    async validatePlanWithAI() {
+        await this.projectPlan.validatePlanWithLLM();
+        this.refreshSidebar();
+        vscode.window.showInformationMessage('Plan validated with AI.');
     }
     /**
      * Get comprehensive dashboard data
@@ -477,6 +567,60 @@ class UI {
         this.disposables.forEach(disposable => disposable.dispose());
         this.disposables = [];
         this.logger.info('UI disposed');
+    }
+    registerSidebar(context) {
+        this.sidebarProvider = new FailSafeSidebarProvider(this);
+        context.subscriptions.push(vscode.window.registerTreeDataProvider('failsafeSidebar', this.sidebarProvider));
+    }
+    refreshSidebar() {
+        this.sidebarProvider?.refresh();
+    }
+    registerSimulationCommand(context) {
+        context.subscriptions.push(vscode.commands.registerCommand('failsafe.simulateEvent', async () => {
+            const eventType = await vscode.window.showQuickPick([
+                'Validation Passed',
+                'Validation Failed',
+                'Block',
+                'Enforcement',
+                'Timeout'
+            ], { placeHolder: 'Select a FailSafe event to simulate' });
+            if (!eventType)
+                return;
+            const now = new Date().toISOString();
+            let description = '';
+            let status = 'active';
+            switch (eventType) {
+                case 'Validation Passed':
+                    description = 'Simulated: Validation passed.';
+                    status = 'active';
+                    break;
+                case 'Validation Failed':
+                    description = 'Simulated: Validation failed.';
+                    status = 'blocked';
+                    break;
+                case 'Block':
+                    description = 'Simulated: Unsafe code blocked.';
+                    status = 'blocked';
+                    break;
+                case 'Enforcement':
+                    description = 'Simulated: Enforcement action taken.';
+                    status = 'blocked';
+                    break;
+                case 'Timeout':
+                    description = 'Simulated: Timeout detected.';
+                    status = 'blocked';
+                    break;
+            }
+            this.actionLog.push({ timestamp: now, description });
+            this.updateStatusBar(status);
+            this.refreshSidebar();
+            vscode.window.showInformationMessage(`Simulated event: ${eventType}`);
+        }));
+    }
+    registerPlanValidationCommand(context) {
+        context.subscriptions.push(vscode.commands.registerCommand('failsafe.validatePlanWithAI', async () => {
+            await this.validatePlanWithAI();
+        }));
     }
 }
 exports.UI = UI;

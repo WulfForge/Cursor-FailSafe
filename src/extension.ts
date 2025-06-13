@@ -44,6 +44,15 @@ export class FailSafeExtension {
         // Register sidebar
         this.ui.registerSidebar(this.context);
         
+        // Register simulation command
+        this.ui.registerSimulationCommand(this.context);
+        
+        // Register plan validation command
+        this.ui.registerPlanValidationCommand(this.context);
+        
+        // Register failsafe configuration command
+        this.ui.registerFailsafeConfigCommand(this.context);
+        
         // Initialize components
         await this.initializeComponents();
         
