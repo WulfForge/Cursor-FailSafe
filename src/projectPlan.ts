@@ -29,7 +29,7 @@ export class ProjectPlan {
     private tasks: Map<string, Task> = new Map();
     private currentTaskId: string | null = null;
     private projectFile: string;
-    private linearMode: boolean = true; // Enforce linear progression
+    private linearMode = true; // Enforce linear progression
     private lastActivity: Date = new Date();
     private lastLLMValidation: {
         result: {
@@ -129,7 +129,7 @@ export class ProjectPlan {
                 const data = JSON.parse(content);
                 
                 if (data.tasks) {
-                    data.tasks.forEach((taskData: any) => {
+                    data.tasks.forEach((taskData: Task) => {
                         const task: Task = {
                             ...taskData,
                             startTime: taskData.startTime ? new Date(taskData.startTime) : undefined,
@@ -533,7 +533,7 @@ export class ProjectPlan {
     /**
      * Checks if project is on track based on estimated timelines
      */
-    private isProjectOnTrack(): boolean {
+    private isProjectOnTrack() {
         const currentTask = this.getCurrentTask();
         if (!currentTask || !currentTask.startTime || !currentTask.estimatedDuration) {
             return true; // No current task, consider on track
@@ -699,7 +699,7 @@ export class ProjectPlan {
     }
 
     // Helper methods for feasibility checking
-    private hasDatabaseSetup(): boolean {
+    private hasDatabaseSetup() {
         // Check for database-related files or configurations
         const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
         if (!workspacePath) return false;
@@ -715,7 +715,7 @@ export class ProjectPlan {
         });
     }
 
-    private hasAuthSetup(): boolean {
+    private hasAuthSetup() {
         // Check for authentication-related files or configurations
         const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
         if (!workspacePath) return false;
@@ -739,7 +739,12 @@ export class ProjectPlan {
     public getLLMValidationState(): {
         isCurrent: boolean,
         lastTimestamp: Date | null,
-        result: any
+        result: {
+            score: number,
+            grade: string,
+            summary: string,
+            suggestions: string[]
+        } | null
     } {
         const allTasks = Array.from(this.tasks.values());
         const currentHash = this.getPlanHash(allTasks);

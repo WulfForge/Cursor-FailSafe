@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 import * as child_process from 'child_process';
+import * as fs from 'fs';
+import * as path from 'path';
 import { TestResult } from './types';
 
 export class TestRunner {
@@ -63,7 +65,7 @@ export class TestRunner {
             });
 
             let output = '';
-            let errors: string[] = [];
+            const errors: string[] = [];
 
             process.stdout?.on('data', (data) => {
                 output += data.toString();
@@ -203,8 +205,7 @@ export class TestRunner {
         }
 
         try {
-            const fs = require('fs');
-            const packageJsonPath = require('path').join(workspaceRoot, 'package.json');
+            const packageJsonPath = path.join(workspaceRoot, 'package.json');
             
             if (fs.existsSync(packageJsonPath)) {
                 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
@@ -226,8 +227,7 @@ export class TestRunner {
         const commands: string[] = [];
         
         try {
-            const fs = require('fs');
-            const packageJsonPath = require('path').join(workspaceRoot, 'package.json');
+            const packageJsonPath = path.join(workspaceRoot, 'package.json');
             
             if (fs.existsSync(packageJsonPath)) {
                 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));

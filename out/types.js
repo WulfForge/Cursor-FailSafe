@@ -8,12 +8,12 @@ var TaskStatus;
     TaskStatus["COMPLETED"] = "completed";
     TaskStatus["BLOCKED"] = "blocked";
     TaskStatus["DELAYED"] = "delayed";
-})(TaskStatus || (exports.TaskStatus = TaskStatus = {}));
+})(TaskStatus = exports.TaskStatus || (exports.TaskStatus = {}));
 var TaskPriority;
 (function (TaskPriority) {
     TaskPriority["LOW"] = "low";
     TaskPriority["MEDIUM"] = "medium";
     TaskPriority["HIGH"] = "high";
     TaskPriority["CRITICAL"] = "critical";
-})(TaskPriority || (exports.TaskPriority = TaskPriority = {}));
+})(TaskPriority = exports.TaskPriority || (exports.TaskPriority = {}));
 //# sourceMappingURL=types.js.map

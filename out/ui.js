@@ -15,23 +15,13 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UI = void 0;
 const vscode = __importStar(require("vscode"));
@@ -78,6 +68,12 @@ class FailSafeSidebarProvider {
                     arguments: []
                 }));
             }
+            // Failsafe Configuration entry
+            items.push(new FailSafeTreeItem('Failsafe Configuration', vscode.TreeItemCollapsibleState.None, {
+                command: 'failsafe.showFailsafeConfig',
+                title: 'Failsafe Configuration',
+                arguments: []
+            }));
             // Status
             items.push(new FailSafeTreeItem(`Status: ${this.ui.statusBarState.toUpperCase()}`));
             // Recent actions
@@ -100,14 +96,16 @@ class FailSafeSidebarProvider {
     }
 }
 class UI {
-    constructor(projectPlan, taskEngine, logger) {
+    constructor(projectPlan, taskEngine, logger, context) {
         this.disposables = [];
         this.dashboardPanel = null;
         this.statusBarState = 'active';
         this.actionLog = [];
+        this.userFailsafes = [];
         this.projectPlan = projectPlan;
         this.taskEngine = taskEngine;
         this.logger = logger;
+        this.context = context;
         this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
         this.progressBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
         this.accountabilityItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98);
@@ -194,8 +192,8 @@ class UI {
             const linearState = status.linearState;
             const accountability = status.accountability;
             this.updateMainStatus(currentTask, linearState);
-            this.updateProgressBar(status.progress, linearState);
-            this.updateAccountabilityItem(accountability, linearState);
+            this.updateProgressBar(status.progress);
+            this.updateAccountabilityItem(accountability);
         }
         catch (error) {
             this.logger.error('Error updating status bar', error);
@@ -223,16 +221,16 @@ class UI {
         }
         // Show deviations if any
         if (linearState.deviations.length > 0) {
-            this.statusBarItem.text = this.statusBarItem.text.replace(/[🟡🟢]/, '⚠️');
+            this.statusBarItem.text = this.statusBarItem.text.replace(/[🟡🟢]/u, '⚠️');
         }
     }
-    updateProgressBar(progress, linearState) {
+    updateProgressBar(progress) {
         const percentage = progress.progressPercentage;
         const progressBar = this.createProgressBar(percentage);
         this.progressBarItem.text = `📊 ${progressBar} ${percentage.toFixed(1)}%`;
         this.progressBarItem.tooltip = `Progress: ${progress.completedTasks}/${progress.totalTasks} tasks\nEstimated remaining: ${Math.round(progress.estimatedRemainingTime / 60000)} minutes`;
     }
-    updateAccountabilityItem(accountability, linearState) {
+    updateAccountabilityItem(accountability) {
         const timeSinceLastActivity = Math.round(accountability.timeSinceLastActivity / 60000);
         if (timeSinceLastActivity < 5) {
             this.accountabilityItem.text = '⏰ Active';
@@ -260,6 +258,8 @@ class UI {
      * Show comprehensive dashboard with all project information
      */
     async showDashboard() {
+        // FAILSAFE: Do not remove or overwrite any major dashboard section (plan validation, progress, tasks, accountability, etc.).
+        // Any edit that removes or replaces these sections is a critical regression and must be flagged by a failsafe.
         try {
             // Plan validation
             const planValidation = await this.projectPlan.validatePlan();
@@ -273,18 +273,23 @@ class UI {
             const llmStatus = planValidation.llmIsCurrent
                 ? `LLM validation current (last run: ${planValidation.llmTimestamp?.toLocaleString() || 'never'})`
                 : 'LLM validation missing or outdated';
-            const dashboardContent = [
+            const planValidationSection = [
                 `# ${color} FailSafe Project Dashboard`,
                 `**Plan Status:** ${planValidation.status.toUpperCase()}`,
                 `**Rule-based Validation:** ${planValidation.ruleResults.join(' ')}`,
                 `**LLM Review:** ${planValidation.llmResults ? `${planValidation.llmResults.grade} (${planValidation.llmResults.score}/100) - ${planValidation.llmResults.summary}` : 'Not available'}`,
                 `**LLM Status:** ${llmStatus}`,
                 '',
-                planValidation.recommendations.length > 0 ? '## Recommendations' : '',
+                planValidation.recommendations.length > 0 ? '## Plan Recommendations' : '',
                 ...planValidation.recommendations.map(r => `- ${r}`),
                 '',
-                !planValidation.llmIsCurrent ? '---\n[Validate Plan with AI](command:failsafe.validatePlanWithAI)' : ''
+                !planValidation.llmIsCurrent ? '---\n[Validate Plan with AI](command:failsafe.validatePlanWithAI)' : '',
+                '---'
             ].filter(Boolean).join('\n');
+            // Original dashboard content
+            const dashboard = this.getDashboardData();
+            const mainDashboard = this.generateDashboardContent(dashboard);
+            const dashboardContent = planValidationSection + '\n' + mainDashboard;
             const document = await vscode.workspace.openTextDocument({
                 content: dashboardContent,
                 language: 'markdown'
@@ -395,7 +400,6 @@ class UI {
     async showProgressDetails() {
         try {
             const progress = this.projectPlan.getProjectProgress();
-            const linearState = this.projectPlan.getLinearProgressState();
             const allTasks = this.projectPlan.getAllTasks();
             const content = [
                 `# 📊 FailSafe Progress Details`,
@@ -621,6 +625,154 @@ class UI {
         context.subscriptions.push(vscode.commands.registerCommand('failsafe.validatePlanWithAI', async () => {
             await this.validatePlanWithAI();
         }));
+    }
+    registerFailsafeConfigCommand(context) {
+        context.subscriptions.push(vscode.commands.registerCommand('failsafe.showFailsafeConfig', async () => {
+            await this.showFailsafeConfigPanel();
+        }));
+    }
+    async showFailsafeConfigPanel() {
+        const panel = vscode.window.createWebviewPanel('failsafeConfig', 'Failsafe Configuration', vscode.ViewColumn.One, { enableScripts: true });
+        // Load user failsafes from globalState
+        if (this.context) {
+            this.userFailsafes = this.context.globalState.get('userFailsafes', []);
+        }
+        let editIndex = null; // Track which failsafe is being edited, or null for add
+        let formActive = false;
+        const updateWebview = () => {
+            const builtInFailsafes = [
+                { name: 'Dashboard Regression Protection', description: 'Prevents removal of dashboard sections', enabled: true, editable: false },
+                { name: 'Timeout Watchdog', description: 'Detects long-running operations', enabled: true, editable: false }
+            ];
+            panel.webview.html = `
+                <html>
+                <body>
+                    <h2>Failsafe Configuration</h2>
+                    <h3>Built-in Failsafes</h3>
+                    <ul>
+                        ${builtInFailsafes.map((f, i) => `
+                            <li>
+                                <b>${f.name}</b>: ${f.description}
+                                <input type="checkbox" ${f.enabled ? 'checked' : ''} onchange="toggleBuiltIn(${i})">
+                                <span style='color:gray'>(uneditable)</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                    <h3>User-defined Failsafes</h3>
+                    <ul id="user-failsafes">
+                        ${this.userFailsafes.map((f, i) => `
+                            <li>
+                                <b>${f.name}</b>: ${f.description}
+                                <input type="checkbox" ${f.enabled ? 'checked' : ''} onchange="toggleFailsafe(${i})">
+                                <button onclick="editFailsafe(${i})">Edit</button>
+                                <button onclick="deleteFailsafe(${i})">Delete</button>
+                            </li>
+                        `).join('')}
+                    </ul>
+                    <button onclick="addFailsafe()">Add New Failsafe</button>
+                    <div id="edit-form" style="display:none;">
+                        <h4 id="form-title">Add/Edit Failsafe</h4>
+                        <label>Name: <input id="failsafe-name"></label><br>
+                        <label>Description: <input id="failsafe-desc"></label><br>
+                        <label>Enabled: <input type="checkbox" id="failsafe-enabled"></label><br>
+                        <button onclick="saveFailsafe()">Save</button>
+                        <button onclick="cancelEdit()">Cancel</button>
+                    </div>
+                    <script>
+                        const vscode = acquireVsCodeApi();
+                        function toggleBuiltIn(index) {
+                            vscode.postMessage({ type: 'toggleBuiltIn', index });
+                        }
+                        function toggleFailsafe(index) {
+                            vscode.postMessage({ type: 'toggleFailsafe', index });
+                        }
+                        function editFailsafe(index) {
+                            vscode.postMessage({ type: 'editFailsafe', index });
+                        }
+                        function deleteFailsafe(index) {
+                            vscode.postMessage({ type: 'deleteFailsafe', index });
+                        }
+                        function addFailsafe() {
+                            vscode.postMessage({ type: 'addFailsafe' });
+                        }
+                        function saveFailsafe() {
+                            const name = document.getElementById('failsafe-name').value;
+                            const description = document.getElementById('failsafe-desc').value;
+                            const enabled = document.getElementById('failsafe-enabled').checked;
+                            vscode.postMessage({ type: 'saveFailsafe', name, description, enabled });
+                        }
+                        function cancelEdit() {
+                            vscode.postMessage({ type: 'cancelEdit' });
+                        }
+                        window.addEventListener('message', event => {
+                            const msg = event.data;
+                            if (msg.type === 'showEditForm') {
+                                document.getElementById('edit-form').style.display = '';
+                                document.getElementById('failsafe-name').value = msg.name || '';
+                                document.getElementById('failsafe-desc').value = msg.description || '';
+                                document.getElementById('failsafe-enabled').checked = msg.enabled || false;
+                            } else if (msg.type === 'hideEditForm') {
+                                document.getElementById('edit-form').style.display = 'none';
+                            }
+                        });
+                    </script>
+                </body>
+                </html>
+            `;
+        };
+        updateWebview();
+        // Handle messages from webview
+        panel.webview.onDidReceiveMessage(async (msg) => {
+            if (msg.type === 'toggleFailsafe') {
+                this.userFailsafes[msg.index].enabled = !this.userFailsafes[msg.index].enabled;
+                if (this.context) {
+                    await this.context.globalState.update('userFailsafes', this.userFailsafes);
+                }
+                updateWebview();
+            }
+            else if (msg.type === 'editFailsafe') {
+                editIndex = msg.index;
+                formActive = true;
+                const f = this.userFailsafes[msg.index];
+                panel.webview.postMessage({ type: 'showEditForm', name: f.name, description: f.description, enabled: f.enabled });
+            }
+            else if (msg.type === 'addFailsafe') {
+                editIndex = null;
+                formActive = true;
+                panel.webview.postMessage({ type: 'showEditForm', name: '', description: '', enabled: true });
+            }
+            else if (msg.type === 'saveFailsafe' && formActive) {
+                if (editIndex !== null) {
+                    this.userFailsafes[editIndex] = { name: msg.name, description: msg.description, enabled: msg.enabled };
+                }
+                else {
+                    this.userFailsafes.push({ name: msg.name, description: msg.description, enabled: msg.enabled });
+                }
+                if (this.context) {
+                    await this.context.globalState.update('userFailsafes', this.userFailsafes);
+                }
+                panel.webview.postMessage({ type: 'hideEditForm' });
+                updateWebview();
+                formActive = false;
+                editIndex = null;
+            }
+            else if (msg.type === 'deleteFailsafe') {
+                this.userFailsafes.splice(msg.index, 1);
+                if (this.context) {
+                    await this.context.globalState.update('userFailsafes', this.userFailsafes);
+                }
+                updateWebview();
+            }
+            else if (msg.type === 'toggleBuiltIn') {
+                vscode.window.showWarningMessage('Disabling built-in failsafes is not recommended!');
+                // Optionally, persist built-in failsafe state if you want
+            }
+            else if (msg.type === 'cancelEdit' && formActive) {
+                panel.webview.postMessage({ type: 'hideEditForm' });
+                formActive = false;
+                editIndex = null;
+            }
+        });
     }
 }
 exports.UI = UI;

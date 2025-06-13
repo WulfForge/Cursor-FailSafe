@@ -2,8 +2,8 @@ import * as vscode from 'vscode';
 import { Commands } from './commands';
 import { TimeoutWatchdog } from './timeoutWatchdog';
 import { Validator, ValidationContext } from './validator';
-import { ValidationResult } from './types';
-import { EnforcementEngine } from './enforcementEngine';
+import { ValidationResult, ValidationError, ValidationWarning } from './types';
+import { EnforcementEngine, EnforcementResult } from './enforcementEngine';
 import { TestRunner } from './testRunner';
 import { Logger } from './logger';
 import { ProjectPlan } from './projectPlan';
@@ -21,18 +21,20 @@ export class FailSafeExtension {
     private taskEngine: TaskEngine;
     private ui: UI;
     private context: vscode.ExtensionContext;
+    private originalExecuteCommand: typeof vscode.commands.executeCommand;
 
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
         this.logger = new Logger();
         this.projectPlan = new ProjectPlan(this.logger);
         this.taskEngine = new TaskEngine(this.projectPlan, this.logger);
-        this.ui = new UI(this.projectPlan, this.taskEngine, this.logger);
         this.validator = new Validator(this.logger, this.projectPlan);
         this.enforcementEngine = new EnforcementEngine(this.logger, this.validator, this.projectPlan);
-        this.timeoutWatchdog = new TimeoutWatchdog();
         this.testRunner = new TestRunner();
+        this.timeoutWatchdog = new TimeoutWatchdog();
+        this.ui = new UI(this.projectPlan, this.taskEngine, this.logger, context);
         this.commands = new Commands(this.projectPlan, this.taskEngine, this.ui, this.logger);
+        this.originalExecuteCommand = vscode.commands.executeCommand;
     }
 
     public async activate(): Promise<void> {
@@ -78,15 +80,19 @@ export class FailSafeExtension {
 
     private setupAIRequestInterception(): void {
         // Intercept AI requests to enforce validation and adherence
-        const originalExecuteCommand = vscode.commands.executeCommand;
         
         // Override executeCommand to intercept AI-related commands
-        (vscode.commands as any).executeCommand = async (command: string, ...args: any[]) => {
-            if (this.isAICommand(command)) {
-                return await this.handleAIRequest(command, args);
+        (vscode.commands as { executeCommand: typeof vscode.commands.executeCommand }).executeCommand = async function<T = unknown>(command: string, ...args: unknown[]): Promise<T> {
+            // Use closure to access the extension instance
+            const extension = (globalThis as Record<string, unknown>).__failsafeExtension as FailSafeExtension;
+            if (extension && extension.isAICommand(command)) {
+                return await extension.handleAIRequest(command, args) as T;
             }
-            return originalExecuteCommand(command, ...args);
+            return extension.originalExecuteCommand(command, ...args);
         };
+
+        // Store reference to this extension instance globally for the interceptor
+        (globalThis as Record<string, unknown>).__failsafeExtension = this;
 
         this.logger.info('AI request interception set up');
     }
@@ -104,7 +110,7 @@ export class FailSafeExtension {
         return aiCommands.some(cmd => command.includes(cmd));
     }
 
-    private async handleAIRequest(command: string, args: any[]): Promise<any> {
+    private async handleAIRequest(command: string, args: unknown[]): Promise<unknown> {
         this.logger.info(`Intercepting AI request: ${command}`);
         
         try {
@@ -128,7 +134,7 @@ export class FailSafeExtension {
         }
     }
 
-    private async executeOriginalCommand(command: string, args: any[]): Promise<any> {
+    private async executeOriginalCommand(command: string, args: unknown[]): Promise<unknown> {
         // This would execute the actual AI command
         // For now, we'll simulate the behavior
         return new Promise((resolve) => {
@@ -138,7 +144,7 @@ export class FailSafeExtension {
         });
     }
 
-    private async validateAIResponseWithEnforcement(response: any, command: string, args: any[]): Promise<void> {
+    private async validateAIResponseWithEnforcement(response: unknown, command: string, args: unknown[]): Promise<void> {
         this.logger.info('Validating AI response with enhanced enforcement...');
         
         // Extract the actual response content
@@ -152,7 +158,7 @@ export class FailSafeExtension {
         await this.handleEnforcementResults(enforcementResult, responseContent);
     }
 
-    private extractResponseContent(response: any): string {
+    private extractResponseContent(response: unknown): string {
         // Extract the actual code/content from the AI response
         if (typeof response === 'string') {
             return response;
@@ -160,16 +166,16 @@ export class FailSafeExtension {
         
         if (response && typeof response === 'object') {
             // Look for common response patterns
-            return response.content || response.data || response.text || 
-                   response.code || response.message || JSON.stringify(response);
+            const obj = response as Record<string, unknown>;
+            return (obj.content as string) || (obj.data as string) || (obj.text as string) || 
+                   (obj.code as string) || (obj.message as string) || JSON.stringify(response);
         }
         
         return String(response);
     }
 
-    private async buildValidationContext(command: string, args: any[]): Promise<ValidationContext> {
+    private async buildValidationContext(command: string, args: unknown[]): Promise<ValidationContext> {
         const currentTask = this.projectPlan.getCurrentTask();
-        const projectProgress = this.projectPlan.getProjectProgress();
         
         return {
             projectState: {
@@ -179,10 +185,10 @@ export class FailSafeExtension {
                 dependencies: this.extractDependenciesFromArgs(args)
             },
             codeContext: {
-                fileType: this.detectFileType(args),
+                fileType: this.detectFileType(),
                 complexity: this.estimateComplexity(args),
                 size: this.estimateSize(args),
-                purpose: this.determinePurpose(command, args)
+                purpose: this.determinePurpose(command)
             },
             userPreferences: {
                 strictMode: this.getConfig().get('validation.strictMode', false),
@@ -202,7 +208,6 @@ export class FailSafeExtension {
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders) return 'unknown';
 
-        const files = vscode.workspace.findFiles('**/*', '**/node_modules/**');
         // This would be implemented to analyze workspace files
         return 'typescript'; // Placeholder
     }
@@ -236,7 +241,7 @@ export class FailSafeExtension {
         return techStack.length > 0 ? techStack : ['unknown'];
     }
 
-    private extractDependenciesFromArgs(args: any[]): string[] {
+    private extractDependenciesFromArgs(args: unknown[]): string[] {
         const dependencies: string[] = [];
         
         args.forEach(arg => {
@@ -257,7 +262,7 @@ export class FailSafeExtension {
         return [...new Set(dependencies)];
     }
 
-    private detectFileType(args: any[]): string {
+    private detectFileType(): string {
         // Detect file type from args or current editor
         const editor = vscode.window.activeTextEditor;
         if (editor) {
@@ -268,7 +273,7 @@ export class FailSafeExtension {
         return 'unknown';
     }
 
-    private estimateComplexity(args: any[]): 'low' | 'medium' | 'high' {
+    private estimateComplexity(args: unknown[]): 'low' | 'medium' | 'high' {
         let totalLength = 0;
         let hasCode = false;
         
@@ -286,7 +291,7 @@ export class FailSafeExtension {
         return 'low';
     }
 
-    private estimateSize(args: any[]): number {
+    private estimateSize(args: unknown[]): number {
         let totalSize = 0;
         args.forEach(arg => {
             if (typeof arg === 'string') {
@@ -296,12 +301,13 @@ export class FailSafeExtension {
         return totalSize;
     }
 
-    private determinePurpose(command: string, args: any[]): string {
-        if (command.includes('refactor')) return 'refactoring';
-        if (command.includes('fix')) return 'bug_fix';
-        if (command.includes('generate')) return 'code_generation';
+    private determinePurpose(command: string): string {
+        if (command.includes('generate')) return 'code-generation';
+        if (command.includes('edit')) return 'code-editing';
+        if (command.includes('explain')) return 'code-explanation';
+        if (command.includes('fix')) return 'bug-fixing';
         if (command.includes('test')) return 'testing';
-        if (command.includes('explain')) return 'explanation';
+        if (command.includes('refactor')) return 'refactoring';
         return 'general';
     }
 
@@ -327,7 +333,7 @@ export class FailSafeExtension {
         const issueCounts = new Map<string, number>();
         
         history.forEach((result: ValidationResult) => {
-            result.errors?.forEach((error: any) => {
+            result.errors?.forEach((error: ValidationError) => {
                 const key = error.type + ': ' + error.message.substring(0, 50);
                 issueCounts.set(key, (issueCounts.get(key) || 0) + 1);
             });
@@ -336,12 +342,12 @@ export class FailSafeExtension {
         return Array.from(issueCounts.entries())
             .sort((a, b) => b[1] - a[1])
             .slice(0, 5)
-            .map(([issue, _]) => issue);
+            .map(([issue]) => issue);
     }
 
     private async handleEnforcementResults(enforcementResult: {
-        validationResult: any;
-        enforcementResults: any[];
+        validationResult: ValidationResult;
+        enforcementResults: EnforcementResult[];
         adaptiveSuggestions: string[];
     }, content: string): Promise<void> {
         const { validationResult, enforcementResults, adaptiveSuggestions } = enforcementResult;
@@ -362,12 +368,12 @@ export class FailSafeExtension {
 
         // Handle validation issues
         if (!validationResult.isValid) {
-            await this.handleValidationIssues(validationResult, content);
+            await this.handleValidationIssues(validationResult);
         }
 
         // Handle enforcement issues
         if (enforcementResults.length > 0) {
-            await this.handleEnforcementIssues(enforcementResults, content);
+            await this.handleEnforcementIssues(enforcementResults);
         }
 
         // Show adaptive suggestions
@@ -379,7 +385,7 @@ export class FailSafeExtension {
         this.updateUserPreferences(enforcementResults);
     }
 
-    private async handleValidationIssues(validationResult: any, content: string): Promise<void> {
+    private async handleValidationIssues(validationResult: ValidationResult): Promise<void> {
         this.logger.warn('Validation issues detected:', validationResult);
         // Log to UI action log
         this.ui["actionLog"].push({
@@ -392,7 +398,7 @@ export class FailSafeExtension {
         // Check if override is allowed
         const config = this.getConfig();
         if (this.validator.shouldAllowOverride(validationResult, config)) {
-            const shouldOverride = await this.promptForOverride(validationResult);
+            const shouldOverride = await this.promptForOverride();
             if (!shouldOverride) {
                 throw new Error('AI response validation failed - user chose not to override');
             }
@@ -401,7 +407,7 @@ export class FailSafeExtension {
         }
     }
 
-    private async handleEnforcementIssues(enforcementResults: any[], content: string): Promise<void> {
+    private async handleEnforcementIssues(enforcementResults: EnforcementResult[]): Promise<void> {
         const criticalIssues = enforcementResults.filter(r => r.severity === 'critical');
         const highIssues = enforcementResults.filter(r => r.severity === 'high');
         if (criticalIssues.length > 0) {
@@ -429,12 +435,12 @@ export class FailSafeExtension {
         }
     }
 
-    private async showCriticalEnforcementIssues(issues: any[]): Promise<void> {
+    private async showCriticalEnforcementIssues(issues: EnforcementResult[]): Promise<void> {
         const message = `Critical enforcement issues detected:\n${issues.map(i => `• ${i.message}`).join('\n')}`;
         await vscode.window.showErrorMessage(message, 'View Details', 'Override', 'Cancel');
     }
 
-    private async showHighEnforcementIssues(issues: any[]): Promise<void> {
+    private async showHighEnforcementIssues(issues: EnforcementResult[]): Promise<void> {
         const message = `High-severity enforcement issues detected:\n${issues.map(i => `• ${i.message}`).join('\n')}`;
         await vscode.window.showWarningMessage(message, 'View Details', 'Override', 'Continue');
     }
@@ -449,7 +455,7 @@ export class FailSafeExtension {
         await vscode.window.showInformationMessage(message, 'Learn More', 'Dismiss');
     }
 
-    private updateUserPreferences(enforcementResults: any[]): void {
+    private updateUserPreferences(enforcementResults: EnforcementResult[]): void {
         // Update enforcement engine preferences based on user behavior
         const overrideCount = enforcementResults.filter(r => r.severity === 'high').length;
         if (overrideCount > 0) {
@@ -457,10 +463,10 @@ export class FailSafeExtension {
         }
     }
 
-    private async showValidationIssues(validationResult: any): Promise<void> {
+    private async showValidationIssues(validationResult: ValidationResult): Promise<void> {
         const issues = [
-            ...validationResult.errors.map((e: any) => `❌ ${e.message}`),
-            ...validationResult.warnings.map((w: any) => `⚠️ ${w.message}`)
+            ...validationResult.errors.map((e: ValidationError) => `❌ ${e.message}`),
+            ...validationResult.warnings.map((w: ValidationWarning) => `⚠️ ${w.message}`)
         ];
 
         if (issues.length > 0) {
@@ -469,7 +475,7 @@ export class FailSafeExtension {
         }
     }
 
-    private async promptForOverride(validationResult: any): Promise<boolean> {
+    private async promptForOverride(): Promise<boolean> {
         const result = await vscode.window.showWarningMessage(
             'Validation issues detected. Do you want to override?',
             'Override',
@@ -478,7 +484,7 @@ export class FailSafeExtension {
         return result === 'Override';
     }
 
-    private getConfig(): any {
+    private getConfig(): vscode.WorkspaceConfiguration {
         return vscode.workspace.getConfiguration('failsafe');
     }
 

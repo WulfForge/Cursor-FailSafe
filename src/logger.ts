@@ -38,7 +38,7 @@ export class Logger {
         return levels.indexOf(level) >= levels.indexOf(configLevel);
     }
 
-    private writeToFile(level: string, message: string, data?: any): void {
+    private writeToFile(level: string, message: string, data?: unknown): void {
         if (!this.shouldLog(level)) {
             return;
         }
@@ -54,7 +54,7 @@ export class Logger {
         const logFile = path.join(this.logDir, `${this.currentSessionId}.json`);
         
         try {
-            let logs: any[] = [];
+            let logs: unknown[] = [];
             if (fs.existsSync(logFile)) {
                 const content = fs.readFileSync(logFile, 'utf8');
                 logs = JSON.parse(content);
@@ -67,22 +67,22 @@ export class Logger {
         }
     }
 
-    public debug(message: string, data?: any): void {
+    public debug(message: string, data?: unknown): void {
         this.writeToFile('debug', message, data);
         console.debug(`[FailSafe] ${message}`, data);
     }
 
-    public info(message: string, data?: any): void {
+    public info(message: string, data?: unknown): void {
         this.writeToFile('info', message, data);
         console.info(`[FailSafe] ${message}`, data);
     }
 
-    public warn(message: string, data?: any): void {
+    public warn(message: string, data?: unknown): void {
         this.writeToFile('warn', message, data);
         console.warn(`[FailSafe] ${message}`, data);
     }
 
-    public error(message: string, error?: any): void {
+    public error(message: string, error?: unknown): void {
         this.writeToFile('error', message, error);
         console.error(`[FailSafe] ${message}`, error);
     }
@@ -120,7 +120,7 @@ export class Logger {
         return [];
     }
 
-    public getRecentLogs(limit: number = 10): SessionLog[] {
+    public getRecentLogs(limit = 10): SessionLog[] {
         try {
             const files = fs.readdirSync(this.logDir)
                 .filter(file => file.endsWith('.json'))

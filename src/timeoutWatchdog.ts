@@ -39,7 +39,7 @@ export class TimeoutWatchdog {
         this.logger.info('Timeout watchdog cleaned up');
     }
 
-    public startWatching(command: string, args: any[]): Promise<any> {
+    public startWatching(command: string, args: unknown[]): Promise<void> {
         const timeoutMs = this.calculateTimeout(command, args);
         const requestId = this.generateRequestId(command, args);
 
@@ -61,7 +61,7 @@ export class TimeoutWatchdog {
         });
     }
 
-    public cancelTimeout(command: string, args: any[]): void {
+    public cancelTimeout(command: string, args: unknown[]): void {
         const requestId = this.generateRequestId(command, args);
         const timeout = this.activeTimeouts.get(requestId);
         
@@ -72,7 +72,7 @@ export class TimeoutWatchdog {
         }
     }
 
-    private calculateTimeout(command: string, args: any[]): number {
+    private calculateTimeout(command: string, args: unknown[]): number {
         const baseTimeout = this.config.baseTimeout;
         const complexity = this.calculateComplexity(args);
         const requestType = this.getRequestType(command);
@@ -96,7 +96,7 @@ export class TimeoutWatchdog {
         return Math.round(timeout);
     }
 
-    private calculateComplexity(args: any[]): number {
+    private calculateComplexity(args: unknown[]): number {
         let complexity = 1.0;
 
         // Analyze prompt length
@@ -117,7 +117,7 @@ export class TimeoutWatchdog {
         return Math.min(complexity, 5.0); // Cap at 5x
     }
 
-    private getPromptLength(args: any[]): number {
+    private getPromptLength(args: unknown[]): number {
         let totalLength = 0;
         
         args.forEach(arg => {
@@ -131,7 +131,7 @@ export class TimeoutWatchdog {
         return totalLength;
     }
 
-    private getCodeComplexity(args: any[]): number {
+    private getCodeComplexity(args: unknown[]): number {
         let complexity = 1.0;
         
         args.forEach(arg => {
@@ -157,7 +157,7 @@ export class TimeoutWatchdog {
         return complexity;
     }
 
-    private getContextSize(args: any[]): number {
+    private getContextSize(args: unknown[]): number {
         let contextSize = 0;
         
         args.forEach(arg => {
@@ -186,13 +186,13 @@ export class TimeoutWatchdog {
         return 'chat'; // Default
     }
 
-    private generateRequestId(command: string, args: any[]): string {
+    private generateRequestId(command: string, args: unknown[]): string {
         const timestamp = Date.now();
         const argsHash = this.hashArgs(args);
         return `${command}-${timestamp}-${argsHash}`;
     }
 
-    private hashArgs(args: any[]): string {
+    private hashArgs(args: unknown[]): string {
         // Simple hash for args
         const argsStr = JSON.stringify(args);
         let hash = 0;

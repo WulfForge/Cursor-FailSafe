@@ -24,7 +24,7 @@ export interface TaskExecutionResult {
 export class TaskEngine {
     private projectPlan: ProjectPlan;
     private logger: Logger;
-    private isRunning: boolean = false;
+    private isActive = false;
     private checkInterval: NodeJS.Timeout | null = null;
     private readonly CHECK_INTERVAL_MS = 30000; // 30 seconds
     private readonly OVERDUE_THRESHOLD_MS = 15 * 60 * 1000; // 15 minutes
@@ -52,11 +52,11 @@ export class TaskEngine {
     }
 
     public start(): void {
-        if (this.isRunning) {
+        if (this.isActive) {
             return;
         }
 
-        this.isRunning = true;
+        this.isActive = true;
         this.checkInterval = setInterval(() => {
             this.checkTasks();
         }, this.CHECK_INTERVAL_MS);
@@ -69,7 +69,7 @@ export class TaskEngine {
             clearInterval(this.checkInterval);
             this.checkInterval = null;
         }
-        this.isRunning = false;
+        this.isActive = false;
         this.logger.info('Task engine stopped');
     }
 
@@ -375,10 +375,33 @@ export class TaskEngine {
     public getProjectStatus(): {
         currentTask: Task | null;
         nextTask: Task | null;
-        progress: any;
+        progress: {
+            totalTasks: number;
+            completedTasks: number;
+            inProgressTasks: number;
+            blockedTasks: number;
+            progressPercentage: number;
+            estimatedRemainingTime: number;
+        };
         suggestions: Task[];
-        linearState: any;
-        accountability: any;
+        linearState: {
+            currentTask: Task | null;
+            nextTask: Task | null;
+            blockedTasks: Task[];
+            completedTasks: Task[];
+            totalProgress: number;
+            estimatedCompletion: Date | null;
+            lastActivity: Date;
+            isOnTrack: boolean;
+            deviations: string[];
+        };
+        accountability: {
+            lastActivity: Date;
+            timeSinceLastActivity: number;
+            currentTaskDuration: number | null;
+            overdueTasks: Task[];
+            recommendations: string[];
+        };
     } {
         const currentTask = this.projectPlan.getCurrentTask();
         const nextTask = this.getNextReadyTask();
@@ -601,7 +624,7 @@ export class TaskEngine {
     /**
      * Complete task execution with validation
      */
-    public async completeTask(taskId: string, result?: any): Promise<TaskExecutionResult> {
+    public async completeTask(taskId: string, result?: unknown): Promise<TaskExecutionResult> {
         const task = this.projectPlan.getAllTasks().find(t => t.id === taskId);
         if (!task) {
             return {

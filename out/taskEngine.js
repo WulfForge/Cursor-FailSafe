@@ -15,30 +15,20 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TaskEngine = void 0;
 const vscode = __importStar(require("vscode"));
 const types_1 = require("./types");
 class TaskEngine {
     constructor(projectPlan, logger) {
-        this.isRunning = false;
+        this.isActive = false;
         this.checkInterval = null;
         this.CHECK_INTERVAL_MS = 30000; // 30 seconds
         this.OVERDUE_THRESHOLD_MS = 15 * 60 * 1000; // 15 minutes
@@ -60,10 +50,10 @@ class TaskEngine {
         }
     }
     start() {
-        if (this.isRunning) {
+        if (this.isActive) {
             return;
         }
-        this.isRunning = true;
+        this.isActive = true;
         this.checkInterval = setInterval(() => {
             this.checkTasks();
         }, this.CHECK_INTERVAL_MS);
@@ -74,7 +64,7 @@ class TaskEngine {
             clearInterval(this.checkInterval);
             this.checkInterval = null;
         }
-        this.isRunning = false;
+        this.isActive = false;
         this.logger.info('Task engine stopped');
     }
     async checkTasks() {

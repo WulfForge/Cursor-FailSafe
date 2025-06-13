@@ -15,27 +15,15 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FailSafeExtension = void 0;
-exports.activate = activate;
-exports.deactivate = deactivate;
+exports.deactivate = exports.activate = exports.FailSafeExtension = void 0;
 const vscode = __importStar(require("vscode"));
 const commands_1 = require("./commands");
 const timeoutWatchdog_1 = require("./timeoutWatchdog");
@@ -52,12 +40,13 @@ class FailSafeExtension {
         this.logger = new logger_1.Logger();
         this.projectPlan = new projectPlan_1.ProjectPlan(this.logger);
         this.taskEngine = new taskEngine_1.TaskEngine(this.projectPlan, this.logger);
-        this.ui = new ui_1.UI(this.projectPlan, this.taskEngine, this.logger);
         this.validator = new validator_1.Validator(this.logger, this.projectPlan);
         this.enforcementEngine = new enforcementEngine_1.EnforcementEngine(this.logger, this.validator, this.projectPlan);
-        this.timeoutWatchdog = new timeoutWatchdog_1.TimeoutWatchdog();
         this.testRunner = new testRunner_1.TestRunner();
+        this.timeoutWatchdog = new timeoutWatchdog_1.TimeoutWatchdog();
+        this.ui = new ui_1.UI(this.projectPlan, this.taskEngine, this.logger, context);
         this.commands = new commands_1.Commands(this.projectPlan, this.taskEngine, this.ui, this.logger);
+        this.originalExecuteCommand = vscode.commands.executeCommand;
     }
     async activate() {
         this.logger.info('FailSafe extension activating...');
@@ -67,6 +56,10 @@ class FailSafeExtension {
         this.ui.registerSidebar(this.context);
         // Register simulation command
         this.ui.registerSimulationCommand(this.context);
+        // Register plan validation command
+        this.ui.registerPlanValidationCommand(this.context);
+        // Register failsafe configuration command
+        this.ui.registerFailsafeConfigCommand(this.context);
         // Initialize components
         await this.initializeComponents();
         // Set up AI request interception
@@ -88,14 +81,17 @@ class FailSafeExtension {
     }
     setupAIRequestInterception() {
         // Intercept AI requests to enforce validation and adherence
-        const originalExecuteCommand = vscode.commands.executeCommand;
         // Override executeCommand to intercept AI-related commands
-        vscode.commands.executeCommand = async (command, ...args) => {
-            if (this.isAICommand(command)) {
-                return await this.handleAIRequest(command, args);
+        vscode.commands.executeCommand = async function (command, ...args) {
+            // Use closure to access the extension instance
+            const extension = globalThis.__failsafeExtension;
+            if (extension && extension.isAICommand(command)) {
+                return await extension.handleAIRequest(command, args);
             }
-            return originalExecuteCommand(command, ...args);
+            return extension.originalExecuteCommand(command, ...args);
         };
+        // Store reference to this extension instance globally for the interceptor
+        globalThis.__failsafeExtension = this;
         this.logger.info('AI request interception set up');
     }
     isAICommand(command) {
@@ -154,14 +150,14 @@ class FailSafeExtension {
         }
         if (response && typeof response === 'object') {
             // Look for common response patterns
-            return response.content || response.data || response.text ||
-                response.code || response.message || JSON.stringify(response);
+            const obj = response;
+            return obj.content || obj.data || obj.text ||
+                obj.code || obj.message || JSON.stringify(response);
         }
         return String(response);
     }
     async buildValidationContext(command, args) {
         const currentTask = this.projectPlan.getCurrentTask();
-        const projectProgress = this.projectPlan.getProjectProgress();
         return {
             projectState: {
                 currentTask: currentTask?.name,
@@ -170,10 +166,10 @@ class FailSafeExtension {
                 dependencies: this.extractDependenciesFromArgs(args)
             },
             codeContext: {
-                fileType: this.detectFileType(args),
+                fileType: this.detectFileType(),
                 complexity: this.estimateComplexity(args),
                 size: this.estimateSize(args),
-                purpose: this.determinePurpose(command, args)
+                purpose: this.determinePurpose(command)
             },
             userPreferences: {
                 strictMode: this.getConfig().get('validation.strictMode', false),
@@ -192,7 +188,6 @@ class FailSafeExtension {
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders)
             return 'unknown';
-        const files = vscode.workspace.findFiles('**/*', '**/node_modules/**');
         // This would be implemented to analyze workspace files
         return 'typescript'; // Placeholder
     }
@@ -239,7 +234,7 @@ class FailSafeExtension {
         });
         return [...new Set(dependencies)];
     }
-    detectFileType(args) {
+    detectFileType() {
         // Detect file type from args or current editor
         const editor = vscode.window.activeTextEditor;
         if (editor) {
@@ -275,17 +270,19 @@ class FailSafeExtension {
         });
         return totalSize;
     }
-    determinePurpose(command, args) {
-        if (command.includes('refactor'))
-            return 'refactoring';
-        if (command.includes('fix'))
-            return 'bug_fix';
+    determinePurpose(command) {
         if (command.includes('generate'))
-            return 'code_generation';
+            return 'code-generation';
+        if (command.includes('edit'))
+            return 'code-editing';
+        if (command.includes('explain'))
+            return 'code-explanation';
+        if (command.includes('fix'))
+            return 'bug-fixing';
         if (command.includes('test'))
             return 'testing';
-        if (command.includes('explain'))
-            return 'explanation';
+        if (command.includes('refactor'))
+            return 'refactoring';
         return 'general';
     }
     calculateSuccessRate() {
@@ -314,7 +311,7 @@ class FailSafeExtension {
         return Array.from(issueCounts.entries())
             .sort((a, b) => b[1] - a[1])
             .slice(0, 5)
-            .map(([issue, _]) => issue);
+            .map(([issue]) => issue);
     }
     async handleEnforcementResults(enforcementResult, content) {
         const { validationResult, enforcementResults, adaptiveSuggestions } = enforcementResult;
@@ -332,11 +329,11 @@ class FailSafeExtension {
         this.ui.updateStatusBar(validationResult.isValid ? 'active' : 'blocked');
         // Handle validation issues
         if (!validationResult.isValid) {
-            await this.handleValidationIssues(validationResult, content);
+            await this.handleValidationIssues(validationResult);
         }
         // Handle enforcement issues
         if (enforcementResults.length > 0) {
-            await this.handleEnforcementIssues(enforcementResults, content);
+            await this.handleEnforcementIssues(enforcementResults);
         }
         // Show adaptive suggestions
         if (adaptiveSuggestions.length > 0) {
@@ -345,7 +342,7 @@ class FailSafeExtension {
         // Update user preferences based on behavior
         this.updateUserPreferences(enforcementResults);
     }
-    async handleValidationIssues(validationResult, content) {
+    async handleValidationIssues(validationResult) {
         this.logger.warn('Validation issues detected:', validationResult);
         // Log to UI action log
         this.ui["actionLog"].push({
@@ -358,7 +355,7 @@ class FailSafeExtension {
         // Check if override is allowed
         const config = this.getConfig();
         if (this.validator.shouldAllowOverride(validationResult, config)) {
-            const shouldOverride = await this.promptForOverride(validationResult);
+            const shouldOverride = await this.promptForOverride();
             if (!shouldOverride) {
                 throw new Error('AI response validation failed - user chose not to override');
             }
@@ -367,7 +364,7 @@ class FailSafeExtension {
             throw new Error('AI response validation failed - safety issues cannot be overridden');
         }
     }
-    async handleEnforcementIssues(enforcementResults, content) {
+    async handleEnforcementIssues(enforcementResults) {
         const criticalIssues = enforcementResults.filter(r => r.severity === 'critical');
         const highIssues = enforcementResults.filter(r => r.severity === 'high');
         if (criticalIssues.length > 0) {
@@ -427,7 +424,7 @@ class FailSafeExtension {
             await vscode.window.showWarningMessage(message, 'View Details', 'Override', 'Cancel');
         }
     }
-    async promptForOverride(validationResult) {
+    async promptForOverride() {
         const result = await vscode.window.showWarningMessage('Validation issues detected. Do you want to override?', 'Override', 'Cancel');
         return result === 'Override';
     }
@@ -459,8 +456,10 @@ function activate(context) {
     const extension = new FailSafeExtension(context);
     return extension.activate();
 }
+exports.activate = activate;
 function deactivate() {
     // This would be called when the extension is deactivated
     return Promise.resolve();
 }
+exports.deactivate = deactivate;
 //# sourceMappingURL=extension.js.map
