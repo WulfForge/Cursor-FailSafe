@@ -1,0 +1,14 @@
+[
+  {
+    "timestamp": "2025-06-13T08:00:12.866Z",
+    "level": "info",
+    "message": "Detected 2 installed extensions",
+    "sessionId": "session-20250613-040012"
+  },
+  {
+    "timestamp": "2025-06-13T08:00:12.870Z",
+    "level": "info",
+    "message": "Detected 1 installed extensions",
+    "sessionId": "session-20250613-040012"
+  }
+]

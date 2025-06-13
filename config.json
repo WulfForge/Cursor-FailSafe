@@ -1,0 +1,28 @@
+{
+  "timeout": 10000,
+  "maxTimeout": 60000,
+  "minTimeout": 5000,
+  "validationEnabled": true,
+  "testRunner": "npm test",
+  "logLevel": "info",
+  "autoRetry": true,
+  "maxRetries": 3,
+  "overdueThreshold": 900000,
+  "stallThreshold": 300000,
+  "checkInterval": 30000,
+  "dynamicTimeout": {
+    "enabled": true,
+    "complexityMultipliers": {
+      "low": 0.8,
+      "medium": 1.2,
+      "high": 2.0
+    },
+    "requestTypeMultipliers": {
+      "simple": 0.7,
+      "complex": 1.5,
+      "refactor": 1.3,
+      "generate": 1.8,
+      "debug": 1.1
+    }
+  }
+} 
