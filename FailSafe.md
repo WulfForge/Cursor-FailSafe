@@ -10,7 +10,7 @@ Build a lightweight, Cursor-native extension that improves code reliability and 
 * Blocking hallucinated or mock data from entering production
 * Presenting real-time project plan visibility to the developer
 * Providing a structured execution path with active feedback and nudges
-* Generating and updating UI using Cursor’s built-in v0 extension system
+* Generating and updating UI using Cursor's built-in v0 extension system
 
 ---
 
@@ -53,7 +53,7 @@ failsafe-cursor/
 ├── projectPlan.ts           # Tracks task progress, deadlines, and critical paths
 ├── taskEngine.ts            # Nudges developer based on overdue tasks or stalling
 ├── ui.ts                    # Handles sidebar view, status bar integration, popups
-├── ui.templates.ts          # Generates views via Cursor’s v0 UI system
+├── ui.templates.ts          # Generates views via Cursor's v0 UI system
 ├── types.ts                 # Shared interfaces, enums, and result types
 ├── config.json              # Settings: timeouts, validation thresholds, toggles
 ├── .failsafe/               # Output folder for local logs and session states
@@ -67,7 +67,7 @@ failsafe-cursor/
 
 ### ✅ AI Interaction (via Cursor API)
 
-* Uses Cursor’s native AI command pipeline to issue structured prompts.
+* Uses Cursor's native AI command pipeline to issue structured prompts.
 * All interaction is done via `vscode.commands.executeCommand('cursor.ask', prompt)`.
 * Captures streamed AI response tokens and buffers them for processing.
 * Post-processing triggers validation and test workflow automatically before applying code.
@@ -90,7 +90,7 @@ failsafe-cursor/
 
 ### ✅ Test Runner
 
-* After successful validation, triggers a local test run via Node’s `child_process.spawn` (e.g. `npm test`).
+* After successful validation, triggers a local test run via Node's `child_process.spawn` (e.g. `npm test`).
 * Parses raw stdout and stderr to detect test pass/failure status.
 * If tests fail:
 
@@ -172,7 +172,16 @@ failsafe-cursor/
 
 ---
 
-## 🖥️ UI Components (Cursor-native via v0)
+## 🖥️ UI Components (VS Code & Cursor)
+
+All UI components in FailSafe are built using standard VS Code extension APIs. This includes:
+
+* Status bar indicators (color-coded, icon-based)
+* Markdown-based dashboard and log panels
+* Notifications and pop-ups
+* Command palette shortcuts
+
+> Note: There are currently no Cursor-specific UI elements. All UI is compatible with both VS Code and Cursor, as Cursor supports the VS Code extension API.
 
 ### 1. Sidebar Panel (`Failsafe: Show Plan`)
 
@@ -205,7 +214,7 @@ failsafe-cursor/
 
 ### 6. Cursor v0 UI Integration
 
-* All views generated via Cursor’s native v0 UI system
+* All views generated via Cursor's native v0 UI system
 * View templates managed in `ui.templates.ts`
 * UI update tasks explicitly tracked in build schedule
 

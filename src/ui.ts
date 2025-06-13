@@ -15,6 +15,59 @@ export interface UIDashboard {
     isOnTrack: boolean;
 }
 
+// Sidebar Tree Item
+class FailSafeTreeItem extends vscode.TreeItem {
+    constructor(
+        public readonly label: string,
+        public readonly collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None,
+        public readonly command?: vscode.Command
+    ) {
+        super(label, collapsibleState);
+    }
+}
+
+// Sidebar Tree Data Provider
+class FailSafeSidebarProvider implements vscode.TreeDataProvider<FailSafeTreeItem> {
+    private _onDidChangeTreeData: vscode.EventEmitter<FailSafeTreeItem | undefined | void> = new vscode.EventEmitter<FailSafeTreeItem | undefined | void>();
+    readonly onDidChangeTreeData: vscode.Event<FailSafeTreeItem | undefined | void> = this._onDidChangeTreeData.event;
+    private ui: UI;
+    constructor(ui: UI) {
+        this.ui = ui;
+    }
+    refresh(): void {
+        this._onDidChangeTreeData.fire();
+    }
+    getTreeItem(element: FailSafeTreeItem): vscode.TreeItem {
+        return element;
+    }
+    getChildren(element?: FailSafeTreeItem): Thenable<FailSafeTreeItem[]> {
+        if (!element) {
+            // Root: show status and actions
+            const items: FailSafeTreeItem[] = [];
+            // Status
+            items.push(new FailSafeTreeItem(`Status: ${this.ui.statusBarState.toUpperCase()}`));
+            // Recent actions
+            const recent = this.ui.actionLog.slice(-5).reverse();
+            if (recent.length > 0) {
+                items.push(new FailSafeTreeItem('Recent Actions', vscode.TreeItemCollapsibleState.Collapsed));
+            }
+            // Show Dashboard button
+            items.push(new FailSafeTreeItem('Show Dashboard', vscode.TreeItemCollapsibleState.None, {
+                command: 'failsafe.showDashboard',
+                title: 'Show Dashboard',
+                arguments: []
+            }));
+            return Promise.resolve(items);
+        } else if (element.label === 'Recent Actions') {
+            // Show up to 5 recent actions
+            return Promise.resolve(
+                this.ui.actionLog.slice(-5).reverse().map(a => new FailSafeTreeItem(`${a.timestamp}: ${a.description}`))
+            );
+        }
+        return Promise.resolve([]);
+    }
+}
+
 export class UI {
     private projectPlan: ProjectPlan;
     private taskEngine: TaskEngine;
@@ -24,6 +77,9 @@ export class UI {
     private accountabilityItem: vscode.StatusBarItem;
     private disposables: vscode.Disposable[] = [];
     private dashboardPanel: vscode.WebviewPanel | null = null;
+    public statusBarState: 'active' | 'validating' | 'blocked' = 'active';
+    public actionLog: { timestamp: string; description: string }[] = [];
+    private sidebarProvider?: FailSafeSidebarProvider;
 
     constructor(projectPlan: ProjectPlan, taskEngine: TaskEngine, logger: Logger) {
         this.projectPlan = projectPlan;
@@ -52,8 +108,8 @@ export class UI {
     }
 
     private setupStatusBar(): void {
-        // Main status item
-        this.statusBarItem.text = '🛡️ FailSafe';
+        this.statusBarItem.text = '$(workspace-trusted) FailSafe: Active';
+        this.statusBarItem.color = '#2ecc40';
         this.statusBarItem.tooltip = 'FailSafe: Time-Aware Development Assistant';
         this.statusBarItem.command = 'failsafe.showDashboard';
         this.statusBarItem.show();
@@ -90,28 +146,45 @@ export class UI {
             vscode.commands.registerCommand('failsafe.showAccountability', () => this.showAccountabilityReport()),
             vscode.commands.registerCommand('failsafe.showFeasibility', () => this.showFeasibilityAnalysis()),
             vscode.commands.registerCommand('failsafe.forceLinearProgression', () => this.forceLinearProgression()),
-            vscode.commands.registerCommand('failsafe.autoAdvance', () => this.autoAdvanceToNextTask())
+            vscode.commands.registerCommand('failsafe.autoAdvance', () => this.autoAdvanceToNextTask()),
+            vscode.commands.registerCommand('failsafe.showActionLog', () => this.showActionLog()),
         ];
 
         this.disposables.push(...commands);
     }
 
-    private updateStatusBar(): void {
+    public updateStatusBar(state?: 'active' | 'validating' | 'blocked'): void {
         try {
+            if (state) {
+                // Use the codicon/color-coded status bar
+                switch (state) {
+                    case 'active':
+                        this.statusBarItem.text = '$(workspace-trusted) FailSafe: Active';
+                        this.statusBarItem.color = '#2ecc40';
+                        this.statusBarItem.tooltip = 'FailSafe is actively monitoring.';
+                        break;
+                    case 'validating':
+                        this.statusBarItem.text = '$(workspace-unknown) FailSafe: Checking';
+                        this.statusBarItem.color = '#ffb900';
+                        this.statusBarItem.tooltip = 'FailSafe is validating AI output.';
+                        break;
+                    case 'blocked':
+                        this.statusBarItem.text = '$(workspace-untrusted) FailSafe: Blocked';
+                        this.statusBarItem.color = '#e81123';
+                        this.statusBarItem.tooltip = 'FailSafe has blocked unsafe output.';
+                        break;
+                }
+                this.statusBarItem.show();
+                return;
+            }
+            // Default: update based on project/task state
             const status = this.taskEngine.getProjectStatus();
             const currentTask = status.currentTask;
             const linearState = status.linearState;
             const accountability = status.accountability;
-
-            // Update main status item
             this.updateMainStatus(currentTask, linearState);
-
-            // Update progress bar
             this.updateProgressBar(status.progress, linearState);
-
-            // Update accountability item
             this.updateAccountabilityItem(accountability, linearState);
-
         } catch (error) {
             this.logger.error('Error updating status bar', error);
         }
@@ -447,6 +520,22 @@ export class UI {
         }
     }
 
+    public async showActionLog(): Promise<void> {
+        if (!this.actionLog || this.actionLog.length === 0) {
+            await vscode.window.showInformationMessage('No FailSafe actions have been logged this session.');
+            return;
+        }
+        const content = [
+            '# 🛡️ FailSafe Action Log',
+            ...this.actionLog.map(action => `- **${action.timestamp}**: ${action.description}`)
+        ].join('\n');
+        const document = await vscode.workspace.openTextDocument({
+            content,
+            language: 'markdown'
+        });
+        await vscode.window.showTextDocument(document);
+    }
+
     private getStatusIcon(status: TaskStatus): string {
         switch (status) {
             case TaskStatus.NOT_STARTED: return '⏳';
@@ -462,5 +551,16 @@ export class UI {
         this.disposables.forEach(disposable => disposable.dispose());
         this.disposables = [];
         this.logger.info('UI disposed');
+    }
+
+    public registerSidebar(context: vscode.ExtensionContext): void {
+        this.sidebarProvider = new FailSafeSidebarProvider(this);
+        context.subscriptions.push(
+            vscode.window.registerTreeDataProvider('failsafeSidebar', this.sidebarProvider)
+        );
+    }
+
+    public refreshSidebar(): void {
+        this.sidebarProvider?.refresh();
     }
 } 

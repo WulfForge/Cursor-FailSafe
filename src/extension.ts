@@ -41,6 +41,9 @@ export class FailSafeExtension {
         // Register commands
         await this.commands.registerCommands(this.context);
         
+        // Register sidebar
+        this.ui.registerSidebar(this.context);
+        
         // Initialize components
         await this.initializeComponents();
         
@@ -341,6 +344,13 @@ export class FailSafeExtension {
             adaptiveSuggestions: adaptiveSuggestions.length
         });
 
+        // Log to UI action log
+        this.ui["actionLog"].push({
+            timestamp: new Date().toISOString(),
+            description: `Enforcement validation completed. Passed: ${validationResult.isValid}, Rules triggered: ${enforcementResults.length}`
+        });
+        this.ui.updateStatusBar(validationResult.isValid ? 'active' : 'blocked');
+
         // Handle validation issues
         if (!validationResult.isValid) {
             await this.handleValidationIssues(validationResult, content);
@@ -362,10 +372,14 @@ export class FailSafeExtension {
 
     private async handleValidationIssues(validationResult: any, content: string): Promise<void> {
         this.logger.warn('Validation issues detected:', validationResult);
-        
+        // Log to UI action log
+        this.ui["actionLog"].push({
+            timestamp: new Date().toISOString(),
+            description: `Validation issues detected: ${validationResult.errors.length} errors, ${validationResult.warnings.length} warnings.`
+        });
+        this.ui.updateStatusBar('blocked');
         // Show validation issues in UI
         await this.showValidationIssues(validationResult);
-        
         // Check if override is allowed
         const config = this.getConfig();
         if (this.validator.shouldAllowOverride(validationResult, config)) {
@@ -381,17 +395,24 @@ export class FailSafeExtension {
     private async handleEnforcementIssues(enforcementResults: any[], content: string): Promise<void> {
         const criticalIssues = enforcementResults.filter(r => r.severity === 'critical');
         const highIssues = enforcementResults.filter(r => r.severity === 'high');
-
         if (criticalIssues.length > 0) {
             this.logger.error('Critical enforcement issues detected', { criticalIssues });
+            this.ui["actionLog"].push({
+                timestamp: new Date().toISOString(),
+                description: `Critical enforcement issues detected: ${criticalIssues.length}`
+            });
+            this.ui.updateStatusBar('blocked');
             await this.showCriticalEnforcementIssues(criticalIssues);
         }
-
         if (highIssues.length > 0) {
             this.logger.warn('High-severity enforcement issues detected', { highIssues });
+            this.ui["actionLog"].push({
+                timestamp: new Date().toISOString(),
+                description: `High-severity enforcement issues detected: ${highIssues.length}`
+            });
+            this.ui.updateStatusBar('blocked');
             await this.showHighEnforcementIssues(highIssues);
         }
-
         // Show all enforcement suggestions
         const allSuggestions = enforcementResults.flatMap(r => r.suggestions);
         if (allSuggestions.length > 0) {

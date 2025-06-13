@@ -40,6 +40,8 @@ class UI {
     constructor(projectPlan, taskEngine, logger) {
         this.disposables = [];
         this.dashboardPanel = null;
+        this.statusBarState = 'active';
+        this.actionLog = [];
         this.projectPlan = projectPlan;
         this.taskEngine = taskEngine;
         this.logger = logger;
@@ -62,8 +64,8 @@ class UI {
         }
     }
     setupStatusBar() {
-        // Main status item
-        this.statusBarItem.text = '🛡️ FailSafe';
+        this.statusBarItem.text = '$(workspace-trusted) FailSafe: Active';
+        this.statusBarItem.color = '#2ecc40';
         this.statusBarItem.tooltip = 'FailSafe: Time-Aware Development Assistant';
         this.statusBarItem.command = 'failsafe.showDashboard';
         this.statusBarItem.show();
@@ -94,21 +96,42 @@ class UI {
             vscode.commands.registerCommand('failsafe.showAccountability', () => this.showAccountabilityReport()),
             vscode.commands.registerCommand('failsafe.showFeasibility', () => this.showFeasibilityAnalysis()),
             vscode.commands.registerCommand('failsafe.forceLinearProgression', () => this.forceLinearProgression()),
-            vscode.commands.registerCommand('failsafe.autoAdvance', () => this.autoAdvanceToNextTask())
+            vscode.commands.registerCommand('failsafe.autoAdvance', () => this.autoAdvanceToNextTask()),
+            vscode.commands.registerCommand('failsafe.showActionLog', () => this.showActionLog()),
         ];
         this.disposables.push(...commands);
     }
-    updateStatusBar() {
+    updateStatusBar(state) {
         try {
+            if (state) {
+                // Use the codicon/color-coded status bar
+                switch (state) {
+                    case 'active':
+                        this.statusBarItem.text = '$(workspace-trusted) FailSafe: Active';
+                        this.statusBarItem.color = '#2ecc40';
+                        this.statusBarItem.tooltip = 'FailSafe is actively monitoring.';
+                        break;
+                    case 'validating':
+                        this.statusBarItem.text = '$(workspace-unknown) FailSafe: Checking';
+                        this.statusBarItem.color = '#ffb900';
+                        this.statusBarItem.tooltip = 'FailSafe is validating AI output.';
+                        break;
+                    case 'blocked':
+                        this.statusBarItem.text = '$(workspace-untrusted) FailSafe: Blocked';
+                        this.statusBarItem.color = '#e81123';
+                        this.statusBarItem.tooltip = 'FailSafe has blocked unsafe output.';
+                        break;
+                }
+                this.statusBarItem.show();
+                return;
+            }
+            // Default: update based on project/task state
             const status = this.taskEngine.getProjectStatus();
             const currentTask = status.currentTask;
             const linearState = status.linearState;
             const accountability = status.accountability;
-            // Update main status item
             this.updateMainStatus(currentTask, linearState);
-            // Update progress bar
             this.updateProgressBar(status.progress, linearState);
-            // Update accountability item
             this.updateAccountabilityItem(accountability, linearState);
         }
         catch (error) {
@@ -424,6 +447,21 @@ class UI {
             this.logger.error('Error auto-advancing', error);
             vscode.window.showErrorMessage('Failed to auto-advance');
         }
+    }
+    async showActionLog() {
+        if (!this.actionLog || this.actionLog.length === 0) {
+            await vscode.window.showInformationMessage('No FailSafe actions have been logged this session.');
+            return;
+        }
+        const content = [
+            '# 🛡️ FailSafe Action Log',
+            ...this.actionLog.map(action => `- **${action.timestamp}**: ${action.description}`)
+        ].join('\n');
+        const document = await vscode.workspace.openTextDocument({
+            content,
+            language: 'markdown'
+        });
+        await vscode.window.showTextDocument(document);
     }
     getStatusIcon(status) {
         switch (status) {

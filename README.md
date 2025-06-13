@@ -276,4 +276,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ for the Cursor community**
 
-*FailSafe: Making AI-assisted development more reliable, one validation at a time.* 
+*FailSafe: Making AI-assisted development more reliable, one validation at a time.*
+
+> All UI elements in FailSafe are built using standard VS Code extension APIs. There are no Cursor-specific UI elements; everything works in both VS Code and Cursor. 
