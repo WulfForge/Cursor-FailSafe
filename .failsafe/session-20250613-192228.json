@@ -1,0 +1,98 @@
+[
+  {
+    "timestamp": "2025-06-13T23:22:28.511Z",
+    "level": "info",
+    "message": "Detected 104 installed extensions",
+    "sessionId": "session-20250613-192228"
+  },
+  {
+    "timestamp": "2025-06-13T23:22:28.514Z",
+    "level": "info",
+    "message": "Detected 104 installed extensions",
+    "sessionId": "session-20250613-192228"
+  },
+  {
+    "timestamp": "2025-06-13T23:22:28.515Z",
+    "level": "info",
+    "message": "FailSafe extension activating...",
+    "sessionId": "session-20250613-192228"
+  },
+  {
+    "timestamp": "2025-06-13T23:22:28.516Z",
+    "level": "info",
+    "message": "All FailSafe commands registered successfully",
+    "sessionId": "session-20250613-192228"
+  },
+  {
+    "timestamp": "2025-06-13T23:22:28.517Z",
+    "level": "info",
+    "message": "Timeout watchdog initializing...",
+    "sessionId": "session-20250613-192228"
+  },
+  {
+    "timestamp": "2025-06-13T23:22:28.518Z",
+    "level": "info",
+    "message": "Project plan initialized",
+    "data": {
+      "taskCount": 5
+    },
+    "sessionId": "session-20250613-192228"
+  },
+  {
+    "timestamp": "2025-06-13T23:22:28.519Z",
+    "level": "info",
+    "message": "Task engine initializing...",
+    "sessionId": "session-20250613-192228"
+  },
+  {
+    "timestamp": "2025-06-13T23:22:28.519Z",
+    "level": "info",
+    "message": "Project plan initialized",
+    "data": {
+      "taskCount": 5
+    },
+    "sessionId": "session-20250613-192228"
+  },
+  {
+    "timestamp": "2025-06-13T23:22:28.521Z",
+    "level": "info",
+    "message": "UI initialized successfully",
+    "sessionId": "session-20250613-192228"
+  },
+  {
+    "timestamp": "2025-06-13T23:22:28.522Z",
+    "level": "info",
+    "message": "All components initialized successfully",
+    "sessionId": "session-20250613-192228"
+  },
+  {
+    "timestamp": "2025-06-13T23:22:28.522Z",
+    "level": "info",
+    "message": "AI request interception set up",
+    "sessionId": "session-20250613-192228"
+  },
+  {
+    "timestamp": "2025-06-13T23:22:28.523Z",
+    "level": "info",
+    "message": "FailSafe extension activated successfully",
+    "sessionId": "session-20250613-192228"
+  },
+  {
+    "timestamp": "2025-06-13T23:23:21.251Z",
+    "level": "info",
+    "message": "Dashboard shown",
+    "sessionId": "session-20250613-192228"
+  },
+  {
+    "timestamp": "2025-06-14T00:11:45.573Z",
+    "level": "info",
+    "message": "Dashboard shown",
+    "sessionId": "session-20250613-192228"
+  },
+  {
+    "timestamp": "2025-06-14T00:15:53.239Z",
+    "level": "info",
+    "message": "Dashboard shown",
+    "sessionId": "session-20250613-192228"
+  }
+]
