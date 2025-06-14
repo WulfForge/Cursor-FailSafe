@@ -39,6 +39,7 @@ export class FailSafeExtension {
         
         // Register sidebar
         this.ui.registerSidebar(this.context);
+        this.ui.refreshSidebar();
         
         // Register simulation command
         this.ui.registerSimulationCommand(this.context);

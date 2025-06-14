@@ -51,6 +51,7 @@ class FailSafeExtension {
         await this.commands.registerCommands(this.context);
         // Register sidebar
         this.ui.registerSidebar(this.context);
+        this.ui.refreshSidebar();
         // Register simulation command
         this.ui.registerSimulationCommand(this.context);
         // Register plan validation command
