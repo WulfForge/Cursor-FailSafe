@@ -1,5 +1,5 @@
 {
-  "name": "cursor-failsafe",
+  "name": "failsafe-cursor",
   "displayName": "FailSafe - Chat Content Validator",
   "description": "Validate AI chat responses for hallucinations and false claims. Provides post-processing validation of code blocks, file references, and implementation claims in chat content.",
   "version": "1.5.1",
