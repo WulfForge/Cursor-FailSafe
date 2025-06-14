@@ -3,7 +3,7 @@
   "displayName": "FailSafe - Chat Content Validator",
   "description": "Validate AI chat responses for hallucinations and false claims. Provides post-processing validation of code blocks, file references, and implementation claims in chat content.",
   "version": "1.5.1",
-  "publisher": "WulfForge",
+  "publisher": "MythologIQ",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -20,7 +20,10 @@
     "code-quality",
     "cursor",
     "failsafe",
-    "content-validation"
+    "content-validation",
+    "safety",
+    "quality",
+    "post-processing"
   ],
   "icon": "images/icon.png",
   "galleryBanner": {
@@ -90,7 +93,7 @@
         {
           "id": "failsafe-sidebar",
           "title": "FailSafe",
-          "icon": "resources/icon.svg"
+          "icon": "images/icon.png"
         }
       ]
     },
