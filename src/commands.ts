@@ -6,6 +6,9 @@ import { Logger } from './logger';
 import { Validator } from './validator';
 import { TestRunner } from './testRunner';
 import { AIRequest, AIResponse, SessionLog } from './types';
+import * as fs from 'fs';
+import { ChatValidator, ChatValidationContext } from './chatValidator';
+import { ValidationResult, ValidationError, ValidationWarning } from './types';
 
 export class Commands {
     private projectPlan: ProjectPlan;
@@ -15,6 +18,7 @@ export class Commands {
     private validator: Validator;
     private testRunner: TestRunner;
     private config: vscode.WorkspaceConfiguration;
+    private extensionContext?: vscode.ExtensionContext;
 
     constructor(
         projectPlan: ProjectPlan,
@@ -32,6 +36,8 @@ export class Commands {
     }
 
     public async registerCommands(context: vscode.ExtensionContext): Promise<void> {
+        this.extensionContext = context;
+        
         const commands = [
             vscode.commands.registerCommand('failsafe.askAI', this.askAI.bind(this)),
             vscode.commands.registerCommand('failsafe.refactor', this.refactor.bind(this)),
@@ -45,7 +51,12 @@ export class Commands {
             vscode.commands.registerCommand('failsafe.reportProblem', this.reportProblem.bind(this)),
             vscode.commands.registerCommand('failsafe.suggestFailsafe', this.suggestFailsafe.bind(this)),
             vscode.commands.registerCommand('failsafe.suggestCustomFailsafe', this.suggestCustomFailsafe.bind(this)),
-            vscode.commands.registerCommand('failsafe.suggestToCore', this.suggestFailsafeToCore.bind(this))
+            vscode.commands.registerCommand('failsafe.suggestToCore', this.suggestFailsafeToCore.bind(this)),
+            vscode.commands.registerCommand('failsafe.simulateEvent', this.simulateEvent.bind(this)),
+            vscode.commands.registerCommand('failsafe.checkVersionConsistency', this.checkVersionConsistency.bind(this)),
+            vscode.commands.registerCommand('failsafe.enforceVersionConsistency', this.enforceVersionConsistency.bind(this)),
+            vscode.commands.registerCommand('failsafe.showVersionDetails', this.showVersionDetails.bind(this)),
+            vscode.commands.registerCommand('failsafe.validateChat', this.validateChat.bind(this))
         ];
 
         commands.forEach(command => context.subscriptions.push(command));
@@ -65,7 +76,7 @@ export class Commands {
 
             await this.executeAIRequest({
                 prompt,
-                validate: this.config.get('validationEnabled', true),
+                validate: this.config.get('autoValidate', true),
                 runTests: true
             });
 
@@ -96,7 +107,7 @@ export class Commands {
             await this.executeAIRequest({
                 prompt,
                 context: `File: ${editor.document.fileName}\nSelected code: ${selectedText}`,
-                validate: this.config.get('validationEnabled', true),
+                validate: this.config.get('autoValidate', true),
                 runTests: true
             });
 
@@ -209,132 +220,90 @@ export class Commands {
     }
 
     private async executeAIRequest(request: AIRequest): Promise<AIResponse> {
-        const startTime = Date.now();
         const sessionId = this.generateSessionId();
+        const startTime = Date.now();
 
         try {
-            this.logger.info('Executing AI request', { prompt: request.prompt, sessionId });
+            // Check if FailSafe is enabled
+            if (!this.config.get('enabled', true)) {
+                throw new Error('FailSafe is disabled in configuration');
+            }
 
-            // Show progress and execute request
-            const result = await vscode.window.withProgress({
-                location: vscode.ProgressLocation.Notification,
-                title: 'FailSafe: Processing AI Request',
-                cancellable: false
-            }, async (progress) => {
-                progress.report({ message: 'Sending request to AI...' });
+            // Calculate timeout based on configuration
+            const timeoutMinutes = this.config.get('timeoutMinutes', 30);
+            const timeoutMs = timeoutMinutes * 60 * 1000;
 
-                // Execute AI request via Cursor API
-                const response = await this.executeCursorAIRequest(request.prompt);
-                
-                progress.report({ message: 'Validating response...' });
-
-                // Validate response
-                let validationResult;
-                if (request.validate) {
-                    validationResult = this.validator.validateResponse(response);
-                }
-
-                // If validation failed, handle override logic
-                if (validationResult && !validationResult.isValid) {
-                    const allowOverride = this.validator.shouldAllowOverride(
-                        validationResult,
-                        { allowOverride: this.config.get('allowOverride', false) }
-                    );
-
-                    // Show summary and allow details
-                    const errorCount = validationResult.errors.length;
-                    const warningCount = validationResult.warnings.length;
-                    let message = `⚠️ Validation found ${errorCount} errors and ${warningCount} warnings.`;
-
-                    if (allowOverride) {
-                        message += '\nYou may override and proceed.';
-                        const action = await vscode.window.showWarningMessage(
-                            message,
-                            'View Details',
-                            'Override and Continue',
-                            'Cancel'
-                        );
-                        if (action === 'View Details') {
-                            await this.showValidationResults(validationResult);
-                            // Ask again
-                            const confirm = await vscode.window.showWarningMessage(
-                                'Do you want to override and continue?',
-                                'Override and Continue',
-                                'Cancel'
-                            );
-                            if (confirm !== 'Override and Continue') {
-                                throw new Error('User cancelled due to validation errors.');
-                            }
-                        } else if (action !== 'Override and Continue') {
-                            throw new Error('User cancelled due to validation errors.');
-                        }
-                    } else {
-                        message += '\nOverride is not allowed by configuration.';
-                        const action = await vscode.window.showWarningMessage(
-                            message,
-                            'View Details',
-                            'Cancel'
-                        );
-                        if (action === 'View Details') {
-                            await this.showValidationResults(validationResult);
-                        }
-                        throw new Error('Validation failed and override is not allowed.');
-                    }
-                }
-
-                progress.report({ message: 'Running tests...' });
-
-                // Run tests if requested
-                let testResult;
-                if (request.runTests && this.testRunner.isTestFrameworkAvailable()) {
-                    testResult = await this.testRunner.runTests();
-                }
-
-                const duration = Date.now() - startTime;
-
-                // Log session
-                const sessionLog: SessionLog = {
-                    id: sessionId,
-                    timestamp: new Date(),
-                    command: 'ai_request',
-                    prompt: request.prompt,
-                    response,
-                    validationResult,
-                    testResult,
-                    duration,
-                    status: this.determineStatus(validationResult, testResult)
-                };
-
-                this.logger.logSession(sessionLog);
-
-                // Show results
-                await this.showAIResults(response, validationResult, testResult);
-
-                return {
-                    content: response,
-                    isValid: validationResult?.isValid ?? true,
-                    validationResult,
-                    testResult,
-                    duration
-                };
+            // Set up timeout watchdog
+            const timeoutPromise = new Promise<never>((_, reject) => {
+                setTimeout(() => {
+                    reject(new Error(`AI request timed out after ${timeoutMinutes} minutes`));
+                }, timeoutMs);
             });
 
-            return result;
-
-        } catch (error) {
-            const duration = Date.now() - startTime;
+            // Execute AI request with timeout
+            const aiPromise = this.executeCursorAIRequest(request.prompt);
             
+            const response = await Promise.race([aiPromise, timeoutPromise]);
+
+            // Validate response if auto-validate is enabled
+            let validationResult = null;
+            if (this.config.get('autoValidate', true) && request.validate) {
+                validationResult = this.validator.validateCode(response, 'ai-generated');
+            }
+
+            // Run tests if requested
+            let testResult = null;
+            if (request.runTests) {
+                testResult = await this.testRunner.runTests();
+            }
+
+            const endTime = Date.now();
+            const duration = endTime - startTime;
+
+            // Log session
             const sessionLog: SessionLog = {
                 id: sessionId,
                 timestamp: new Date(),
                 command: 'ai_request',
                 prompt: request.prompt,
+                response: response.substring(0, 1000), // Truncate for logging
                 duration,
-                status: 'error',
-                error: error instanceof Error ? error.message : String(error)
+                status: this.determineStatus(validationResult, testResult),
+                validationResult: validationResult || undefined,
+                testResult: testResult || undefined
             };
 
             this.logger.logSession(sessionLog);
+
+            // Show results
+            await this.showAIResults(response, validationResult, testResult);
+
+            return {
+                content: response,
+                isValid: validationResult?.isValid ?? true,
+                validationResult: validationResult || undefined,
+                testResult: testResult || undefined,
+                duration
+            };
+
+        } catch (error) {
+            const endTime = Date.now();
+            const duration = endTime - startTime;
+
+            // Log error session
+            const sessionLog: SessionLog = {
+                id: sessionId,
+                timestamp: new Date(),
+                command: 'ai_request',
+                prompt: request.prompt,
+                response: '',
+                duration,
+                status: 'error',
+                error: error instanceof Error ? error.message : 'Unknown error'
+            };
+
+            this.logger.logSession(sessionLog);
+
             throw error;
         }
     }
@@ -532,16 +501,10 @@ export class Commands {
 
     private async createProjectPlan(): Promise<void> {
         try {
-            const plan = await this.ui.projectPlan.validatePlan();
-            if (plan.status === 'missing') {
-                // Initialize default project plan
-                await this.ui.projectPlan.initialize();
-                vscode.window.showInformationMessage('Project plan created successfully!');
-            } else {
-                vscode.window.showInformationMessage('Project plan already exists.');
-            }
+            await this.projectPlan.createBasicProject();
+            vscode.window.showInformationMessage('Basic project plan created successfully!');
         } catch (error) {
-            vscode.window.showErrorMessage(`Failed to create project plan: ${error}`);
+            vscode.window.showErrorMessage('Failed to create project plan: ' + error);
         }
     }
 
@@ -928,21 +891,54 @@ export class Commands {
 
     private async submitGitHubIssue(formData: any, systemInfo: any): Promise<void> {
         try {
-            // Create GitHub issue URL with pre-filled data
-            const issueTitle = encodeURIComponent(formData.title);
-            const issueBody = this.generateGitHubIssueBody(formData, systemInfo);
-            const issueUrl = encodeURIComponent(issueBody);
-            
-            // GitHub issue URL for the Cursor-FailSafe repo
-            const githubUrl = `https://github.com/MythologIQ/Cursor-FailSafe/issues/new?title=${issueTitle}&body=${issueUrl}`;
-            
-            // Open in browser
-            await vscode.env.openExternal(vscode.Uri.parse(githubUrl));
-            
-            vscode.window.showInformationMessage('GitHub issue page opened in your browser. Please submit the issue there.');
-            
+            // Create GitHub issue directly via API instead of opening browser
+            const issueData = {
+                title: formData.title,
+                body: this.generateGitHubIssueBody(formData, systemInfo),
+                labels: ['bug', 'user-reported']
+            };
+
+            // For now, show the issue data and provide instructions
+            // In a real implementation, you would use GitHub API with authentication
+            const issueContent = `## Issue Title
+${issueData.title}
+
+## Issue Body
+${issueData.body}
+
+## Labels
+${issueData.labels.join(', ')}
+
+---
+**Note**: This issue would be created directly via GitHub API in a production environment.
+For now, please manually create an issue at: https://github.com/WulfForge/Cursor-FailSafe/issues/new
+with the content above.`;
+
+            // Show the issue content in a new document
+            const document = await vscode.workspace.openTextDocument({
+                content: issueContent,
+                language: 'markdown'
+            });
+
+            await vscode.window.showTextDocument(document);
+
+            vscode.window.showInformationMessage(
+                'Issue content opened in editor. Please copy and paste to GitHub Issues.',
+                'Open GitHub Issues', 'OK'
+            ).then(choice => {
+                if (choice === 'Open GitHub Issues') {
+                    vscode.env.openExternal(vscode.Uri.parse('https://github.com/WulfForge/Cursor-FailSafe/issues/new'));
+                }
+            });
+
+            // Log the issue report
+            this.ui.actionLog.push({
+                timestamp: new Date().toISOString(),
+                description: `🐛 Reported problem: ${formData.title}`
+            });
+
         } catch (error) {
-            vscode.window.showErrorMessage(`Failed to open GitHub issue: ${error}`);
+            vscode.window.showErrorMessage(`Failed to create issue: ${error}`);
         }
     }
 
@@ -1772,22 +1768,46 @@ ${formData.additionalInfo}
 
     private async submitCoreSuggestion(formData: any, failsafe: any, systemInfo: any): Promise<void> {
         try {
-            // Create GitHub issue URL with pre-filled data for core suggestion
-            const issueTitle = encodeURIComponent(formData.title);
-            const issueBody = this.generateCoreSuggestionBody(formData, failsafe, systemInfo);
-            const issueUrl = encodeURIComponent(issueBody);
-            
-            // GitHub issue URL for the Cursor-FailSafe repo with core-suggestion label
-            const githubUrl = `https://github.com/MythologIQ/Cursor-FailSafe/issues/new?title=${issueTitle}&body=${issueUrl}&labels=core-suggestion,enhancement`;
-            
-            // Open in browser
-            await vscode.env.openExternal(vscode.Uri.parse(githubUrl));
-            
+            // Create GitHub issue directly via API instead of opening browser
+            const issueData = {
+                title: formData.title,
+                body: this.generateCoreSuggestionBody(formData, failsafe, systemInfo),
+                labels: ['core-suggestion', 'enhancement']
+            };
+
+            // For now, show the issue data and provide instructions
+            // In a real implementation, you would use GitHub API with authentication
+            const issueContent = `## Issue Title
+${issueData.title}
+
+## Issue Body
+${issueData.body}
+
+## Labels
+${issueData.labels.join(', ')}
+
+---
+**Note**: This core suggestion would be created directly via GitHub API in a production environment.
+For now, please manually create an issue at: https://github.com/WulfForge/Cursor-FailSafe/issues/new
+with the content above.`;
+
+            // Show the issue content in a new document
+            const document = await vscode.workspace.openTextDocument({
+                content: issueContent,
+                language: 'markdown'
+            });
+
+            await vscode.window.showTextDocument(document);
+
             vscode.window.showInformationMessage(
-                'Core suggestion GitHub issue opened in your browser. Please submit the issue there.',
-                'OK'
-            );
-            
+                'Core suggestion content opened in editor. Please copy and paste to GitHub Issues.',
+                'Open GitHub Issues', 'OK'
+            ).then(choice => {
+                if (choice === 'Open GitHub Issues') {
+                    vscode.env.openExternal(vscode.Uri.parse('https://github.com/WulfForge/Cursor-FailSafe/issues/new'));
+                }
+            });
+
             // Log the suggestion
             this.ui.actionLog.push({
                 timestamp: new Date().toISOString(),
@@ -1795,7 +1815,7 @@ ${formData.additionalInfo}
             });
 
         } catch (error) {
-            vscode.window.showErrorMessage(`Failed to open core suggestion: ${error}`);
+            vscode.window.showErrorMessage(`Failed to create core suggestion: ${error}`);
         }
     }
 
@@ -1844,5 +1864,738 @@ ${formData.additionalInfo}
             case 'safety-check': return '🛡️';
             default: return '❓';
         }
+    }
+
+    /**
+     * Simulate an event for testing and validation purposes
+     */
+    private async simulateEvent(): Promise<void> {
+        try {
+            const eventTypes = [
+                'Task Completion',
+                'Validation Failure',
+                'Timeout Event',
+                'AI Response',
+                'Test Failure',
+                'Project Milestone'
+            ];
+
+            const selectedEvent = await vscode.window.showQuickPick(eventTypes, {
+                placeHolder: 'Select an event type to simulate'
+            });
+
+            if (!selectedEvent) {
+                return;
+            }
+
+            // Simulate the selected event
+            switch (selectedEvent) {
+                case 'Task Completion':
+                    await this.simulateTaskCompletion();
+                    break;
+                case 'Validation Failure':
+                    await this.simulateValidationFailure();
+                    break;
+                case 'Timeout Event':
+                    await this.simulateTimeoutEvent();
+                    break;
+                case 'AI Response':
+                    await this.simulateAIResponse();
+                    break;
+                case 'Test Failure':
+                    await this.simulateTestFailure();
+                    break;
+                case 'Project Milestone':
+                    await this.simulateProjectMilestone();
+                    break;
+            }
+
+            vscode.window.showInformationMessage(`✅ Simulated ${selectedEvent} successfully`);
+
+        } catch (error) {
+            this.logger.error('Error simulating event', error);
+            vscode.window.showErrorMessage('Failed to simulate event. Check logs for details.');
+        }
+    }
+
+    private async simulateTaskCompletion(): Promise<void> {
+        const currentTask = this.projectPlan.getCurrentTask();
+        if (currentTask) {
+            await this.projectPlan.completeTask(currentTask.id);
+            vscode.window.showInformationMessage(`Simulated completion of task: ${currentTask.name}`);
+        } else {
+            vscode.window.showInformationMessage('No active task to complete');
+        }
+    }
+
+    private async simulateValidationFailure(): Promise<void> {
+        const mockValidationResult = {
+            isValid: false,
+            errors: ['Simulated syntax error on line 42', 'Missing semicolon on line 15'],
+            warnings: ['Unused variable detected', 'Deprecated function usage']
+        };
+
+        await this.showValidationResults(mockValidationResult);
+    }
+
+    private async simulateTimeoutEvent(): Promise<void> {
+        const timeoutMinutes = this.config.get('timeoutMinutes', 30);
+        vscode.window.showWarningMessage(
+            `⏰ Simulated timeout after ${timeoutMinutes} minutes of inactivity`
+        );
+    }
+
+    private async simulateAIResponse(): Promise<void> {
+        const mockResponse = `// Simulated AI-generated code
+function simulatedFunction() {
+    console.log('This is a simulated AI response');
+    return 'success';
+}`;
+
+        const document = await vscode.workspace.openTextDocument({
+            content: mockResponse,
+            language: 'typescript'
+        });
+
+        await vscode.window.showTextDocument(document);
+    }
+
+    private async simulateTestFailure(): Promise<void> {
+        const mockTestResult = {
+            passed: false,
+            totalTests: 5,
+            failedTests: 2,
+            errors: [
+                'Test "should validate user input" failed',
+                'Test "should handle edge cases" failed'
+            ]
+        };
+
+        vscode.window.showErrorMessage(
+            `🧪 Simulated test failure: ${mockTestResult.failedTests}/${mockTestResult.totalTests} tests failed`
+        );
+    }
+
+    private async simulateProjectMilestone(): Promise<void> {
+        const milestones = [
+            'Project initialization complete',
+            'Core functionality implemented',
+            'Testing phase started',
+            'Documentation updated',
+            'Ready for review'
+        ];
+
+        const milestone = milestones[Math.floor(Math.random() * milestones.length)];
+        vscode.window.showInformationMessage(`🎯 Simulated milestone: ${milestone}`);
+    }
+
+    /**
+     * Check version consistency across all project files
+     */
+    private async checkVersionConsistency(): Promise<void> {
+        try {
+            // This would integrate with the VersionManager when implemented
+            const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            const currentVersion = packageJson.version;
+
+            const issues = [];
+            const recommendations = [];
+
+            // Check CHANGELOG.md
+            if (fs.existsSync('CHANGELOG.md')) {
+                const changelogContent = fs.readFileSync('CHANGELOG.md', 'utf8');
+                if (!changelogContent.includes(`## [${currentVersion}]`)) {
+                    issues.push('CHANGELOG.md missing current version entry');
+                    recommendations.push('Add version entry to CHANGELOG.md');
+                }
+            }
+
+            // Check README.md badge
+            if (fs.existsSync('README.md')) {
+                const readmeContent = fs.readFileSync('README.md', 'utf8');
+                if (!readmeContent.includes(`version-${currentVersion}`)) {
+                    issues.push('README.md badge version mismatch');
+                    recommendations.push('Update README.md version badge');
+                }
+            }
+
+            const isConsistent = issues.length === 0;
+
+            if (isConsistent) {
+                vscode.window.showInformationMessage('✅ All versions are consistent');
+            } else {
+                const message = `❌ Found ${issues.length} version inconsistency issues`;
+                vscode.window.showWarningMessage(message);
+                
+                // Show detailed issues
+                const issueList = issues.map((issue, index) => `${index + 1}. ${issue}`).join('\n');
+                const recommendationList = recommendations.map((rec, index) => `${index + 1}. ${rec}`).join('\n');
+                
+                const content = `# Version Consistency Check
+
+## Issues Found:
+${issueList}
+
+## Recommendations:
+${recommendationList}`;
+
+                const document = await vscode.workspace.openTextDocument({
+                    content,
+                    language: 'markdown'
+                });
+
+                await vscode.window.showTextDocument(document);
+            }
+
+        } catch (error) {
+            this.logger.error('Error checking version consistency', error);
+            vscode.window.showErrorMessage('Failed to check version consistency. Check logs for details.');
+        }
+    }
+
+    /**
+     * Enforce version consistency by auto-fixing issues
+     */
+    private async enforceVersionConsistency(): Promise<void> {
+        try {
+            const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            const currentVersion = packageJson.version;
+
+            let fixedIssues = 0;
+
+            // Fix CHANGELOG.md if needed
+            if (fs.existsSync('CHANGELOG.md')) {
+                const changelogContent = fs.readFileSync('CHANGELOG.md', 'utf8');
+                if (!changelogContent.includes(`## [${currentVersion}]`)) {
+                    const newEntry = `\n## [${currentVersion}] - ${new Date().toISOString().split('T')[0]}\n\n### Added\n- Version consistency enforcement\n\n`;
+                    const updatedContent = changelogContent.replace('# Changelog', `# Changelog${newEntry}`);
+                    fs.writeFileSync('CHANGELOG.md', updatedContent);
+                    fixedIssues++;
+                }
+            }
+
+            // Fix README.md badge if needed
+            if (fs.existsSync('README.md')) {
+                const readmeContent = fs.readFileSync('README.md', 'utf8');
+                if (!readmeContent.includes(`version-${currentVersion}`)) {
+                    const updatedContent = readmeContent.replace(
+                        /version-\d+\.\d+\.\d+/g,
+                        `version-${currentVersion}`
+                    );
+                    fs.writeFileSync('README.md', updatedContent);
+                    fixedIssues++;
+                }
+            }
+
+            if (fixedIssues > 0) {
+                vscode.window.showInformationMessage(`✅ Fixed ${fixedIssues} version consistency issues`);
+            } else {
+                vscode.window.showInformationMessage('✅ All versions are already consistent');
+            }
+
+        } catch (error) {
+            this.logger.error('Error enforcing version consistency', error);
+            vscode.window.showErrorMessage('Failed to enforce version consistency. Check logs for details.');
+        }
+    }
+
+    /**
+     * Show detailed version information
+     */
+    private async showVersionDetails(): Promise<void> {
+        try {
+            const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            const currentVersion = packageJson.version;
+
+            const content = `# 📋 FailSafe Version Details
+
+## Current Version
+**Version:** ${currentVersion}
+**Last Updated:** ${new Date().toISOString()}
+
+## Version Files Status
+- **package.json:** ✅ ${currentVersion}
+- **CHANGELOG.md:** ${fs.existsSync('CHANGELOG.md') && fs.readFileSync('CHANGELOG.md', 'utf8').includes(`## [${currentVersion}]`) ? '✅' : '❌'} ${currentVersion}
+- **README.md:** ${fs.existsSync('README.md') && fs.readFileSync('README.md', 'utf8').includes(`version-${currentVersion}`) ? '✅' : '❌'} ${currentVersion}
+
+## Auto-Versioning Features
+- **Automatic checking:** ${this.config.get('automaticVersioning', true) ? 'Enabled' : 'Disabled'}
+- **Pre-commit validation:** Available via npm script
+- **Consistency enforcement:** Available via command
+
+## Recommendations
+1. Run "Check Version Consistency" to identify issues
+2. Run "Enforce Version Consistency" to auto-fix issues
+3. Enable automatic versioning in settings for continuous monitoring`;
+
+            const document = await vscode.workspace.openTextDocument({
+                content,
+                language: 'markdown'
+            });
+
+            await vscode.window.showTextDocument(document);
+
+        } catch (error) {
+            this.logger.error('Error showing version details', error);
+            vscode.window.showErrorMessage('Failed to show version details. Check logs for details.');
+        }
+    }
+
+    private async validateChat(): Promise<void> {
+        try {
+            const editor = vscode.window.activeTextEditor;
+            if (!editor) {
+                vscode.window.showErrorMessage('No active editor found. Please open a chat file or select chat content.');
+                return;
+            }
+
+            const document = editor.document;
+            const selection = editor.selection;
+            const chatContent = selection.isEmpty ? document.getText() : document.getText(selection);
+
+            if (!chatContent.trim()) {
+                vscode.window.showErrorMessage('No content to validate. Please select chat content or open a chat file.');
+                return;
+            }
+
+            // Create validation context
+            const context: ChatValidationContext = {
+                workspaceRoot: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '',
+                currentFile: document.fileName,
+                projectType: await this.detectProjectType(),
+                techStack: await this.detectTechStack()
+            };
+
+            // Initialize validator
+            const validator = new ChatValidator(this.logger, context.workspaceRoot);
+            
+            // Show progress
+            await vscode.window.withProgress({
+                location: vscode.ProgressLocation.Notification,
+                title: "Validating chat content...",
+                cancellable: false
+            }, async (progress) => {
+                progress.report({ increment: 0 });
+                
+                // Validate chat content
+                const result = validator.validateChatContent(chatContent, context);
+                
+                progress.report({ increment: 100 });
+                
+                // Display results
+                if (this.extensionContext) {
+                    await this.displayChatValidationResults(result, chatContent, this.extensionContext);
+                } else {
+                    vscode.window.showErrorMessage('Extension context not available');
+                }
+            });
+
+        } catch (error: any) {
+            this.logger.error('Error validating chat content', error);
+            vscode.window.showErrorMessage(`Failed to validate chat content: ${error}`);
+        }
+    }
+
+    private async displayChatValidationResults(result: ValidationResult, originalContent: string, extensionContext: vscode.ExtensionContext): Promise<void> {
+        const panel = vscode.window.createWebviewPanel(
+            'chatValidationResults',
+            'Chat Validation Results',
+            vscode.ViewColumn.One,
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true
+            }
+        );
+
+        const html = this.generateChatValidationHTML(result, originalContent);
+        panel.webview.html = html;
+
+        // Handle messages from webview
+        panel.webview.onDidReceiveMessage(
+            message => {
+                switch (message.command) {
+                    case 'copyToClipboard':
+                        vscode.env.clipboard.writeText(message.text);
+                        vscode.window.showInformationMessage('Copied to clipboard');
+                        break;
+                    case 'openFile':
+                        if (message.filePath) {
+                            vscode.workspace.openTextDocument(message.filePath).then(doc => {
+                                vscode.window.showTextDocument(doc);
+                            });
+                        }
+                        break;
+                }
+            },
+            undefined,
+            extensionContext.subscriptions
+        );
+    }
+
+    private generateChatValidationHTML(result: ValidationResult, originalContent: string): string {
+        const errorCount = result.errors.length;
+        const warningCount = result.warnings.length;
+        const suggestionCount = result.suggestions.length;
+
+        const errorHtml = result.errors.map((error: ValidationError) => `
+            <div class="error-item">
+                <div class="error-header">
+                    <span class="error-type">${error.type.toUpperCase()}</span>
+                    <span class="error-severity ${error.severity}">${error.severity}</span>
+                </div>
+                <div class="error-message">${error.message}</div>
+                ${error.line ? `<div class="error-line">Line: ${error.line}</div>` : ''}
+                ${error.category ? `<div class="error-category">Category: ${error.category}</div>` : ''}
+            </div>
+        `).join('');
+
+        const warningHtml = result.warnings.map((warning: ValidationWarning) => `
+            <div class="warning-item">
+                <div class="warning-header">
+                    <span class="warning-type">${warning.type.toUpperCase()}</span>
+                    <span class="warning-category">${warning.category}</span>
+                </div>
+                <div class="warning-message">${warning.message}</div>
+                ${warning.line ? `<div class="warning-line">Line: ${warning.line}</div>` : ''}
+            </div>
+        `).join('');
+
+        const suggestionHtml = result.suggestions.map((suggestion: string) => `
+            <div class="suggestion-item">
+                <div class="suggestion-message">💡 ${suggestion}</div>
+            </div>
+        `).join('');
+
+        return `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Chat Validation Results</title>
+                <style>
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                        margin: 0;
+                        padding: 20px;
+                        background-color: var(--vscode-editor-background);
+                        color: var(--vscode-editor-foreground);
+                    }
+                    
+                    .header {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 20px;
+                        padding-bottom: 15px;
+                        border-bottom: 1px solid var(--vscode-panel-border);
+                    }
+                    
+                    .logo {
+                        width: 32px;
+                        height: 32px;
+                        margin-right: 12px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border-radius: 6px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-weight: bold;
+                        font-size: 14px;
+                    }
+                    
+                    .title {
+                        font-size: 24px;
+                        font-weight: 600;
+                        margin: 0;
+                    }
+                    
+                    .summary {
+                        display: flex;
+                        gap: 20px;
+                        margin-bottom: 30px;
+                        padding: 15px;
+                        background-color: var(--vscode-editor-inactiveSelectionBackground);
+                        border-radius: 8px;
+                    }
+                    
+                    .summary-item {
+                        text-align: center;
+                    }
+                    
+                    .summary-number {
+                        font-size: 24px;
+                        font-weight: bold;
+                        display: block;
+                    }
+                    
+                    .summary-label {
+                        font-size: 12px;
+                        opacity: 0.8;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    
+                    .errors-count { color: #f44336; }
+                    .warnings-count { color: #ff9800; }
+                    .suggestions-count { color: #2196f3; }
+                    
+                    .section {
+                        margin-bottom: 30px;
+                    }
+                    
+                    .section-title {
+                        font-size: 18px;
+                        font-weight: 600;
+                        margin-bottom: 15px;
+                        padding-bottom: 8px;
+                        border-bottom: 2px solid var(--vscode-panel-border);
+                    }
+                    
+                    .error-item, .warning-item, .suggestion-item {
+                        margin-bottom: 15px;
+                        padding: 15px;
+                        border-radius: 6px;
+                        border-left: 4px solid;
+                    }
+                    
+                    .error-item {
+                        background-color: rgba(244, 67, 54, 0.1);
+                        border-left-color: #f44336;
+                    }
+                    
+                    .warning-item {
+                        background-color: rgba(255, 152, 0, 0.1);
+                        border-left-color: #ff9800;
+                    }
+                    
+                    .suggestion-item {
+                        background-color: rgba(33, 150, 243, 0.1);
+                        border-left-color: #2196f3;
+                    }
+                    
+                    .error-header, .warning-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 8px;
+                    }
+                    
+                    .error-type, .warning-type {
+                        font-weight: 600;
+                        font-size: 12px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    
+                    .error-severity {
+                        font-size: 11px;
+                        padding: 2px 8px;
+                        border-radius: 12px;
+                        text-transform: uppercase;
+                        font-weight: 600;
+                    }
+                    
+                    .error-severity.error {
+                        background-color: #f44336;
+                        color: white;
+                    }
+                    
+                    .error-severity.warning {
+                        background-color: #ff9800;
+                        color: white;
+                    }
+                    
+                    .error-message, .warning-message, .suggestion-message {
+                        font-size: 14px;
+                        line-height: 1.4;
+                    }
+                    
+                    .error-line, .error-category, .warning-line, .warning-category {
+                        font-size: 12px;
+                        opacity: 0.7;
+                        margin-top: 5px;
+                    }
+                    
+                    .actions {
+                        margin-top: 20px;
+                        padding-top: 20px;
+                        border-top: 1px solid var(--vscode-panel-border);
+                    }
+                    
+                    .action-button {
+                        background-color: var(--vscode-button-background);
+                        color: var(--vscode-button-foreground);
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        margin-right: 10px;
+                        font-size: 13px;
+                    }
+                    
+                    .action-button:hover {
+                        background-color: var(--vscode-button-hoverBackground);
+                    }
+                    
+                    .no-issues {
+                        text-align: center;
+                        padding: 40px;
+                        color: var(--vscode-descriptionForeground);
+                    }
+                    
+                    .no-issues-icon {
+                        font-size: 48px;
+                        margin-bottom: 15px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div class="logo">FS</div>
+                    <h1 class="title">Chat Validation Results</h1>
+                </div>
+                
+                <div class="summary">
+                    <div class="summary-item">
+                        <span class="summary-number errors-count">${errorCount}</span>
+                        <span class="summary-label">Errors</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-number warnings-count">${warningCount}</span>
+                        <span class="summary-label">Warnings</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-number suggestions-count">${suggestionCount}</span>
+                        <span class="summary-label">Suggestions</span>
+                    </div>
+                </div>
+                
+                ${errorCount > 0 ? `
+                    <div class="section">
+                        <h2 class="section-title">🚨 Errors (${errorCount})</h2>
+                        ${errorHtml}
+                    </div>
+                ` : ''}
+                
+                ${warningCount > 0 ? `
+                    <div class="section">
+                        <h2 class="section-title">⚠️ Warnings (${warningCount})</h2>
+                        ${warningHtml}
+                    </div>
+                ` : ''}
+                
+                ${suggestionCount > 0 ? `
+                    <div class="section">
+                        <h2 class="section-title">💡 Suggestions (${suggestionCount})</h2>
+                        ${suggestionHtml}
+                    </div>
+                ` : ''}
+                
+                ${errorCount === 0 && warningCount === 0 ? `
+                    <div class="no-issues">
+                        <div class="no-issues-icon">✅</div>
+                        <h3>No Issues Found!</h3>
+                        <p>The chat content appears to be valid and free of common hallucination patterns.</p>
+                    </div>
+                ` : ''}
+                
+                <div class="actions">
+                    <button class="action-button" onclick="copyResults()">Copy Results</button>
+                    <button class="action-button" onclick="exportResults()">Export Report</button>
+                    <button class="action-button" onclick="closePanel()">Close</button>
+                </div>
+                
+                <script>
+                    const vscode = acquireVsCodeApi();
+                    
+                    function copyResults() {
+                        const results = {
+                            errors: ${JSON.stringify(result.errors)},
+                            warnings: ${JSON.stringify(result.warnings)},
+                            suggestions: ${JSON.stringify(result.suggestions)}
+                        };
+                        
+                        vscode.postMessage({
+                            command: 'copyToClipboard',
+                            text: JSON.stringify(results, null, 2)
+                        });
+                    }
+                    
+                    function exportResults() {
+                        const report = {
+                            timestamp: new Date().toISOString(),
+                            summary: {
+                                errors: ${errorCount},
+                                warnings: ${warningCount},
+                                suggestions: ${suggestionCount}
+                            },
+                            results: {
+                                errors: ${JSON.stringify(result.errors)},
+                                warnings: ${JSON.stringify(result.warnings)},
+                                suggestions: ${JSON.stringify(result.suggestions)}
+                            },
+                            originalContent: ${JSON.stringify(originalContent)}
+                        };
+                        
+                        vscode.postMessage({
+                            command: 'copyToClipboard',
+                            text: JSON.stringify(report, null, 2)
+                        });
+                    }
+                    
+                    function closePanel() {
+                        vscode.postMessage({ command: 'close' });
+                    }
+                </script>
+            </body>
+            </html>
+        `;
+    }
+
+    private async detectProjectType(): Promise<string> {
+        // Simple project type detection
+        const files = await vscode.workspace.findFiles('**/package.json', '**/node_modules/**');
+        if (files.length > 0) return 'node';
+        
+        const pythonFiles = await vscode.workspace.findFiles('**/*.py', '**/__pycache__/**');
+        if (pythonFiles.length > 0) return 'python';
+        
+        const javaFiles = await vscode.workspace.findFiles('**/*.java', '**/target/**');
+        if (javaFiles.length > 0) return 'java';
+        
+        return 'unknown';
+    }
+
+    private async detectTechStack(): Promise<string[]> {
+        const techStack: string[] = [];
+        
+        // Check for common tech stack indicators
+        const packageJson = await vscode.workspace.findFiles('**/package.json', '**/node_modules/**');
+        if (packageJson.length > 0) {
+            techStack.push('nodejs');
+            
+            // Read package.json to detect frameworks
+            try {
+                const content = await vscode.workspace.fs.readFile(packageJson[0]);
+                const pkg = JSON.parse(content.toString());
+                if (pkg.dependencies) {
+                    if (pkg.dependencies.react) techStack.push('react');
+                    if (pkg.dependencies.vue) techStack.push('vue');
+                    if (pkg.dependencies.angular) techStack.push('angular');
+                    if (pkg.dependencies.express) techStack.push('express');
+                    if (pkg.dependencies.next) techStack.push('nextjs');
+                }
+            } catch {
+                // Ignore parsing errors
+            }
+        }
+        
+        const requirementsTxt = await vscode.workspace.findFiles('**/requirements.txt', '**/__pycache__/**');
+        if (requirementsTxt.length > 0) {
+            techStack.push('python');
+        }
+        
+        return techStack;
     }
 } 

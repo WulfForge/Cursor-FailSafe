@@ -19,10 +19,85 @@ try {
 
 Write-Host ""
 
+# Function to generate commit message from CHANGELOG
+function Get-CommitMessageFromChangelog {
+    param([string]$Version)
+    
+    try {
+        $content = Get-Content "CHANGELOG.md" -Raw
+        $pattern = "## \[$Version\] - .*(?=## \[|$)"
+        
+        if ($content -match $pattern) {
+            $match = $matches[0]
+            $lines = $match -split '\r?\n'
+            $features = @()
+            $fixes = @()
+            $changes = @()
+            $inSection = ''
+            
+            foreach ($line in $lines) {
+                if ($line -match '### Added') {
+                    $inSection = 'added'
+                } elseif ($line -match '### Fixed') {
+                    $inSection = 'fixed'
+                } elseif ($line -match '### Changed') {
+                    $inSection = 'changed'
+                } elseif ($line -match '^-\s*\*\*(.+?)\*\*') {
+                    $feature = $matches[1]
+                    switch ($inSection) {
+                        'added' { $features += $feature }
+                        'fixed' { $fixes += $feature }
+                        'changed' { $changes += $feature }
+                    }
+                }
+            }
+            
+            $summary = @()
+            if ($features.Count -gt 0) {
+                $featureText = 'Added: ' + ($features[0..2] -join ', ')
+                if ($features.Count -gt 3) {
+                    $featureText += ' and ' + ($features.Count - 3) + ' more'
+                }
+                $summary += $featureText
+            }
+            
+            if ($fixes.Count -gt 0) {
+                $fixText = 'Fixed: ' + ($fixes[0..2] -join ', ')
+                if ($fixes.Count -gt 3) {
+                    $fixText += ' and ' + ($fixes.Count - 3) + ' more'
+                }
+                $summary += $fixText
+            }
+            
+            if ($changes.Count -gt 0) {
+                $changeText = 'Changed: ' + ($changes[0..2] -join ', ')
+                if ($changes.Count -gt 3) {
+                    $changeText += ' and ' + ($changes.Count - 3) + ' more'
+                }
+                $summary += $changeText
+            }
+            
+            if ($summary.Count -eq 0) {
+                return "Release version $Version"
+            } else {
+                return "v$Version - " + ($summary -join '; ')
+            }
+        } else {
+            return "Release version $Version"
+        }
+    } catch {
+        return "Release version $Version"
+    }
+}
+
+# Generate commit message from CHANGELOG
+Write-Host "Generating commit message from CHANGELOG..." -ForegroundColor Yellow
+$COMMIT_MSG = Get-CommitMessageFromChangelog -Version $VERSION
+
 # Prompt for commit message
-$COMMIT_MSG = Read-Host "Enter commit message (or press Enter for default)"
-if ([string]::IsNullOrWhiteSpace($COMMIT_MSG)) {
-    $COMMIT_MSG = "Release version $VERSION - Dashboard improvements and testing features"
+$USER_COMMIT_MSG = Read-Host "Enter commit message (or press Enter for auto-generated)"
+if (-not [string]::IsNullOrWhiteSpace($USER_COMMIT_MSG)) {
+    $COMMIT_MSG = $USER_COMMIT_MSG
 }
 
 Write-Host ""

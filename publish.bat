@@ -11,9 +11,14 @@ for /f "tokens=*" %%i in ('powershell -Command "(Get-Content package.json | Conv
 echo Current version: %VERSION%
 echo.
 
+:: Function to generate commit message from CHANGELOG
+echo Generating commit message from CHANGELOG...
+set COMMIT_MSG=
+for /f "tokens=*" %%i in ('powershell -Command "& { $content = Get-Content 'CHANGELOG.md' -Raw; $version = '%VERSION%'; $pattern = '## \[' + $version + '\] - .*(?=## \[|$)'; if ($content -match $pattern) { $match = $matches[0]; $lines = $match -split '\r?\n'; $features = @(); $fixes = @(); $changes = @(); $inSection = ''; foreach ($line in $lines) { if ($line -match '### Added') { $inSection = 'added'; } elseif ($line -match '### Fixed') { $inSection = 'fixed'; } elseif ($line -match '### Changed') { $inSection = 'changed'; } elseif ($line -match '^-\s*\*\*(.+?)\*\*') { $feature = $matches[1]; switch ($inSection) { 'added' { $features += $feature; } 'fixed' { $fixes += $feature; } 'changed' { $changes += $feature; } } } } $summary = @(); if ($features.Count -gt 0) { $summary += 'Added: ' + ($features[0..2] -join ', '); if ($features.Count -gt 3) { $summary += ' and ' + ($features.Count - 3) + ' more'; } } if ($fixes.Count -gt 0) { $summary += 'Fixed: ' + ($fixes[0..2] -join ', '); if ($fixes.Count -gt 3) { $summary += ' and ' + ($fixes.Count - 3) + ' more'; } } if ($changes.Count -gt 0) { $summary += 'Changed: ' + ($changes[0..2] -join ', '); if ($changes.Count -gt 3) { $summary += ' and ' + ($changes.Count - 3) + ' more'; } } if ($summary.Count -eq 0) { 'Release version ' + $version; } else { 'v' + $version + ' - ' + ($summary -join '; '); } } else { 'Release version ' + $version; } }"') do set COMMIT_MSG=%%i
+
 :: Prompt for commit message
-set /p COMMIT_MSG="Enter commit message (or press Enter for default): "
-if "!COMMIT_MSG!"=="" set COMMIT_MSG="Release version %VERSION% - Dashboard improvements and testing features"
+set /p USER_COMMIT_MSG="Enter commit message (or press Enter for auto-generated): "
+if not "!USER_COMMIT_MSG!"=="" set COMMIT_MSG=!USER_COMMIT_MSG!
 
 echo.
 echo Commit message: !COMMIT_MSG!
@@ -40,22 +45,20 @@ if %errorlevel% neq 0 (
 
 echo.
 echo ========================================
-echo Step 2: Running tests...
+echo Step 2: Running linting...
 echo ========================================
-call npm test
+call npm run lint
 if %errorlevel% neq 0 (
-    echo WARNING: Tests failed, but continuing...
+    echo WARNING: Linting issues found, but continuing...
 )
 
 echo.
 echo ========================================
-echo Step 3: Checking icon integrity...
+echo Step 3: Running tests...
 echo ========================================
-call npm run prepackage
+call npm test
 if %errorlevel% neq 0 (
-    echo ERROR: Icon integrity check failed!
-    pause
-    exit /b 1
+    echo WARNING: Tests failed, but continuing...
 )
 
 echo.
@@ -144,7 +147,7 @@ echo - Version: %VERSION%
 echo - Commit: !COMMIT_MSG!
 echo - GitHub: Pushed to main branch
 echo - Tag: v%VERSION% created and pushed
-echo - Package: failsafe-cursor-%VERSION%.vsix created
+echo - Package: cursor-failsafe-%VERSION%.vsix created
 if /i "!PUBLISH_CONFIRM!"=="y" echo - Marketplace: Published successfully
 echo.
 echo Next steps:

@@ -232,76 +232,68 @@ Please provide a JSON response with the following structure:
 }`;
     }
     getProjectContext(context) {
-        let projectContext = 'No specific project context available.';
-        if (this.projectPlan) {
-            const currentTask = this.projectPlan.getCurrentTask();
-            const allTasks = this.projectPlan.getAllTasks();
-            const progress = this.projectPlan.getProjectProgress();
-            projectContext = `
-- Current Task: ${currentTask?.name || 'None'}
-- Project Progress: ${progress.progressPercentage.toFixed(1)}%
-- Total Tasks: ${progress.totalTasks}
-- Completed Tasks: ${progress.completedTasks}
-- Active Tasks: ${progress.inProgressTasks}
-- Blocked Tasks: ${progress.blockedTasks}
-- Estimated Remaining Time: ${Math.round(progress.estimatedRemainingTime)} minutes`;
+        if (!context?.projectState) {
+            return 'No project context available';
         }
-        if (context?.projectState) {
-            projectContext += `
-- Project Type: ${context.projectState.projectType || 'Unknown'}
-- Tech Stack: ${context.projectState.techStack?.join(', ') || 'Unknown'}
-- Dependencies: ${context.projectState.dependencies?.join(', ') || 'None'}`;
-        }
-        return projectContext;
+        const { currentTask, projectType, techStack, dependencies } = context.projectState;
+        const parts = [];
+        if (currentTask)
+            parts.push(`Current task: ${currentTask}`);
+        if (projectType)
+            parts.push(`Project type: ${projectType}`);
+        if (techStack?.length)
+            parts.push(`Tech stack: ${techStack.join(', ')}`);
+        if (dependencies?.length)
+            parts.push(`Dependencies: ${dependencies.join(', ')}`);
+        return parts.length > 0 ? parts.join(' | ') : 'Basic project context';
     }
     analyzeCodeComplexity(content) {
         const lines = content.split('\n').length;
-        const functions = (content.match(/function\s+\w+|=>|class\s+\w+/g) || []).length;
-        const imports = (content.match(/import\s+.*from|require\(/g) || []).length;
-        const nestedLevels = this.calculateNestingLevel(content);
-        const cyclomaticComplexity = this.calculateCyclomaticComplexity(content);
-        let complexity = 'low';
-        if (lines > 200 || functions > 20 || nestedLevels > 4 || cyclomaticComplexity > 10) {
-            complexity = 'high';
-        }
-        else if (lines > 50 || functions > 5 || nestedLevels > 2 || cyclomaticComplexity > 5) {
-            complexity = 'medium';
-        }
+        const structures = this.calculateNestingLevel(content);
+        const complexity = this.calculateCyclomaticComplexity(content);
         const dependencies = this.extractDependencies(content);
+        let complexityLevel = 'low';
+        if (complexity > 10 || structures > 5)
+            complexityLevel = 'high';
+        else if (complexity > 5 || structures > 3)
+            complexityLevel = 'medium';
         return {
-            complexity,
+            complexity: complexityLevel,
             lines,
-            structures: functions,
+            structures,
             dependencies
         };
     }
     calculateNestingLevel(content) {
+        const lines = content.split('\n');
         let maxNesting = 0;
         let currentNesting = 0;
-        for (const char of content) {
-            if (char === '{') {
+        lines.forEach(line => {
+            const trimmed = line.trim();
+            if (trimmed.includes('{')) {
                 currentNesting++;
                 maxNesting = Math.max(maxNesting, currentNesting);
             }
-            else if (char === '}') {
+            if (trimmed.includes('}')) {
                 currentNesting = Math.max(0, currentNesting - 1);
             }
-        }
+        });
         return maxNesting;
     }
     calculateCyclomaticComplexity(content) {
-        const conditions = [
-            /if\s*\(/g,
-            /else\s+if\s*\(/g,
-            /for\s*\(/g,
-            /while\s*\(/g,
-            /switch\s*\(/g,
-            /case\s+/g,
-            /catch\s*\(/g,
-            /\|\||&&/g
+        const patterns = [
+            /\bif\b/g,
+            /\belse\b/g,
+            /\bfor\b/g,
+            /\bwhile\b/g,
+            /\bcase\b/g,
+            /\bcatch\b/g,
+            /\b&&\b/g,
+            /\b\|\|\b/g,
+            /\?\s*\w+\s*:/g
         ];
         let complexity = 1; // Base complexity
-        conditions.forEach(pattern => {
+        patterns.forEach(pattern => {
             const matches = content.match(pattern);
             if (matches) {
                 complexity += matches.length;
@@ -310,108 +302,80 @@ Please provide a JSON response with the following structure:
         return complexity;
     }
     extractDependencies(content) {
+        const dependencyPatterns = [
+            /import\s+.*\s+from\s+['"]([^'"]+)['"]/g,
+            /require\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
+            /from\s+['"]([^'"]+)['"]/g
+        ];
         const dependencies = [];
-        // Extract import statements
-        const importMatches = content.match(/import\s+.*from\s+['"]([^'"]+)['"]/g);
-        if (importMatches) {
-            importMatches.forEach(match => {
-                const module = match.match(/from\s+['"]([^'"]+)['"]/)?.[1];
-                if (module && !module.startsWith('.')) {
-                    dependencies.push(module);
-                }
-            });
-        }
-        // Extract require statements
-        const requireMatches = content.match(/require\s*\(\s*['"]([^'"]+)['"]\s*\)/g);
-        if (requireMatches) {
-            requireMatches.forEach(match => {
-                const module = match.match(/['"]([^'"]+)['"]/)?.[1];
-                if (module && !module.startsWith('.')) {
-                    dependencies.push(module);
-                }
-            });
-        }
-        return [...new Set(dependencies)]; // Remove duplicates
+        dependencyPatterns.forEach(pattern => {
+            const matches = content.match(pattern);
+            if (matches) {
+                matches.forEach(match => {
+                    const dep = match.replace(pattern, '$1');
+                    if (dep && !dependencies.includes(dep)) {
+                        dependencies.push(dep);
+                    }
+                });
+            }
+        });
+        return dependencies;
     }
     determineFocusAreas(context, codeAnalysis) {
-        const focusAreas = [];
-        // Always include core areas
-        focusAreas.push('Security validation');
-        focusAreas.push('Code quality assessment');
-        // Add context-specific focus areas
-        if (context?.projectState?.currentTask) {
-            focusAreas.push('Task alignment verification');
+        const defaultAreas = ['security', 'quality'];
+        const userAreas = context?.userPreferences?.focusAreas || [];
+        if (userAreas.length > 0) {
+            return userAreas;
         }
-        if (codeAnalysis?.complexity === 'high') {
-            focusAreas.push('Performance optimization');
-            focusAreas.push('Complexity reduction');
+        if (codeAnalysis) {
+            if (codeAnalysis.complexity === 'high' || codeAnalysis.structures > 5) {
+                defaultAreas.push('performance');
+            }
+            if (codeAnalysis.dependencies.length > 5) {
+                defaultAreas.push('security');
+            }
         }
-        if (codeAnalysis?.dependencies.length > 5) {
-            focusAreas.push('Dependency management');
-        }
-        if (context?.userPreferences?.focusAreas) {
-            focusAreas.push(...context.userPreferences.focusAreas);
-        }
-        return focusAreas;
+        return defaultAreas;
     }
     getPreviousIssues(content) {
-        const contentHash = this.hashContent(content);
-        const previousResult = this.validationHistory.get(contentHash);
-        if (!previousResult) {
-            return [];
+        const hash = this.hashContent(content);
+        const previousResult = this.validationHistory.get(hash);
+        if (previousResult) {
+            return [
+                ...previousResult.errors.map(e => e.message),
+                ...previousResult.warnings.map(w => w.message)
+            ];
         }
-        // Extract common issues from previous validation
-        const issues = [];
-        previousResult.errors.forEach(error => {
-            issues.push(`${error.type}: ${error.message.substring(0, 50)}`);
-        });
-        return issues.slice(0, 5); // Top 5 issues
+        return [];
     }
     hashContent(content) {
         let hash = 0;
         for (let i = 0; i < content.length; i++) {
             const char = content.charCodeAt(i);
             hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
+            hash = hash & hash; // Convert to 32-bit integer
         }
-        return Math.abs(hash).toString(36);
+        return hash.toString();
     }
     storeValidationResult(content, result) {
-        const contentHash = this.hashContent(content);
-        this.validationHistory.set(contentHash, result);
+        const hash = this.hashContent(content);
+        this.validationHistory.set(hash, result);
     }
     async analyzeWithLLM(content, prompt, context) {
         try {
-            // This would call the actual LLM API with the enhanced prompt
-            const response = await this.callLLMForAnalysis(prompt);
-            return JSON.parse(response);
+            // Since we can't actually call LLM APIs from VS Code extensions,
+            // we'll use the fallback pattern analysis
+            return this.fallbackPatternAnalysis(content, context);
         }
         catch (error) {
-            this.logger?.error('LLM analysis failed, falling back to pattern analysis', error);
+            this.logger.error('LLM analysis failed, using fallback', error);
             return this.fallbackPatternAnalysis(content, context);
         }
     }
     async callLLMForAnalysis(prompt) {
-        // Placeholder for actual LLM API call
-        // In production, this would call the same LLM that generated the code
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                // Simulated LLM response with enhanced analysis
-                resolve(JSON.stringify({
-                    safetyIssues: [],
-                    qualityIssues: [],
-                    performanceIssues: [],
-                    securityIssues: [],
-                    suggestions: [
-                        "Consider adding input validation for user-provided data",
-                        "Implement proper error handling for async operations",
-                        "Add JSDoc comments for better documentation"
-                    ],
-                    confidence: 0.95,
-                    analysisSummary: "Code appears to be well-structured with minor improvement opportunities"
-                }));
-            }, 1000);
-        });
+        // This method is a placeholder since we can't make external API calls
+        // from VS Code extensions without user consent and proper configuration
+        throw new Error('LLM analysis not available in VS Code extension context');
     }
     fallbackPatternAnalysis(content, context) {
         const safetyIssues = [];
@@ -477,48 +441,12 @@ Please provide a JSON response with the following structure:
         }
         return { safetyIssues, qualityIssues, performanceIssues, securityIssues, suggestions };
     }
-    // Legacy method for backward compatibility
-    validateCode(content, filePath) {
-        const result = this.fallbackPatternAnalysis(content);
-        return {
-            isValid: (result.safetyIssues?.length || 0) === 0 && (result.qualityIssues?.length || 0) === 0,
-            errors: [
-                ...(result.safetyIssues?.map(issue => ({
-                    type: 'safety',
-                    message: issue.description,
-                    line: issue.line,
-                    severity: 'error'
-                })) || []),
-                ...(result.qualityIssues?.filter(issue => issue.severity === 'error').map(issue => ({
-                    type: 'hallucination',
-                    message: issue.description,
-                    line: issue.line,
-                    severity: 'error'
-                })) || [])
-            ],
-            warnings: result.qualityIssues?.filter(issue => issue.severity === 'warning').map(issue => ({
-                type: 'style',
-                message: issue.description,
-                line: issue.line
-            })) || [],
-            suggestions: result.suggestions || []
-        };
-    }
-    validateResponse(response) {
-        return this.validateCode(response);
-    }
     shouldAllowOverride(validationResult, config) {
         if (!config || !config.allowOverride)
             return false;
         if (validationResult.errors.length === 0)
             return true;
         return validationResult.errors.every(e => e.type !== 'safety' && e.type !== 'security');
-    }
-    getValidationHistory() {
-        return new Map(this.validationHistory);
-    }
-    clearValidationHistory() {
-        this.validationHistory.clear();
     }
     /**
      * Enhanced validation to detect emulation and mock environments
@@ -645,62 +573,39 @@ Please provide a JSON response with the following structure:
     /**
      * Enhanced validation that includes extension detection
      */
-    async validateRequest(request, context) {
+    async validateRequest(request) {
         const errors = [];
         const warnings = [];
         const suggestions = [];
         // 1. Environment validation
-        const envResult = this.validateEnvironmentContext();
-        errors.push(...envResult.errors);
-        warnings.push(...envResult.warnings);
-        suggestions.push(...envResult.suggestions);
-        // 2. Extension validation
-        const extensionResult = this.extensionDetector.validateExtensionUsage(request);
-        if (!extensionResult.isValid) {
-            extensionResult.issues.forEach(issue => {
-                errors.push({
-                    type: 'hallucination',
-                    message: issue,
-                    severity: 'error',
-                    category: 'extension'
-                });
-            });
-            suggestions.push(...extensionResult.suggestions);
-        }
+        const environmentResult = this.validateEnvironmentContext();
+        errors.push(...environmentResult.errors);
+        warnings.push(...environmentResult.warnings);
+        // 2. Mock data detection
+        const mockDataResult = this.detectMockData(request);
+        errors.push(...mockDataResult.errors);
+        warnings.push(...mockDataResult.warnings);
         // 3. Date validation
         const dateResult = this.validateDates(request);
         errors.push(...dateResult.errors);
         warnings.push(...dateResult.warnings);
-        suggestions.push(...dateResult.suggestions);
-        // 4. Existing validation logic
+        // 4. Feasibility check
         const feasibility = this.validateEnvironmentFeasibility(request);
         if (!feasibility.isFeasible) {
-            feasibility.blockers.forEach(blocker => {
-                errors.push({
-                    type: 'hallucination',
-                    message: blocker,
-                    severity: 'error',
-                    category: 'hallucination'
-                });
+            errors.push({
+                type: 'safety',
+                message: `Request not feasible: ${feasibility.blockers.join(', ')}`,
+                severity: 'error',
+                category: 'feasibility'
             });
             suggestions.push(...feasibility.recommendations);
         }
-        // 5. Mock data detection
-        const mockResult = this.detectMockData(request);
-        if (!mockResult.isValid) {
-            errors.push(...mockResult.errors);
-            warnings.push(...mockResult.warnings);
-            suggestions.push(...mockResult.suggestions);
-        }
-        const result = {
+        return {
             isValid: errors.length === 0,
             errors,
             warnings,
             suggestions
         };
-        // Cache result
-        this.validationHistory.set(request, result);
-        return result;
     }
     /**
      * Detect mock data patterns in requests
@@ -740,86 +645,305 @@ Please provide a JSON response with the following structure:
             suggestions
         };
     }
+    /**
+     * Validate dates in content
+     */
     validateDates(content) {
         const errors = [];
         const warnings = [];
         const suggestions = [];
-        for (const pattern of this.datePatterns) {
+        this.datePatterns.forEach(pattern => {
             const matches = content.match(pattern);
             if (matches) {
-                for (const match of matches) {
-                    const dateMatch = match.match(/\d{4}-\d{2}-\d{2}/);
-                    if (dateMatch) {
-                        const dateStr = dateMatch[0];
-                        const date = new Date(dateStr);
-                        // Check if date is valid
-                        if (isNaN(date.getTime())) {
-                            errors.push({
-                                type: 'syntax',
-                                message: `Invalid date format: ${dateStr}`,
-                                severity: 'error',
-                                category: 'date'
-                            });
-                            suggestions.push(`Fix the date format: ${dateStr} should be in YYYY-MM-DD format`);
-                            continue;
-                        }
-                        // Check if date is in reasonable range
-                        const daysDiff = Math.floor((date.getTime() - this.currentDate.getTime()) / (1000 * 60 * 60 * 24));
-                        if (daysDiff > this.maxFutureDays) {
-                            errors.push({
-                                type: 'hallucination',
-                                message: `Date too far in future: ${dateStr} (${daysDiff} days ahead)`,
-                                severity: 'error',
-                                category: 'date'
-                            });
-                            suggestions.push(`Consider using a more realistic date for ${dateStr}`);
-                        }
-                        else if (daysDiff < -this.maxPastDays) {
+                matches.forEach(match => {
+                    const dateStr = match.replace(/[^\d\-]/g, '');
+                    const date = new Date(dateStr);
+                    if (isNaN(date.getTime())) {
+                        errors.push({
+                            type: 'hallucination',
+                            message: `Invalid date format: ${match}`,
+                            severity: 'error',
+                            category: 'date_validation'
+                        });
+                    }
+                    else {
+                        const now = new Date();
+                        const diffDays = Math.abs((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                        if (date > now && diffDays > this.maxFutureDays) {
                             warnings.push({
                                 type: 'quality',
-                                message: `Date very far in past: ${dateStr} (${Math.abs(daysDiff)} days ago)`,
-                                category: 'date'
+                                message: `Date is too far in the future: ${match}`,
+                                category: 'date_validation'
                             });
                         }
-                        else if (daysDiff < -30) { // More than 30 days in past
-                            errors.push({
-                                type: 'hallucination',
-                                message: `Date too far in past: ${dateStr} (${Math.abs(daysDiff)} days ago)`,
-                                severity: 'error',
-                                category: 'date'
+                        else if (date < now && diffDays > this.maxPastDays) {
+                            warnings.push({
+                                type: 'quality',
+                                message: `Date is too far in the past: ${match}`,
+                                category: 'date_validation'
                             });
-                            suggestions.push(`Consider using a more recent date for ${dateStr}`);
-                        }
-                        // Check for common date errors (like month > 12, day > 31)
-                        const [year, month, day] = dateStr.split('-').map(Number);
-                        if (month > 12 || month < 1) {
-                            errors.push({
-                                type: 'syntax',
-                                message: `Invalid month in date: ${dateStr}`,
-                                severity: 'error',
-                                category: 'date'
-                            });
-                            suggestions.push(`Month should be between 01-12 in ${dateStr}`);
-                        }
-                        if (day > 31 || day < 1) {
-                            errors.push({
-                                type: 'syntax',
-                                message: `Invalid day in date: ${dateStr}`,
-                                severity: 'error',
-                                category: 'date'
-                            });
-                            suggestions.push(`Day should be between 01-31 in ${dateStr}`);
                         }
                     }
-                }
+                });
             }
-        }
+        });
         return {
             isValid: errors.length === 0,
             errors,
             warnings,
             suggestions
         };
+    }
+    /**
+     * Validates AI-generated code for safety and quality
+     */
+    validateCode(code, context) {
+        const errors = [];
+        const warnings = [];
+        const suggestions = [];
+        try {
+            // Check for hallucination patterns
+            const hallucinationResult = this.detectHallucination(code, context);
+            errors.push(...hallucinationResult.errors);
+            warnings.push(...hallucinationResult.warnings);
+            // Check for mock data patterns
+            const mockDataResult = this.detectMockData(code);
+            errors.push(...mockDataResult.errors);
+            warnings.push(...mockDataResult.warnings);
+            // Check for security issues
+            const securityResult = this.detectSecurityIssues(code);
+            errors.push(...securityResult.errors);
+            warnings.push(...securityResult.warnings);
+            // Check for syntax issues
+            const syntaxResult = this.detectSyntaxIssues(code);
+            errors.push(...syntaxResult.errors);
+            warnings.push(...syntaxResult.warnings);
+            // Check for performance issues
+            const performanceResult = this.detectPerformanceIssues(code);
+            warnings.push(...performanceResult.warnings);
+            suggestions.push(...performanceResult.suggestions);
+            const isValid = errors.length === 0;
+            return {
+                isValid,
+                errors,
+                warnings,
+                suggestions
+            };
+        }
+        catch (error) {
+            this.logger.error('Error during code validation', error);
+            return {
+                isValid: false,
+                errors: [{
+                        type: 'safety',
+                        message: 'Validation failed due to internal error',
+                        severity: 'error',
+                        category: 'validation_error'
+                    }],
+                warnings: [],
+                suggestions: []
+            };
+        }
+    }
+    /**
+     * NEW: Detect AI hallucination patterns
+     * This is the core feature to prevent exactly the issue we just experienced
+     */
+    detectHallucination(code, context) {
+        const errors = [];
+        const warnings = [];
+        // Patterns that indicate AI hallucination
+        const hallucinationPatterns = [
+            // False claims about implementation
+            /\b(?:I have|I've|I just|I created|I implemented|I added|I fixed)\s+(?:the|a|an)\s+(?:feature|function|class|method|file|script|tool)\b/gi,
+            // Vague implementation claims
+            /\b(?:implemented|created|added|fixed|built|developed)\s+(?:successfully|properly|correctly|fully)\b/gi,
+            // Claims about files that may not exist
+            /\b(?:created|added|implemented)\s+(?:file|script|class|module)\s+(?:at|in)\s+[\w/.-]+\b/gi,
+            // Claims about functionality without evidence
+            /\b(?:now|currently|already)\s+(?:supports|includes|has|provides|offers)\s+[\w\s]+\b/gi,
+            // Claims about testing or validation
+            /\b(?:tested|verified|validated|confirmed)\s+(?:and|that|it)\s+(?:works|functions|operates)\b/gi,
+            // Claims about integration
+            /\b(?:integrated|connected|linked|bound)\s+(?:with|to|into)\s+[\w\s]+\b/gi,
+            // Claims about performance improvements
+            /\b(?:improved|enhanced|optimized|boosted)\s+(?:performance|speed|efficiency)\b/gi,
+            // Claims about user experience
+            /\b(?:improved|enhanced|better)\s+(?:user\s+)?(?:experience|interface|ux|ui)\b/gi
+        ];
+        hallucinationPatterns.forEach(pattern => {
+            const matches = code.match(pattern);
+            if (matches) {
+                matches.forEach(match => {
+                    errors.push({
+                        type: 'hallucination',
+                        message: `Potential hallucination detected: "${match.trim()}" - Verify this claim`,
+                        severity: 'error',
+                        category: 'ai_hallucination',
+                        line: this.findLineNumber(code, match)
+                    });
+                });
+            }
+        });
+        return { errors, warnings };
+    }
+    /**
+     * Detect security issues in code
+     */
+    detectSecurityIssues(code) {
+        const errors = [];
+        const warnings = [];
+        const suggestions = [];
+        this.securityAntiPatterns.forEach(pattern => {
+            const matches = code.match(new RegExp(pattern, 'gi'));
+            if (matches) {
+                matches.forEach(match => {
+                    errors.push({
+                        type: 'security',
+                        message: `Security vulnerability detected: "${match.trim()}"`,
+                        severity: 'error',
+                        category: 'security_issue',
+                        line: this.findLineNumber(code, match)
+                    });
+                });
+            }
+        });
+        return { isValid: errors.length === 0, errors, warnings, suggestions };
+    }
+    /**
+     * Detect syntax issues in code
+     */
+    detectSyntaxIssues(code) {
+        const errors = [];
+        const warnings = [];
+        const suggestions = [];
+        // Basic syntax checks
+        const lines = code.split('\n');
+        lines.forEach((line, index) => {
+            // Check for common syntax issues
+            if (line.includes('TODO') || line.includes('FIXME')) {
+                warnings.push({
+                    type: 'quality',
+                    message: `Placeholder content detected: ${line.trim()}`,
+                    category: 'placeholder_content',
+                    line: index + 1
+                });
+            }
+        });
+        return { isValid: errors.length === 0, errors, warnings, suggestions };
+    }
+    /**
+     * Detect performance issues in code
+     */
+    detectPerformanceIssues(code) {
+        const errors = [];
+        const warnings = [];
+        const suggestions = [];
+        this.performanceAntiPatterns.forEach(pattern => {
+            const matches = code.match(new RegExp(pattern, 'gi'));
+            if (matches) {
+                matches.forEach(match => {
+                    warnings.push({
+                        type: 'performance',
+                        message: `Performance concern detected: "${match.trim()}"`,
+                        category: 'performance_issue',
+                        line: this.findLineNumber(code, match)
+                    });
+                });
+            }
+        });
+        return { isValid: errors.length === 0, errors, warnings, suggestions };
+    }
+    /**
+     * Validate context match between code and context
+     */
+    validateContextMatch(code, context) {
+        // Simple context validation - could be enhanced
+        const codeKeywords = code.toLowerCase().split(/\s+/);
+        const contextKeywords = context.toLowerCase().split(/\s+/);
+        const commonKeywords = codeKeywords.filter(keyword => contextKeywords.includes(keyword) && keyword.length > 3);
+        return commonKeywords.length > 0;
+    }
+    /**
+     * Find line number for a given text in content
+     */
+    findLineNumber(text, searchText) {
+        const lines = text.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i].includes(searchText)) {
+                return i + 1;
+            }
+        }
+        return undefined;
+    }
+    /**
+     * Validate implementation claims against actual files
+     */
+    validateImplementationClaims(claims, actualFiles) {
+        const errors = [];
+        const warnings = [];
+        const suggestions = [];
+        claims.forEach(claim => {
+            // Extract file references from claim
+            const fileMatches = claim.match(/[\w/.-]+\.(?:ts|js|json|md|txt|yml|yaml)/g);
+            if (fileMatches) {
+                fileMatches.forEach(fileRef => {
+                    if (!actualFiles.includes(fileRef)) {
+                        errors.push({
+                            type: 'hallucination',
+                            message: `File referenced but doesn't exist: ${fileRef}`,
+                            severity: 'error',
+                            category: 'missing_file'
+                        });
+                        suggestions.push(`Verify that ${fileRef} exists in the workspace`);
+                    }
+                });
+            }
+        });
+        return {
+            isValid: errors.length === 0,
+            errors,
+            warnings,
+            suggestions
+        };
+    }
+    /**
+     * NEW: Comprehensive AI response validation
+     * This is the main entry point for validating AI-generated responses
+     */
+    validateAIResponse(response, context, actualFiles) {
+        // Extract claims from the response
+        const claims = this.extractClaims(response);
+        // Validate implementation claims
+        const claimValidation = this.validateImplementationClaims(claims, actualFiles);
+        // Validate code content
+        const codeValidation = this.validateCode(response, context);
+        // Combine results
+        return {
+            isValid: claimValidation.isValid && codeValidation.isValid,
+            errors: [...claimValidation.errors, ...codeValidation.errors],
+            warnings: [...claimValidation.warnings, ...codeValidation.warnings],
+            suggestions: [...claimValidation.suggestions, ...codeValidation.suggestions]
+        };
+    }
+    /**
+     * Extract implementation claims from AI response
+     */
+    extractClaims(response) {
+        const claims = [];
+        // Patterns that indicate implementation claims
+        const claimPatterns = [
+            /(?:I have|I've|I just|I created|I implemented|I added|I fixed)\s+([^.!?]+)/gi,
+            /(?:created|added|implemented)\s+([^.!?]+)/gi,
+            /(?:in|at)\s+([\w/.-]+\.(?:ts|js|json|md))/gi
+        ];
+        claimPatterns.forEach(pattern => {
+            const matches = response.match(pattern);
+            if (matches) {
+                claims.push(...matches);
+            }
+        });
+        return claims;
     }
 }
 exports.Validator = Validator;

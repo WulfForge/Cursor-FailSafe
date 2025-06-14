@@ -448,9 +448,9 @@ export class UI {
     }
 
     public async validatePlanWithAI(): Promise<void> {
-        await this.projectPlan.validatePlanWithLLM();
+        await this.projectPlan.validatePlan();
         this.refreshSidebar();
-        vscode.window.showInformationMessage('Plan validated with AI.');
+        vscode.window.showInformationMessage('Plan validated.');
     }
 
     /**
@@ -1755,5 +1755,327 @@ export class UI {
         const tasks = this.projectPlan.getAllTasks();
         if (!tasks) return 0;
         return tasks.filter((task: any) => task.status !== 'completed').length;
+    }
+
+    private async createProjectPlan(): Promise<void> {
+        try {
+            await this.projectPlan.createBasicProject();
+            vscode.window.showInformationMessage('Basic project plan created successfully!');
+        } catch (error) {
+            vscode.window.showErrorMessage('Failed to create project plan: ' + error);
+        }
+    }
+
+    private async showProjectPlan(): Promise<void> {
+        try {
+            const currentTask = this.projectPlan.getCurrentTask();
+            const allTasks = this.projectPlan.getAllTasks();
+            const progress = this.projectPlan.getProjectProgress();
+            const linearState = this.projectPlan.getLinearProgressState();
+            const accountability = this.projectPlan.getAccountabilityReport();
+
+            const content = `
+                <div class="project-plan-section">
+                    <h2>📋 Basic Project Plan</h2>
+                    
+                    <div class="progress-section">
+                        <h3>📊 Progress Overview</h3>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress.progressPercentage}%"></div>
+                        </div>
+                        <p>${progress.completedTasks}/${progress.totalTasks} tasks completed (${progress.progressPercentage.toFixed(1)}%)</p>
+                        <p>Estimated remaining time: ${Math.round(progress.estimatedRemainingTime / 60)} minutes</p>
+                    </div>
+
+                    <div class="current-task-section">
+                        <h3>🎯 Current Task</h3>
+                        ${currentTask ? `
+                            <div class="task-card current">
+                                <h4>${currentTask.name}</h4>
+                                <p>${currentTask.description}</p>
+                                <div class="task-meta">
+                                    <span class="status in-progress">In Progress</span>
+                                    <span class="priority ${currentTask.priority.toLowerCase()}">${currentTask.priority}</span>
+                                </div>
+                                <div class="task-actions">
+                                    <button onclick="completeTask('${currentTask.id}')" class="btn btn-success">Complete Task</button>
+                                    <button onclick="blockTask('${currentTask.id}')" class="btn btn-warning">Block Task</button>
+                                </div>
+                            </div>
+                        ` : '<p>No task currently in progress</p>'}
+                    </div>
+
+                    <div class="tasks-section">
+                        <h3>📝 All Tasks</h3>
+                        <div class="task-list">
+                            ${allTasks.map(task => `
+                                <div class="task-card ${task.status.toLowerCase().replace('_', '-')}">
+                                    <h4>${task.name}</h4>
+                                    <p>${task.description}</p>
+                                    <div class="task-meta">
+                                        <span class="status ${task.status.toLowerCase().replace('_', '-')}">${task.status.replace('_', ' ')}</span>
+                                        <span class="priority ${task.priority.toLowerCase()}">${task.priority}</span>
+                                        ${task.estimatedDuration ? `<span class="duration">${task.estimatedDuration} min</span>` : ''}
+                                    </div>
+                                    ${task.blockers.length > 0 ? `
+                                        <div class="blockers">
+                                            <strong>Blockers:</strong> ${task.blockers.join(', ')}
+                                        </div>
+                                    ` : ''}
+                                    <div class="task-actions">
+                                        ${task.status === TaskStatus.NOT_STARTED ? `
+                                            <button onclick="startTask('${task.id}')" class="btn btn-primary">Start Task</button>
+                                        ` : ''}
+                                        ${task.status === TaskStatus.IN_PROGRESS ? `
+                                            <button onclick="completeTask('${task.id}')" class="btn btn-success">Complete Task</button>
+                                            <button onclick="blockTask('${task.id}')" class="btn btn-warning">Block Task</button>
+                                        ` : ''}
+                                        ${task.status === TaskStatus.BLOCKED ? `
+                                            <button onclick="unblockTask('${task.id}')" class="btn btn-info">Unblock Task</button>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="accountability-section">
+                        <h3>⏰ Accountability Report</h3>
+                        <p><strong>Last Activity:</strong> ${accountability.lastActivity.toLocaleString()}</p>
+                        <p><strong>Time Since Last Activity:</strong> ${Math.round(accountability.timeSinceLastActivity / 60000)} minutes</p>
+                        ${accountability.currentTaskDuration ? `
+                            <p><strong>Current Task Duration:</strong> ${Math.round(accountability.currentTaskDuration / 60000)} minutes</p>
+                        ` : ''}
+                        ${accountability.recommendations.length > 0 ? `
+                            <div class="recommendations">
+                                <h4>Recommendations:</h4>
+                                <ul>
+                                    ${accountability.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="integration-section">
+                        <h3>🔗 Project Management Integration</h3>
+                        <p>For advanced project management features including:</p>
+                        <ul>
+                            <li>PMP-compliant project planning</li>
+                            <li>Stakeholder management</li>
+                            <li>Risk assessment and mitigation</li>
+                            <li>Advanced metrics and reporting</li>
+                            <li>Quality gates and validation points</li>
+                        </ul>
+                        <p>Consider installing the <strong>Professional Project Manager</strong> extension.</p>
+                        <button onclick="openProjectManagerExtension()" class="btn btn-secondary">Learn More</button>
+                    </div>
+                </div>
+            `;
+
+            const panel = vscode.window.createWebviewPanel(
+                'projectPlan',
+                'Basic Project Plan',
+                vscode.ViewColumn.One,
+                {
+                    enableScripts: true,
+                    retainContextWhenHidden: true
+                }
+            );
+
+            panel.webview.html = `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Basic Project Plan</title>
+                    <style>
+                        body {
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                            margin: 0;
+                            padding: 20px;
+                            background: #f5f5f5;
+                        }
+                        .project-plan-section { padding: 20px; }
+                        .progress-section, .current-task-section, .tasks-section, .accountability-section, .integration-section {
+                            margin-bottom: 30px;
+                            padding: 15px;
+                            border: 1px solid #ddd;
+                            border-radius: 8px;
+                            background: #f9f9f9;
+                        }
+                        .progress-bar {
+                            width: 100%;
+                            height: 20px;
+                            background: #e0e0e0;
+                            border-radius: 10px;
+                            overflow: hidden;
+                            margin: 10px 0;
+                        }
+                        .progress-fill {
+                            height: 100%;
+                            background: linear-gradient(90deg, #4CAF50, #45a049);
+                            transition: width 0.3s ease;
+                        }
+                        .task-card {
+                            margin: 10px 0;
+                            padding: 15px;
+                            border: 1px solid #ddd;
+                            border-radius: 8px;
+                            background: white;
+                        }
+                        .task-card.current {
+                            border-color: #2196F3;
+                            background: #f0f8ff;
+                        }
+                        .task-card.completed {
+                            border-color: #4CAF50;
+                            background: #f0fff0;
+                        }
+                        .task-card.blocked {
+                            border-color: #f44336;
+                            background: #fff0f0;
+                        }
+                        .task-meta {
+                            display: flex;
+                            gap: 10px;
+                            margin: 10px 0;
+                            flex-wrap: wrap;
+                        }
+                        .status {
+                            padding: 4px 8px;
+                            border-radius: 4px;
+                            font-size: 12px;
+                            font-weight: bold;
+                        }
+                        .status.in-progress { background: #2196F3; color: white; }
+                        .status.completed { background: #4CAF50; color: white; }
+                        .status.blocked { background: #f44336; color: white; }
+                        .status.not-started { background: #9e9e9e; color: white; }
+                        .priority {
+                            padding: 4px 8px;
+                            border-radius: 4px;
+                            font-size: 12px;
+                            font-weight: bold;
+                        }
+                        .priority.critical { background: #f44336; color: white; }
+                        .priority.high { background: #ff9800; color: white; }
+                        .priority.medium { background: #ffc107; color: black; }
+                        .priority.low { background: #4CAF50; color: white; }
+                        .duration {
+                            padding: 4px 8px;
+                            background: #e0e0e0;
+                            border-radius: 4px;
+                            font-size: 12px;
+                        }
+                        .blockers {
+                            margin: 10px 0;
+                            padding: 10px;
+                            background: #fff3cd;
+                            border: 1px solid #ffeaa7;
+                            border-radius: 4px;
+                            color: #856404;
+                        }
+                        .task-actions {
+                            margin-top: 10px;
+                        }
+                        .btn {
+                            padding: 8px 16px;
+                            margin: 2px;
+                            border: none;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 12px;
+                            text-decoration: none;
+                            display: inline-block;
+                        }
+                        .btn-primary { background: #2196F3; color: white; }
+                        .btn-success { background: #4CAF50; color: white; }
+                        .btn-warning { background: #ff9800; color: white; }
+                        .btn-info { background: #00bcd4; color: white; }
+                        .btn-secondary { background: #6c757d; color: white; }
+                        .recommendations {
+                            margin-top: 15px;
+                            padding: 15px;
+                            background: #fff3cd;
+                            border: 1px solid #ffeaa7;
+                            border-radius: 4px;
+                        }
+                        .recommendations ul {
+                            margin: 10px 0;
+                            padding-left: 20px;
+                        }
+                        .integration-section {
+                            background: #e3f2fd;
+                            border-color: #2196F3;
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${content}
+                    <script>
+                        const vscode = acquireVsCodeApi();
+                        
+                        function startTask(taskId) {
+                            vscode.postMessage({ command: 'startTask', taskId: taskId });
+                        }
+                        
+                        function completeTask(taskId) {
+                            vscode.postMessage({ command: 'completeTask', taskId: taskId });
+                        }
+                        
+                        function blockTask(taskId) {
+                            const reason = prompt('Enter reason for blocking task:');
+                            if (reason) {
+                                vscode.postMessage({ command: 'blockTask', taskId: taskId, reason: reason });
+                            }
+                        }
+                        
+                        function unblockTask(taskId) {
+                            vscode.postMessage({ command: 'unblockTask', taskId: taskId });
+                        }
+                        
+                        function openProjectManagerExtension() {
+                            vscode.postMessage({ command: 'openProjectManagerExtension' });
+                        }
+                    </script>
+                </body>
+                </html>
+            `;
+
+            panel.webview.onDidReceiveMessage(async msg => {
+                switch (msg.command) {
+                    case 'startTask':
+                        await this.projectPlan.startTask(msg.taskId);
+                        panel.dispose();
+                        this.showProjectPlan();
+                        break;
+                    case 'completeTask':
+                        await this.projectPlan.completeTask(msg.taskId);
+                        panel.dispose();
+                        this.showProjectPlan();
+                        break;
+                    case 'blockTask':
+                        await this.projectPlan.blockTask(msg.taskId, msg.reason);
+                        panel.dispose();
+                        this.showProjectPlan();
+                        break;
+                    case 'unblockTask':
+                        await this.projectPlan.unblockTask(msg.taskId);
+                        panel.dispose();
+                        this.showProjectPlan();
+                        break;
+                    case 'openProjectManagerExtension':
+                        vscode.window.showInformationMessage(
+                            'Professional Project Manager extension provides advanced PMP-compliant project management features. ' +
+                            'Visit the marketplace to learn more and install the extension.'
+                        );
+                        break;
+                }
+            });
+
+        } catch (error) {
+            vscode.window.showErrorMessage('Failed to show project plan: ' + error);
+        }
     }
 } 

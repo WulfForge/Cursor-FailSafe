@@ -1,41 +1,30 @@
 {
-  "name": "failsafe-cursor",
-  "displayName": "FailSafe: AI Development Extension",
-  "description": "Time-aware, validation-driven AI development assistant, by MythologIQ. **Beta**",
-  "version": "1.4.1",
-  "publisher": "MythologIQ",
+  "name": "cursor-failsafe",
+  "displayName": "FailSafe - Chat Content Validator",
+  "description": "Validate AI chat responses for hallucinations and false claims. Provides post-processing validation of code blocks, file references, and implementation claims in chat content.",
+  "version": "1.5.1",
+  "publisher": "WulfForge",
   "engines": {
     "vscode": "^1.74.0"
   },
   "categories": [
     "Other",
     "Programming Languages",
-    "Testing",
-    "Debuggers",
-    "Formatters",
-    "Snippets",
-    "Extension Packs"
+    "Snippets"
   ],
   "keywords": [
     "ai",
     "validation",
-    "safety",
-    "timeout",
-    "testing",
-    "productivity",
+    "chat",
+    "hallucination",
     "code-quality",
-    "security",
-    "project-management",
     "cursor",
-    "development",
-    "guardian",
     "failsafe",
-    "automation",
-    "workflow"
+    "content-validation"
   ],
   "icon": "images/icon.png",
   "galleryBanner": {
-    "color": "#1e1e1e",
+    "color": "#2c3e50",
     "theme": "dark"
   },
   "repository": {
@@ -45,7 +34,7 @@
   "bugs": {
     "url": "https://github.com/WulfForge/Cursor-FailSafe/issues"
   },
-  "homepage": "https://www.MythologIQ.studio",
+  "homepage": "https://github.com/WulfForge/Cursor-FailSafe#readme",
   "license": "MIT",
   "author": {
     "name": "MythologIQ",
@@ -53,138 +42,82 @@
   },
   "main": "./out/extension.js",
   "activationEvents": [
-    "onStartupFinished"
+    "onCommand:failsafe.validateChat",
+    "onCommand:failsafe.validate",
+    "onCommand:failsafe.showPlan"
   ],
   "contributes": {
     "commands": [
       {
-        "command": "failsafe.askAI",
-        "title": "FailSafe: Ask AI",
-        "category": "FailSafe"
-      },
-      {
-        "command": "failsafe.refactor",
-        "title": "FailSafe: Refactor Code",
-        "category": "FailSafe"
+        "command": "failsafe.validateChat",
+        "title": "Validate Chat Content",
+        "category": "FailSafe",
+        "description": "Validate AI chat responses for hallucinations and false claims"
       },
       {
         "command": "failsafe.validate",
         "title": "FailSafe: Validate Code",
-        "category": "FailSafe"
+        "category": "FailSafe",
+        "description": "Validate code for safety and quality issues"
       },
       {
         "command": "failsafe.showPlan",
-        "title": "FailSafe: Show Project Dashboard",
-        "category": "FailSafe"
-      },
-      {
-        "command": "failsafe.retryLastTask",
-        "title": "FailSafe: Retry Last Task",
-        "category": "FailSafe"
-      },
-      {
-        "command": "failsafe.viewSessionLog",
-        "title": "FailSafe: View Session Log",
-        "category": "FailSafe"
-      },
-      {
-        "command": "failsafe.markTaskComplete",
-        "title": "FailSafe: Mark Task Complete",
-        "category": "FailSafe"
-      },
-      {
-        "command": "failsafe.simulateEvent",
-        "title": "FailSafe: Simulate Event",
-        "category": "FailSafe"
-      },
-      {
-        "command": "failsafe.showDashboard",
         "title": "FailSafe: Show Dashboard",
-        "category": "FailSafe"
-      },
-      {
-        "command": "failsafe.showProgress",
-        "title": "FailSafe: Show Progress Details",
-        "category": "FailSafe"
-      },
-      {
-        "command": "failsafe.showAccountability",
-        "title": "FailSafe: Show Accountability Report",
-        "category": "FailSafe"
-      },
-      {
-        "command": "failsafe.showFeasibility",
-        "title": "FailSafe: Show Feasibility Analysis",
-        "category": "FailSafe"
-      },
-      {
-        "command": "failsafe.forceLinearProgression",
-        "title": "FailSafe: Force Linear Progression",
-        "category": "FailSafe"
-      },
-      {
-        "command": "failsafe.autoAdvance",
-        "title": "FailSafe: Auto Advance to Next Task",
-        "category": "FailSafe"
-      },
-      {
-        "command": "failsafe.showActionLog",
-        "title": "FailSafe: Show Action Log",
-        "category": "FailSafe"
-      },
-      {
-        "command": "failsafe.validatePlanWithAI",
-        "title": "FailSafe: Validate Plan with AI",
-        "category": "FailSafe"
-      },
-      {
-        "command": "failsafe.showFailsafeConfig",
-        "title": "FailSafe: Show Failsafe Configuration",
-        "category": "FailSafe"
-      },
-      {
-        "command": "failsafe.createProjectPlan",
-        "title": "FailSafe: Create Project Plan",
-        "category": "FailSafe"
-      },
-      {
-        "command": "failsafe.editProjectPlan",
-        "title": "FailSafe: Edit Project Plan",
-        "category": "FailSafe"
+        "category": "FailSafe",
+        "description": "Show project dashboard and plan"
       },
       {
         "command": "failsafe.reportProblem",
         "title": "FailSafe: Report a Problem",
-        "category": "FailSafe"
+        "category": "FailSafe",
+        "description": "Report issues to GitHub"
       },
       {
         "command": "failsafe.suggestFailsafe",
-        "title": "FailSafe: Suggest Custom Failsafe",
-        "category": "FailSafe"
+        "title": "FailSafe: Suggest Failsafe",
+        "category": "FailSafe",
+        "description": "Suggest custom failsafes for your project"
       },
       {
-        "command": "failsafe.suggestToCore",
-        "title": "FailSafe: Suggest Failsafe to Core",
-        "category": "FailSafe"
+        "command": "failsafe.checkVersionConsistency",
+        "title": "FailSafe: Check Version Consistency",
+        "category": "FailSafe",
+        "description": "Check version consistency across files"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "failsafe-sidebar",
+          "title": "FailSafe",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "failsafe-sidebar": [
+        {
+          "id": "failsafe-tree",
+          "name": "FailSafe Status"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "failsafe.showDashboard",
+          "when": "view == failsafe-tree",
+          "group": "navigation"
+        }
+      ]
+    },
     "configuration": {
       "title": "FailSafe",
       "properties": {
-        "failsafe.validationEnabled": {
+        "failsafe.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable AI output validation"
-        },
-        "failsafe.timeoutEnabled": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable timeout detection for AI requests"
-        },
-        "failsafe.testRunner": {
-          "type": "string",
-          "default": "npm test",
-          "description": "Command to run tests"
+          "description": "Enable or disable FailSafe"
         },
         "failsafe.validation.strictMode": {
           "type": "boolean",
@@ -194,139 +127,12 @@
         "failsafe.validation.focusAreas": {
           "type": "array",
           "items": {
-            "type": "string",
-            "enum": [
-              "security",
-              "performance",
-              "quality",
-              "maintainability"
-            ]
+            "type": "string"
           },
-          "default": [
-            "security",
-            "performance"
-          ],
+          "default": ["security", "quality", "performance"],
           "description": "Focus areas for validation"
-        },
-        "failsafe.timeout.baseTimeout": {
-          "type": "number",
-          "default": 30000,
-          "description": "Base timeout in milliseconds"
-        },
-        "failsafe.timeout.complexityMultiplier": {
-          "type": "number",
-          "default": 2,
-          "description": "Timeout multiplier for complex requests"
-        },
-        "failsafe.logLevel": {
-          "type": "string",
-          "enum": [
-            "debug",
-            "info",
-            "warn",
-            "error"
-          ],
-          "default": "info",
-          "description": "Logging level"
-        },
-        "failsafe.alwaysUpdateReadme": {
-          "type": "boolean",
-          "default": false,
-          "description": "Automatically update the README file to reflect new features, failsafes, or configuration changes."
-        },
-        "failsafe.automaticVersioning": {
-          "type": "boolean",
-          "default": false,
-          "description": "Automatically increment the version in package.json when significant changes are made."
         }
       }
-    },
-    "menus": {
-      "commandPalette": [
-        {
-          "command": "failsafe.askAI",
-          "when": "editorTextFocus"
-        },
-        {
-          "command": "failsafe.refactor",
-          "when": "editorHasSelection"
-        },
-        {
-          "command": "failsafe.validate",
-          "when": "editorTextFocus"
-        },
-        {
-          "command": "failsafe.showPlan"
-        },
-        {
-          "command": "failsafe.retryLastTask"
-        },
-        {
-          "command": "failsafe.viewSessionLog"
-        },
-        {
-          "command": "failsafe.markTaskComplete"
-        },
-        {
-          "command": "failsafe.simulateEvent"
-        },
-        {
-          "command": "failsafe.showDashboard"
-        },
-        {
-          "command": "failsafe.showProgress"
-        },
-        {
-          "command": "failsafe.showAccountability"
-        },
-        {
-          "command": "failsafe.showFeasibility"
-        },
-        {
-          "command": "failsafe.forceLinearProgression"
-        },
-        {
-          "command": "failsafe.autoAdvance"
-        },
-        {
-          "command": "failsafe.showActionLog"
-        },
-        {
-          "command": "failsafe.validatePlanWithAI"
-        },
-        {
-          "command": "failsafe.showFailsafeConfig",
-          "when": "true"
-        },
-        {
-          "command": "failsafe.createProjectPlan",
-          "when": "true"
-        },
-        {
-          "command": "failsafe.editProjectPlan",
-          "when": "true"
-        },
-        {
-          "command": "failsafe.reportProblem",
-          "when": "true"
-        },
-        {
-          "command": "failsafe.suggestFailsafe",
-          "when": "true"
-        },
-        {
-          "command": "failsafe.suggestToCore",
-          "when": "true"
-        }
-      ]
-    },
-    "views": {
-      "explorer": [
-        {
-          "id": "failsafeSidebar",
-          "name": "FailSafe Activity"
-        }
-      ]
     }
   },
   "scripts": {
@@ -335,31 +141,35 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./test/runTest.js",
-    "test:validator": "npx mocha test/validator-emulation.test.js",
-    "test:timeout": "npx mocha test/timeoutWatchdog.test.js",
-    "test:extensions": "npx mocha test/extension-detection.test.js",
-    "test:projectPlan": "npx mocha test/projectPlan.test.js",
-    "test:taskEngine": "npx mocha test/taskEngine.test.js",
-    "test:ui": "npx mocha test/ui.test.js",
-    "prepackage": "node scripts/check-icon.js",
+    "test": "node ./out/test/runTest.js",
     "package": "vsce package",
     "publish": "vsce publish"
   },
   "devDependencies": {
-    "@types/node": "16.x",
     "@types/vscode": "^1.74.0",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
+    "@types/node": "16.x",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/parser": "^5.42.0",
     "eslint": "^8.26.0",
-    "mocha": "^10.1.0",
-    "proxyquire": "^2.1.3",
     "typescript": "^4.8.4",
-    "vsce": "^2.15.0"
+    "vsce": "^2.7.0"
   },
+  "dependencies": {},
   "extensionDependencies": [],
   "extensionPack": [],
-  "preview": false,
+  "badges": [
+    {
+      "description": "Version",
+      "url": "https://img.shields.io/badge/version-1.5.1-blue.svg",
+      "href": "https://github.com/WulfForge/Cursor-FailSafe/releases"
+    },
+    {
+      "description": "License",
+      "url": "https://img.shields.io/badge/license-MIT-green.svg",
+      "href": "https://github.com/WulfForge/Cursor-FailSafe/blob/main/LICENSE"
+    }
+  ],
   "markdown": "github",
-  "qna": "marketplace"
+  "preview": false,
+  "qna": "https://github.com/WulfForge/Cursor-FailSafe/issues"
 }
