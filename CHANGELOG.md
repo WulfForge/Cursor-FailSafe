@@ -24,6 +24,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Test environment detection
 - Extension integration bugs
 
+## [1.4.1] - 2025-06-13
+
+### Added
+- **Custom Failsafe Suggestions**: Intelligent suggestion system for user-defined custom failsafes
+  - Context-aware analysis based on file type, current task, selected text, and workspace
+  - Relevance scoring algorithm that considers multiple factors
+  - Smart prioritization of less recently used failsafes
+  - Integration with Configuration tab in dashboard
+  - Detailed failsafe information display with usage statistics
+- **Failsafe Usage Tracking**: Automatic tracking of failsafe usage patterns
+  - Usage count and last used timestamps
+  - Preference for suggesting unused or rarely used failsafes
+  - Action logging for applied suggestions
+- **Suggest Failsafe to Core**: Users can now propose their custom failsafes for inclusion in the core extension
+  - Accessible via the Configuration tab or the command palette
+  - Opens a form to provide rationale, use cases, and implementation notes
+  - Submits a pre-filled GitHub issue to the FailSafe repository for review
+
+### Changed
+- **Version Update**: Updated to version 1.4.1 to reflect new custom failsafe features
+- **Configuration Tab**: Added "Suggest Custom Failsafe" button for easy access
+
+### Technical
+- **Relevance Algorithm**: Multi-factor scoring system for failsafe suggestions
+- **Context Analysis**: Real-time analysis of current development context
+- **UI Integration**: Seamless integration with existing dashboard and command system
+- **Data Access**: Added public getter for user failsafes to support external access
+
+## [1.4.0] - 2025-06-13
+
+### Added
+- **Unified Webview with Tabs**: Consolidated all functionality into a single webview with organized tabs
+  - Dashboard tab: Main overview with status cards, current task, progress, and recommendations
+  - **Project Plan tab: Full project plan management with workspace association**
+  - Testing tab: Development and testing commands with purple theme
+  - Configuration tab: Failsafe configuration and project management tools
+  - Status tab: Detailed status information and deviation tracking
+- **Simplified Sidebar**: Streamlined sidebar to show only essential information
+  - FailSafe Status with color-coded indicators
+  - Project State showing current task
+  - Plan Status with validation state
+  - Launch Dashboard link for quick access
+- **Enhanced Status Cards**: Visual status overview with icons and descriptions
+- **Improved Tab Navigation**: Clean tab interface with smooth transitions
+- **Project Plan Management**: Complete project plan system with workspace association
+  - Full plan view with task details and status
+  - Plan validation with rule-based and AI-powered checks
+  - Plan statistics and progress tracking
+  - Direct editing integration
+
+### Changed
+- **App Name**: Updated to "FailSafe: AI Development Extension"
+- **Description**: Updated to "Time-aware, validation-driven AI development assistant, by MythologIQ. **Beta**"
+- **Dashboard Redesign**: Complete overhaul of dashboard layout and functionality
+- **Sidebar Simplification**: Removed redundant sections, focused on core status information
+- **Version Update**: Updated to version 1.4.0 to reflect major UI redesign
+
+### Technical
+- **Webview Architecture**: Unified webview approach for better user experience
+- **CSS Improvements**: Enhanced styling with better visual hierarchy
+- **JavaScript Enhancements**: Improved tab switching and command execution
+- **Workspace Integration**: Project plans now associated with current workspace
+- **Command Integration**: Added create and edit project plan commands
+- **Date Validation**: Added comprehensive date format validation to catch errors like incorrect dates in documentation
+- **Hangup Detection**: Added intelligent hangup detection for documentation and general tasks with proactive intervention
+- **Problem Reporting**: Added integrated GitHub issue reporting with pre-filled system information and structured forms
+- **Threshold Optimization**: Reduced hangup detection thresholds to 5 minutes for documentation tasks and 2-minute check intervals
+
 ## [1.3.8] - 2025-01-13
 
 ### Added

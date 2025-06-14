@@ -40,6 +40,13 @@ export class Validator {
         'foo', 'bar', 'baz', 'abc', '1234', 'test', 'sample'
     ];
 
+    private readonly datePatterns = [
+        /## \[[\d.]+\] - \d{4}-\d{2}-\d{2}/g, // CHANGELOG date format
+        /\d{4}-\d{2}-\d{2}/g, // General date format
+        /Start Date.*\d{4}-\d{2}-\d{2}/g, // Project plan dates
+        /Date.*\d{4}-\d{2}-\d{2}/g // Any date references
+    ];
+
     private readonly performanceAntiPatterns = [
         'O(n²)', 'O(n³)', 'nested loops', 'recursion without base case',
         'memory leak', 'infinite loop', 'blocking operation'
@@ -54,6 +61,9 @@ export class Validator {
     private projectPlan: ProjectPlan;
     private extensionDetector: ExtensionDetector;
     private validationHistory: Map<string, ValidationResult> = new Map();
+    private readonly currentDate = new Date();
+    private readonly maxFutureDays = 365; // Allow up to 1 year in future
+    private readonly maxPastDays = 3650; // Allow up to 10 years in past
 
     constructor(logger: Logger, projectPlan: ProjectPlan) {
         this.logger = logger;
@@ -766,7 +776,13 @@ Please provide a JSON response with the following structure:
             suggestions.push(...extensionResult.suggestions);
         }
 
-        // 3. Existing validation logic
+        // 3. Date validation
+        const dateResult = this.validateDates(request);
+        errors.push(...dateResult.errors);
+        warnings.push(...dateResult.warnings);
+        suggestions.push(...dateResult.suggestions);
+
+        // 4. Existing validation logic
         const feasibility = this.validateEnvironmentFeasibility(request);
         if (!feasibility.isFeasible) {
             feasibility.blockers.forEach(blocker => {
@@ -780,7 +796,7 @@ Please provide a JSON response with the following structure:
             suggestions.push(...feasibility.recommendations);
         }
 
-        // 4. Mock data detection
+        // 5. Mock data detection
         const mockResult = this.detectMockData(request);
         if (!mockResult.isValid) {
             errors.push(...mockResult.errors);
@@ -833,6 +849,92 @@ Please provide a JSON response with the following structure:
                 category: 'mock_data'
             });
             suggestions.push('Use real data and APIs instead of mock implementations');
+        }
+
+        return {
+            isValid: errors.length === 0,
+            errors,
+            warnings,
+            suggestions
+        };
+    }
+
+    private validateDates(content: string): ValidationResult {
+        const errors: ValidationError[] = [];
+        const warnings: ValidationWarning[] = [];
+        const suggestions: string[] = [];
+
+        for (const pattern of this.datePatterns) {
+            const matches = content.match(pattern);
+            if (matches) {
+                for (const match of matches) {
+                    const dateMatch = match.match(/\d{4}-\d{2}-\d{2}/);
+                    if (dateMatch) {
+                        const dateStr = dateMatch[0];
+                        const date = new Date(dateStr);
+                        
+                        // Check if date is valid
+                        if (isNaN(date.getTime())) {
+                            errors.push({
+                                type: 'syntax',
+                                message: `Invalid date format: ${dateStr}`,
+                                severity: 'error',
+                                category: 'date'
+                            });
+                            suggestions.push(`Fix the date format: ${dateStr} should be in YYYY-MM-DD format`);
+                            continue;
+                        }
+
+                        // Check if date is in reasonable range
+                        const daysDiff = Math.floor((date.getTime() - this.currentDate.getTime()) / (1000 * 60 * 60 * 24));
+                        
+                        if (daysDiff > this.maxFutureDays) {
+                            errors.push({
+                                type: 'hallucination',
+                                message: `Date too far in future: ${dateStr} (${daysDiff} days ahead)`,
+                                severity: 'error',
+                                category: 'date'
+                            });
+                            suggestions.push(`Consider using a more realistic date for ${dateStr}`);
+                        } else if (daysDiff < -this.maxPastDays) {
+                            warnings.push({
+                                type: 'quality',
+                                message: `Date very far in past: ${dateStr} (${Math.abs(daysDiff)} days ago)`,
+                                category: 'date'
+                            });
+                        } else if (daysDiff < -30) { // More than 30 days in past
+                            errors.push({
+                                type: 'hallucination',
+                                message: `Date too far in past: ${dateStr} (${Math.abs(daysDiff)} days ago)`,
+                                severity: 'error',
+                                category: 'date'
+                            });
+                            suggestions.push(`Consider using a more recent date for ${dateStr}`);
+                        }
+
+                        // Check for common date errors (like month > 12, day > 31)
+                        const [year, month, day] = dateStr.split('-').map(Number);
+                        if (month > 12 || month < 1) {
+                            errors.push({
+                                type: 'syntax',
+                                message: `Invalid month in date: ${dateStr}`,
+                                severity: 'error',
+                                category: 'date'
+                            });
+                            suggestions.push(`Month should be between 01-12 in ${dateStr}`);
+                        }
+                        if (day > 31 || day < 1) {
+                            errors.push({
+                                type: 'syntax',
+                                message: `Invalid day in date: ${dateStr}`,
+                                severity: 'error',
+                                category: 'date'
+                            });
+                            suggestions.push(`Day should be between 01-31 in ${dateStr}`);
+                        }
+                    }
+                }
+            }
         }
 
         return {

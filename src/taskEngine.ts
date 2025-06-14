@@ -24,20 +24,24 @@ export interface TaskExecutionResult {
 export class TaskEngine {
     private projectPlan: ProjectPlan;
     private logger: Logger;
+    private ui: any; // UI interface for action logging and status updates
     private isActive = false;
     private checkInterval: NodeJS.Timeout | null = null;
     private readonly CHECK_INTERVAL_MS = 30000; // 30 seconds
-    private readonly OVERDUE_THRESHOLD_MS = 15 * 60 * 1000; // 15 minutes
-    private readonly STALL_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
+    private readonly OVERDUE_THRESHOLD_MS = 120 * 60 * 1000; // 2 hours
+    private readonly STALL_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
     private readonly MAX_RETRY_ATTEMPTS = 3;
     private readonly AUTO_RETRY_DELAY_MS = 5000; // 5 seconds
+    private readonly HANGUP_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes for documentation tasks
+    private readonly HANGUP_CHECK_INTERVAL_MS = 2 * 60 * 1000; // Check every 2 minutes
 
     // Track task execution contexts
     private executionContexts: Map<string, TaskExecutionContext> = new Map();
 
-    constructor(projectPlan: ProjectPlan, logger: Logger) {
+    constructor(projectPlan: ProjectPlan, logger: Logger, ui?: any) {
         this.projectPlan = projectPlan;
         this.logger = logger;
+        this.ui = ui;
     }
 
     public async initialize(): Promise<void> {
@@ -93,6 +97,9 @@ export class TaskEngine {
             // Check for blocked tasks
             const blockedNudges = this.checkBlockedTasks(tasks);
             nudges.push(...blockedNudges);
+
+            // Check for hangup detection
+            await this.detectHangup();
 
             // Process nudges
             await this.processNudges(nudges);
@@ -726,5 +733,120 @@ export class TaskEngine {
                 await this.projectPlan.blockTask(taskId, `Task timed out after ${Math.round(elapsed / 60000)} minutes`);
             }
         }
+    }
+
+    private async detectHangup(): Promise<void> {
+        const currentTask = this.projectPlan.getCurrentTask();
+        if (!currentTask) return;
+
+        const taskDuration = Date.now() - currentTask.startTime!.getTime();
+        const isDocumentationTask = this.isDocumentationTask(currentTask);
+        const hangupThreshold = isDocumentationTask ? this.HANGUP_THRESHOLD_MS : this.STALL_THRESHOLD_MS;
+
+        if (taskDuration > hangupThreshold) {
+            const hangupType = isDocumentationTask ? 'documentation' : 'general';
+            this.logger.warn(`Potential hangup detected on ${hangupType} task: ${currentTask.name}`, {
+                taskId: currentTask.id,
+                duration: taskDuration,
+                threshold: hangupThreshold
+            });
+
+            // Log to action log
+            this.ui.actionLog.push({
+                timestamp: new Date().toISOString(),
+                description: `🚨 Hangup detected on ${currentTask.name} (${Math.round(taskDuration / 60000)} minutes)`
+            });
+
+            // Show notification
+            vscode.window.showWarningMessage(
+                `FailSafe detected potential hangup on task: ${currentTask.name}. Consider taking a break or asking for help.`,
+                'Take Break', 'Ask for Help', 'Continue'
+            ).then(choice => {
+                switch (choice) {
+                    case 'Take Break':
+                        this.suggestBreak();
+                        break;
+                    case 'Ask for Help':
+                        this.suggestHelp(currentTask);
+                        break;
+                    case 'Continue':
+                        this.logger.info('User chose to continue despite hangup warning');
+                        break;
+                }
+            });
+
+            // Update status bar
+            this.ui.updateStatusBar('blocked');
+        }
+    }
+
+    private isDocumentationTask(task: Task): boolean {
+        const documentationKeywords = [
+            'documentation', 'changelog', 'readme', 'docs', 'comment', 'update',
+            'write', 'edit', 'format', 'style', 'polish', 'finalize'
+        ];
+        
+        const taskText = `${task.name} ${task.description}`.toLowerCase();
+        return documentationKeywords.some(keyword => taskText.includes(keyword));
+    }
+
+    private suggestBreak(): void {
+        vscode.window.showInformationMessage(
+            'Taking a short break can help clear your mind and improve productivity.',
+            'OK'
+        );
+        
+        this.ui.actionLog.push({
+            timestamp: new Date().toISOString(),
+            description: '💡 Break suggested due to hangup detection'
+        });
+    }
+
+    private suggestHelp(task: Task): void {
+        const helpOptions = [
+            'Ask AI for guidance',
+            'Review similar tasks',
+            'Break task into smaller parts',
+            'Check documentation'
+        ];
+
+        vscode.window.showQuickPick(helpOptions, {
+            placeHolder: 'Choose help option for: ' + task.name
+        }).then(choice => {
+            if (choice) {
+                this.ui.actionLog.push({
+                    timestamp: new Date().toISOString(),
+                    description: `🆘 Help requested: ${choice} for ${task.name}`
+                });
+                
+                // Execute appropriate help action
+                switch (choice) {
+                    case 'Ask AI for guidance':
+                        vscode.commands.executeCommand('failsafe.askAI');
+                        break;
+                    case 'Review similar tasks':
+                        vscode.commands.executeCommand('failsafe.showPlan');
+                        break;
+                    case 'Break task into smaller parts':
+                        this.suggestTaskBreakdown(task);
+                        break;
+                    case 'Check documentation':
+                        vscode.commands.executeCommand('failsafe.showPlan');
+                        break;
+                }
+            }
+        });
+    }
+
+    private suggestTaskBreakdown(task: Task): void {
+        vscode.window.showInformationMessage(
+            `Consider breaking "${task.name}" into smaller, more manageable subtasks.`,
+            'Create Subtasks', 'OK'
+        ).then(choice => {
+            if (choice === 'Create Subtasks') {
+                // This could open a task breakdown interface
+                vscode.window.showInformationMessage('Task breakdown feature coming soon!');
+            }
+        });
     }
 } 

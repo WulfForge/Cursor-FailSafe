@@ -2,14 +2,11 @@
   <img src="images/icon.png" width="128" alt="FailSafe Logo"/>
 </p>
 
-# FailSafe: AI Development Extension for Cursor
+# FailSafe: AI Development Extension
 
-**by [MythologIQ](https://www.MythologIQ.studio)**
+**Version 1.4.1** - Time-aware, validation-driven AI development assistant, by MythologIQ. **Beta**
 
-> Time-aware, validation-driven AI development assistant for Cursor.
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Website](https://img.shields.io/badge/MythologIQ-Website-blue)](https://www.MythologIQ.studio)
+[![License: MIT](https://img.shields.io/badge/License-Mit-green.svg)](LICENSE)
 
 ## 🎯 What is FailSafe?
 
@@ -21,6 +18,55 @@ FailSafe is a comprehensive development assistant that enhances AI-powered codin
 - **🧪 Test Integration**: Automatically runs tests to verify code changes
 - **🛡️ Extension Detection**: Prevents hallucination of unavailable extensions
 - **📊 Real-time Visibility**: Provides project status and accountability tracking
+
+## 🚀 Features
+
+### Core Functionality
+- **Proactive Status Bar**: Real-time workspace status with color-coded indicators
+- **Unified Dashboard**: Single webview with organized tabs for all functionality
+  - **Dashboard Tab**: Main overview with status cards, current task, progress tracking
+  - **Project Plan Tab**: Full project plan management with workspace association
+  - **Testing Tab**: Development and testing commands with purple theme
+  - **Configuration Tab**: Failsafe configuration and project management tools
+  - **Status Tab**: Detailed status information and deviation tracking
+- **Simplified Sidebar**: Essential status information at a glance
+  - FailSafe Status with color-coded indicators
+  - Project State showing current task
+  - Plan Status with validation state
+  - Quick access to Dashboard
+- **Project Plan Validation**: Rule-based and LLM-based plan validation
+- **Linear Progression Tracking**: Ensures tasks are completed in order
+- **Action Logging**: Comprehensive logging of all development activities
+- **Failsafe Configuration**: Built-in and user-defined failsafes
+- **Testing Integration**: Built-in testing commands and simulation tools
+- **Problem Reporting**: Direct GitHub issue integration for bug reports and feature requests
+- **Custom Failsafe Suggestions**: Intelligent suggestion system for user-defined failsafes
+- **Suggest Failsafe to Core**: Users can now propose their custom failsafes for inclusion in the core extension. This feature allows you to select one of your user-defined failsafes, fill out a rationale and details, and submit a pre-filled GitHub issue to the FailSafe repository for review by the maintainers.
+
+### Dashboard Features
+- **Status Cards**: Visual overview of system status, project state, plan status, and progress
+- **Current Task Display**: Real-time task information with status indicators
+- **Progress Tracking**: Visual progress bars and completion statistics
+- **Smart Recommendations**: Context-aware recommendations based on project state
+- **Quick Actions**: One-click access to common development tasks
+- **Report a Problem**: Integrated form for submitting issues directly to GitHub
+- **Failsafe Suggestions**: Context-aware suggestions for custom failsafes with relevance scoring
+
+### Project Plan Management
+- **Workspace Association**: Project plans are automatically associated with the current workspace
+- **Full Plan View**: Complete project plan display with task details and status
+- **Plan Validation**: Real-time validation with rule-based and AI-powered checks
+- **Plan Statistics**: Comprehensive statistics including task counts and progress
+- **Edit Integration**: Direct editing of project plans through the extension
+
+### Development Tools
+- **Simulation Commands**: Test FailSafe events and functionality
+- **Plan Validation**: AI-powered project plan validation
+- **Code Validation**: Automated code quality checks
+- **Refactoring Tools**: AI-assisted code refactoring
+- **Session Logging**: Comprehensive development session tracking
+- **Hangup Detection**: Intelligent detection of productivity blocks with proactive intervention
+- **Custom Failsafe Intelligence**: Smart suggestions based on current context and usage patterns
 
 ## ✨ Key Features
 
@@ -100,6 +146,7 @@ npm run compile
 - `failsafe.forceLinearProgression` - Force advance to next task
 - `failsafe.autoAdvance` - Auto-advance if ready
 - `failsafe.showActionLog` - Show action log
+- `failsafe.suggestToCore` - Suggest a custom failsafe for inclusion in the core extension (opens a form and submits to GitHub)
 
 ### Configuration
 ```json

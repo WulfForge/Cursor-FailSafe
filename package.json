@@ -1,8 +1,8 @@
 {
   "name": "failsafe-cursor",
-  "displayName": "FailSafe: AI Development Extension for Cursor",
-  "description": "Time-aware, validation-driven AI development assistant for Cursor. By MythologIQ.",
-  "version": "1.3.8",
+  "displayName": "FailSafe: AI Development Extension",
+  "description": "Time-aware, validation-driven AI development assistant, by MythologIQ. **Beta**",
+  "version": "1.4.1",
   "publisher": "MythologIQ",
   "engines": {
     "vscode": "^1.74.0"
@@ -141,6 +141,31 @@
         "command": "failsafe.showFailsafeConfig",
         "title": "FailSafe: Show Failsafe Configuration",
         "category": "FailSafe"
+      },
+      {
+        "command": "failsafe.createProjectPlan",
+        "title": "FailSafe: Create Project Plan",
+        "category": "FailSafe"
+      },
+      {
+        "command": "failsafe.editProjectPlan",
+        "title": "FailSafe: Edit Project Plan",
+        "category": "FailSafe"
+      },
+      {
+        "command": "failsafe.reportProblem",
+        "title": "FailSafe: Report a Problem",
+        "category": "FailSafe"
+      },
+      {
+        "command": "failsafe.suggestFailsafe",
+        "title": "FailSafe: Suggest Custom Failsafe",
+        "category": "FailSafe"
+      },
+      {
+        "command": "failsafe.suggestToCore",
+        "title": "FailSafe: Suggest Failsafe to Core",
+        "category": "FailSafe"
       }
     ],
     "configuration": {
@@ -270,7 +295,28 @@
           "command": "failsafe.validatePlanWithAI"
         },
         {
-          "command": "failsafe.showFailsafeConfig"
+          "command": "failsafe.showFailsafeConfig",
+          "when": "true"
+        },
+        {
+          "command": "failsafe.createProjectPlan",
+          "when": "true"
+        },
+        {
+          "command": "failsafe.editProjectPlan",
+          "when": "true"
+        },
+        {
+          "command": "failsafe.reportProblem",
+          "when": "true"
+        },
+        {
+          "command": "failsafe.suggestFailsafe",
+          "when": "true"
+        },
+        {
+          "command": "failsafe.suggestToCore",
+          "when": "true"
         }
       ]
     },

@@ -71,49 +71,10 @@ class FailSafeSidebarProvider implements vscode.TreeDataProvider<FailSafeTreeIte
         if (!element) {
             const items: FailSafeTreeItem[] = [];
             
-            // Project Setup section
-            items.push(new FailSafeTreeItem('📁 Project Setup', vscode.TreeItemCollapsibleState.None));
-            
-            // Plan validation with improved logic
+            // Get plan validation status
             const planValidation = await this.ui.projectPlan.validatePlan();
-            let planColor = '🟢';
-            let planStatus = planValidation.status.toUpperCase();
             
-            // Improved plan status logic
-            if (planValidation.status === 'missing') {
-                planColor = '🔴';
-                planStatus = 'MISSING';
-            } else if (planValidation.status === 'invalid') {
-                planColor = '🔴';
-                planStatus = 'INVALID';
-            } else if (planValidation.status === 'empty') {
-                planColor = '🟡';
-                planStatus = 'READY TO START';
-            } else if (planValidation.status === 'complete') {
-                planColor = '🟢';
-                planStatus = 'COMPLETE';
-            } else if (planValidation.status === 'in_progress') {
-                planColor = '🟡';
-                planStatus = 'IN PROGRESS';
-            }
-            
-            // Add LLM validation status
-            if (!planValidation.llmIsCurrent && planValidation.status !== 'missing') {
-                planColor = '🟡';
-                planStatus += ' (NEEDS AI VALIDATION)';
-            }
-            
-            items.push(new FailSafeTreeItem(`${planColor} Plan: ${planStatus}`));
-            
-            if (!planValidation.llmIsCurrent && planValidation.status !== 'missing') {
-                items.push(new FailSafeTreeItem('🤖 Validate Plan with AI', vscode.TreeItemCollapsibleState.None, {
-                    command: 'failsafe.validatePlanWithAI',
-                    title: 'Validate Plan with AI',
-                    arguments: []
-                }));
-            }
-            
-            // Status with proper icons
+            // FailSafe Status
             let statusIcon = '🟢';
             let statusText = this.ui.statusBarState.toUpperCase();
             
@@ -132,34 +93,69 @@ class FailSafeSidebarProvider implements vscode.TreeDataProvider<FailSafeTreeIte
                     break;
             }
             
-            items.push(new FailSafeTreeItem(`${statusIcon} Status: ${statusText}`));
+            items.push(new FailSafeTreeItem(`${statusIcon} FailSafe Status: ${statusText}`));
             
-            // Failsafe Configuration entry
-            items.push(new FailSafeTreeItem('⚙️ Failsafe Configuration', vscode.TreeItemCollapsibleState.None, {
-                command: 'failsafe.showFailsafeConfig',
-                title: 'Failsafe Configuration',
-                arguments: []
-            }));
+            // Project State
+            const dashboard = this.ui.getDashboardData();
+            const currentTask = dashboard.currentTask;
+            let projectState = 'No active task';
+            let projectIcon = '⚪';
             
-            // Recent actions
-            const recent = this.ui.actionLog.slice(-5).reverse();
-            if (recent.length > 0) {
-                items.push(new FailSafeTreeItem('📋 Recent Actions', vscode.TreeItemCollapsibleState.Collapsed));
+            if (currentTask) {
+                projectState = currentTask.name;
+                switch (currentTask.status) {
+                    case 'in_progress':
+                        projectIcon = '🔄';
+                        break;
+                    case 'completed':
+                        projectIcon = '✅';
+                        break;
+                    case 'blocked':
+                        projectIcon = '❌';
+                        break;
+                    case 'delayed':
+                        projectIcon = '⚠️';
+                        break;
+                    default:
+                        projectIcon = '⏳';
+                }
             }
             
-            // Show Dashboard button
-            items.push(new FailSafeTreeItem('📊 Show Dashboard', vscode.TreeItemCollapsibleState.None, {
+            items.push(new FailSafeTreeItem(`${projectIcon} Project State: ${projectState}`));
+            
+            // Plan Status
+            let planIcon = '🟢';
+            let planText = planValidation.status.toUpperCase();
+            
+            if (planValidation.status === 'missing') {
+                planIcon = '🔴';
+                planText = 'MISSING';
+            } else if (planValidation.status === 'invalid') {
+                planIcon = '🔴';
+                planText = 'INVALID';
+            } else if (planValidation.status === 'empty') {
+                planIcon = '🟡';
+                planText = 'READY TO START';
+            } else if (planValidation.status === 'complete') {
+                planIcon = '🟢';
+                planText = 'COMPLETE';
+            } else if (planValidation.status === 'in_progress') {
+                planIcon = '🟡';
+                planText = 'IN PROGRESS';
+            }
+            
+            items.push(new FailSafeTreeItem(`${planIcon} Plan Status: ${planText}`));
+            
+            // Dashboard link
+            items.push(new FailSafeTreeItem('📊 Launch Dashboard', vscode.TreeItemCollapsibleState.None, {
                 command: 'failsafe.showDashboard',
-                title: 'Show Dashboard',
+                title: 'Launch Dashboard',
                 arguments: []
             }));
             
             return Promise.resolve(items);
-        } else if (element.label === '📋 Recent Actions') {
-            return Promise.resolve(
-                this.ui.actionLog.slice(-5).reverse().map(a => new FailSafeTreeItem(`${a.timestamp}: ${a.description}`))
-            );
         }
+        
         return Promise.resolve([]);
     }
 }
@@ -187,6 +183,10 @@ export class UI {
         this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
         this.progressBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
         this.accountabilityItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98);
+    }
+
+    public getUserFailsafes(): { name: string; description: string; enabled: boolean }[] {
+        return this.userFailsafes;
     }
 
     public async initialize(): Promise<void> {
@@ -509,7 +509,7 @@ export class UI {
             priority: 'high',
             startTime: new Date(Date.now() - 49 * 60 * 1000), // 49 minutes ago
             estimatedDuration: 120,
-            description: 'Developing and improving FailSafe extension features, currently on version 1.3.6'
+            description: 'Developing and improving FailSafe extension features, currently on version 1.4.0'
         };
 
         // Generate meaningful recommendations based on actual state
@@ -609,7 +609,7 @@ export class UI {
         }
         
         .dashboard-container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
@@ -622,7 +622,6 @@ export class UI {
             color: white;
             padding: 30px;
             text-align: center;
-            position: relative;
         }
         
         .header-content {
@@ -683,28 +682,39 @@ export class UI {
             font-style: italic;
         }
         
-        .status-bar {
+        .tabs {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
             background: #ecf0f1;
-            padding: 15px 30px;
             border-bottom: 1px solid #bdc3c7;
         }
         
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .tab {
+            padding: 15px 25px;
+            background: #ecf0f1;
+            border: none;
+            cursor: pointer;
             font-weight: 500;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
         }
         
-        .status-active { color: #27ae60; }
-        .status-warning { color: #f39c12; }
-        .status-error { color: #e74c3c; }
+        .tab.active {
+            background: white;
+            border-bottom-color: #3498db;
+            color: #2c3e50;
+        }
         
-        .content {
+        .tab:hover {
+            background: #d5dbdb;
+        }
+        
+        .tab-content {
+            display: none;
             padding: 30px;
+        }
+        
+        .tab-content.active {
+            display: block;
         }
         
         .section {
@@ -876,6 +886,57 @@ export class UI {
         .testing-section .action-button:hover {
             background: linear-gradient(135deg, #8e44ad, #7d3c98);
         }
+        
+        .config-section {
+            border-left-color: #f39c12;
+        }
+        
+        .config-section h2 {
+            color: #d68910;
+        }
+        
+        .config-section .action-button {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+        
+        .config-section .action-button:hover {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .status-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #3498db;
+        }
+        
+        .status-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-value {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .status-description {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -890,27 +951,44 @@ export class UI {
                 </div>
                 <div>
                     <h1>FailSafe Dashboard</h1>
-                    <div class="header-subtitle">by MythologIQ</div>
+                    <div class="header-subtitle">by MythologIQ - Version 1.4.0</div>
                 </div>
             </div>
         </div>
         
-        <div class="status-bar">
-            <div class="status-item">
-                <span class="status-active">🟢</span>
-                <span>System Status: ACTIVE</span>
-            </div>
-            <div class="status-item">
-                <span>⏰</span>
-                <span>Last Activity: ${Math.round(accountability.timeSinceLastActivity / 60000)} minutes ago</span>
-            </div>
-            <div class="status-item">
-                <span>📊</span>
-                <span>Progress: ${Math.max(linearProgress.totalProgress, 25)}%</span>
-            </div>
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
+            <button class="tab" onclick="showTab('project-plan')">📋 Project Plan</button>
+            <button class="tab" onclick="showTab('testing')">🧪 Testing</button>
+            <button class="tab" onclick="showTab('configuration')">⚙️ Configuration</button>
+            <button class="tab" onclick="showTab('status')">📈 Status</button>
         </div>
         
-        <div class="content">
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="status-grid">
+                <div class="status-card">
+                    <h3>🛡️ FailSafe Status</h3>
+                    <div class="status-value">${this.getSystemStatusIcon()} ${this.getSystemStatusText()}</div>
+                    <div class="status-description">System operational status</div>
+                </div>
+                <div class="status-card">
+                    <h3>📋 Project State</h3>
+                    <div class="status-value">${actualCurrentTask.name}</div>
+                    <div class="status-description">Current development task</div>
+                </div>
+                <div class="status-card">
+                    <h3>📋 Plan Status</h3>
+                    <div class="status-value">${planColor} ${planStatus}</div>
+                    <div class="status-description">Project plan validation</div>
+                </div>
+                <div class="status-card">
+                    <h3>📊 Progress</h3>
+                    <div class="status-value">${Math.max(linearProgress.totalProgress, 25)}%</div>
+                    <div class="status-description">Overall project progress</div>
+                </div>
+            </div>
+            
             <!-- Current Task Section -->
             <div class="section">
                 <h2>📋 Current Task</h2>
@@ -932,30 +1010,6 @@ export class UI {
                         <div class="detail-item">
                             <div class="detail-label">Estimated</div>
                             <div class="detail-value">${actualCurrentTask.estimatedDuration} minutes</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Plan Status Section -->
-            <div class="section">
-                <h2>📋 Plan Status</h2>
-                <div class="task-card plan-status ${planValidation.status === 'invalid' ? 'invalid' : planValidation.status === 'in_progress' ? 'warning' : ''}">
-                    <div class="task-header">
-                        <div class="task-name">${planColor} Plan Status: ${planStatus}</div>
-                    </div>
-                    <div class="task-details">
-                        <div class="detail-item">
-                            <div class="detail-label">Rule-based Validation</div>
-                            <div class="detail-value">${planValidation.ruleResults.join(' ')}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">LLM Review</div>
-                            <div class="detail-value">${planValidation.llmResults ? `${planValidation.llmResults.grade} (${planValidation.llmResults.score}/100)` : 'Not available'}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">LLM Status</div>
-                            <div class="detail-value">${planValidation.llmIsCurrent ? '✅ Current' : '⚠️ Outdated'}</div>
                         </div>
                     </div>
                 </div>
@@ -1000,8 +1054,84 @@ export class UI {
                 </div>
             </div>
             
-            <!-- Quick Actions -->
+            <!-- Report a Problem -->
             <div class="section">
+                <h2>🆘 Report a Problem</h2>
+                <div style="text-align: center; padding: 20px;">
+                    <p style="margin-bottom: 20px; color: #6c757d;">Found a bug or have a suggestion? Help us improve FailSafe!</p>
+                    <button class="action-button" onclick="executeCommand('failsafe.reportProblem')" style="background: linear-gradient(135deg, #e74c3c, #c0392b); font-size: 1.1em; padding: 15px 30px;">
+                        🐛 Report a Problem
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Project Plan Tab -->
+        <div id="project-plan" class="tab-content">
+            <div class="section">
+                <h2>📋 Full Project Plan</h2>
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div>
+                            <h3 style="color: #2c3e50; margin-bottom: 5px;">Workspace: ${this.getWorkspaceName()}</h3>
+                            <p style="color: #6c757d; font-size: 0.9em;">Project plan associated with current workspace</p>
+                        </div>
+                        <button class="action-button" onclick="executeCommand('failsafe.editProjectPlan')" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
+                            ✏️ Edit Plan
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="plan-content">
+                    ${this.generateProjectPlanContent()}
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🔍 Plan Validation</h2>
+                <div class="validation-results">
+                    ${this.generatePlanValidationContent(planValidation)}
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📊 Plan Statistics</h2>
+                <div class="task-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Total Tasks</div>
+                        <div class="detail-value">${this.getPlanTaskCount()}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Completed</div>
+                        <div class="detail-value">${this.getCompletedTaskCount()}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">In Progress</div>
+                        <div class="detail-value">${this.getInProgressTaskCount()}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Remaining</div>
+                        <div class="detail-value">${this.getRemainingTaskCount()}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Testing Tab -->
+        <div id="testing" class="tab-content">
+            <div class="section testing-section">
+                <h2>🧪 Testing & Development</h2>
+                <div class="quick-actions">
+                    <button class="action-button" onclick="executeCommand('failsafe.simulateEvent')">Simulate FailSafe Event</button>
+                    <button class="action-button" onclick="executeCommand('failsafe.showActionLog')">Show Action Log</button>
+                    <button class="action-button" onclick="executeCommand('failsafe.viewSessionLog')">View Session Log</button>
+                    <button class="action-button" onclick="executeCommand('failsafe.markTaskComplete')">Mark Task Complete</button>
+                    <button class="action-button" onclick="executeCommand('failsafe.retryLastTask')">Retry Last Task</button>
+                    <button class="action-button" onclick="executeCommand('failsafe.validatePlanWithAI')">Validate Plan with AI</button>
+                </div>
+            </div>
+            
+            <div class="section testing-section">
                 <h2>🎮 Quick Actions</h2>
                 <div class="quick-actions">
                     <button class="action-button" onclick="executeCommand('failsafe.forceLinearProgression')">Force Linear Progression</button>
@@ -1009,20 +1139,54 @@ export class UI {
                     <button class="action-button" onclick="executeCommand('failsafe.showProgress')">Show Progress</button>
                     <button class="action-button" onclick="executeCommand('failsafe.showAccountability')">Show Accountability</button>
                     <button class="action-button" onclick="executeCommand('failsafe.showFeasibility')">Show Feasibility</button>
-                    ${!planValidation.llmIsCurrent ? '<button class="action-button" onclick="executeCommand(\'failsafe.validatePlanWithAI\')">Validate Plan with AI</button>' : ''}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Configuration Tab -->
+        <div id="configuration" class="tab-content">
+            <div class="section config-section">
+                <h2>⚙️ Failsafe Configuration</h2>
+                <div class="quick-actions">
+                    <button class="action-button" onclick="executeCommand('failsafe.showFailsafeConfig')">Show Failsafe Config</button>
+                    <button class="action-button" onclick="executeCommand('failsafe.suggestFailsafe')">Suggest Custom Failsafe</button>
+                    <button class="action-button" onclick="executeCommand('failsafe.suggestToCore')">Suggest to Core</button>
+                    <button class="action-button" onclick="executeCommand('failsafe.askAI')">Ask AI</button>
+                    <button class="action-button" onclick="executeCommand('failsafe.refactor')">Refactor Code</button>
+                    <button class="action-button" onclick="executeCommand('failsafe.validate')">Validate Code</button>
+                    <button class="action-button" onclick="executeCommand('failsafe.showPlan')">Show Project Plan</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Status Tab -->
+        <div id="status" class="tab-content">
+            <div class="section">
+                <h2>📈 Detailed Status</h2>
+                <div class="task-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Last Activity</div>
+                        <div class="detail-value">${Math.round(accountability.timeSinceLastActivity / 60000)} minutes ago</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Current Task Duration</div>
+                        <div class="detail-value">${accountability.currentTaskDuration ? Math.round(accountability.currentTaskDuration / 60000) : 0} minutes</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Overdue Tasks</div>
+                        <div class="detail-value">${accountability.overdueTasks.length}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Feasibility</div>
+                        <div class="detail-value">${this.getFeasibilityStatus(feasibility.feasibility)}</div>
+                    </div>
                 </div>
             </div>
             
-            <!-- Testing Section -->
-            <div class="section testing-section">
-                <h2>🧪 Testing & Development</h2>
-                <div class="quick-actions">
-                    <button class="action-button" onclick="executeCommand('failsafe.simulateEvent')">Simulate FailSafe Event</button>
-                    <button class="action-button" onclick="executeCommand('failsafe.showFailsafeConfig')">Show Failsafe Config</button>
-                    <button class="action-button" onclick="executeCommand('failsafe.showActionLog')">Show Action Log</button>
-                    <button class="action-button" onclick="executeCommand('failsafe.viewSessionLog')">View Session Log</button>
-                    <button class="action-button" onclick="executeCommand('failsafe.markTaskComplete')">Mark Task Complete</button>
-                    <button class="action-button" onclick="executeCommand('failsafe.retryLastTask')">Retry Last Task</button>
+            <div class="section">
+                <h2>🚨 Deviations & Issues</h2>
+                <div>
+                    ${deviations.length > 0 ? deviations.map(d => `- ⚠️ ${d}`).join('\n') : '✅ No deviations detected'}
                 </div>
             </div>
         </div>
@@ -1030,6 +1194,22 @@ export class UI {
     
     <script>
         const vscode = acquireVsCodeApi();
+        
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
         
         function executeCommand(command) {
             vscode.postMessage({
@@ -1214,7 +1394,7 @@ export class UI {
             case 'active': return '🟢';
             case 'validating': return '🟡';
             case 'blocked': return '🔴';
-            default: return '🟢';
+            default: return '⚪';
         }
     }
 
@@ -1223,7 +1403,7 @@ export class UI {
             case 'active': return 'ACTIVE';
             case 'validating': return 'VALIDATING';
             case 'blocked': return 'BLOCKED';
-            default: return 'ACTIVE';
+            default: return 'UNKNOWN';
         }
     }
 
@@ -1453,5 +1633,127 @@ export class UI {
                 editIndex = null;
             }
         });
+    }
+
+    private getWorkspaceName(): string {
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (workspaceFolders && workspaceFolders.length > 0) {
+            return workspaceFolders[0].name;
+        }
+        return 'No Workspace';
+    }
+
+    private generateProjectPlanContent(): string {
+        const tasks = this.projectPlan.getAllTasks();
+        if (!tasks || tasks.length === 0) {
+            return `
+                <div style="text-align: center; padding: 40px; color: #6c757d;">
+                    <div style="font-size: 3em; margin-bottom: 20px;">📋</div>
+                    <h3 style="margin-bottom: 10px;">No Project Plan Found</h3>
+                    <p style="margin-bottom: 20px;">Create a project plan to get started with your development workflow.</p>
+                    <button class="action-button" onclick="executeCommand('failsafe.createProjectPlan')" style="background: linear-gradient(135deg, #3498db, #2980b9);">
+                        Create Project Plan
+                    </button>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="plan-tasks">
+                ${tasks.map((task: any, index: number) => `
+                    <div class="task-card ${task.status === 'completed' ? 'completed' : task.status === 'in_progress' ? 'in-progress' : ''}" style="margin-bottom: 15px;">
+                        <div class="task-header">
+                            <div class="task-name">
+                                <span style="font-weight: 600; color: #2c3e50;">${index + 1}. ${task.name}</span>
+                                ${task.priority === 'high' ? ' 🔴' : task.priority === 'medium' ? ' 🟡' : ' 🟢'}
+                            </div>
+                            <div class="task-status status-${task.status}">${this.getStatusIcon(task.status)} ${task.status.replace('_', ' ').toUpperCase()}</div>
+                        </div>
+                        <p style="margin: 10px 0; color: #6c757d;">${task.description || 'No description provided'}</p>
+                        <div class="task-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Priority</div>
+                                <div class="detail-value">${task.priority}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Estimated Duration</div>
+                                <div class="detail-value">${task.estimatedDuration || 'Not set'} minutes</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Dependencies</div>
+                                <div class="detail-value">${task.dependencies ? task.dependencies.join(', ') : 'None'}</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    private generatePlanValidationContent(planValidation: any): string {
+        return `
+            <div class="validation-card" style="background: ${planValidation.status === 'valid' ? '#d4edda' : planValidation.status === 'invalid' ? '#f8d7da' : '#fff3cd'}; border-radius: 10px; padding: 20px; margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h4 style="color: #2c3e50; margin: 0;">Overall Validation Status</h4>
+                    <span style="font-weight: 600; color: ${planValidation.status === 'valid' ? '#155724' : planValidation.status === 'invalid' ? '#721c24' : '#856404'};">
+                        ${this.getValidationStatusIcon(planValidation.status)} ${planValidation.status.toUpperCase()}
+                    </span>
+                </div>
+                
+                <div class="validation-details">
+                    <div style="margin-bottom: 10px;">
+                        <strong>Rule-based Validation:</strong> ${planValidation.ruleResults.join(', ')}
+                    </div>
+                    ${planValidation.llmResults ? `
+                        <div style="margin-bottom: 10px;">
+                            <strong>AI Validation:</strong> ${planValidation.llmResults.grade} (${planValidation.llmResults.score}/100)
+                        </div>
+                    ` : ''}
+                    <div>
+                        <strong>LLM Status:</strong> ${planValidation.llmIsCurrent ? '✅ Current' : '⚠️ Outdated'}
+                    </div>
+                </div>
+            </div>
+            
+            ${!planValidation.llmIsCurrent ? `
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="action-button" onclick="executeCommand('failsafe.validatePlanWithAI')" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+                        🤖 Validate with AI
+                    </button>
+                </div>
+            ` : ''}
+        `;
+    }
+
+    private getValidationStatusIcon(status: string): string {
+        switch (status) {
+            case 'valid': return '✅';
+            case 'invalid': return '❌';
+            case 'warning': return '⚠️';
+            default: return '❓';
+        }
+    }
+
+    private getPlanTaskCount(): number {
+        const tasks = this.projectPlan.getAllTasks();
+        return tasks ? tasks.length : 0;
+    }
+
+    private getCompletedTaskCount(): number {
+        const tasks = this.projectPlan.getAllTasks();
+        if (!tasks) return 0;
+        return tasks.filter((task: any) => task.status === 'completed').length;
+    }
+
+    private getInProgressTaskCount(): number {
+        const tasks = this.projectPlan.getAllTasks();
+        if (!tasks) return 0;
+        return tasks.filter((task: any) => task.status === 'in_progress').length;
+    }
+
+    private getRemainingTaskCount(): number {
+        const tasks = this.projectPlan.getAllTasks();
+        if (!tasks) return 0;
+        return tasks.filter((task: any) => task.status !== 'completed').length;
     }
 } 
