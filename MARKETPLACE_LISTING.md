@@ -4,27 +4,28 @@ A VS Code/Cursor extension that validates AI chat responses for hallucinations a
 
 ## What This Extension Does
 
-FailSafe validates existing chat content after AI responses are generated. It does NOT intercept AI requests or validate responses in real-time (this is not possible in VS Code extensions).
+FailSafe validates existing chat content after AI responses are generated. It does **NOT** intercept, block, or modify AI responses in real-time, nor does it enforce or guarantee safety, quality, or performance. These are not possible in VS Code/Cursor extensions.
 
 ## Features
 
-### Chat Content Validation
-- Validate AI chat responses for hallucinations and false claims
+- Validate AI chat responses for hallucinations and false claims (after the fact)
 - Detect code blocks with syntax errors, placeholder content, and security issues
 - Verify file references mentioned in chat content actually exist
-- Check command claims and implementation assertions
-- Identify hallucination patterns in AI responses
+- Heuristically check command and implementation claims (cannot guarantee execution or correctness)
+- Identify common hallucination patterns in AI responses
 
-### Basic Project Management
+## Project Management
+
 - Simple dashboard with project status and progress tracking
 - Basic task management with linear progression
 - Progress monitoring with task completion tracking
-- Status bar integration with real-time project status
+- Status bar integration with project status
 
-### Development Safeguards
-- Code validation for security, quality, and performance issues
+## Development Safeguards
+
+- Code validation for security, quality, and performance issues (static analysis only)
 - Version management with consistency checking
-- Session logging for development accountability
+- Session logging for development accountability (not immutable)
 - Problem reporting with GitHub integration
 
 ## Quick Start
@@ -36,42 +37,12 @@ FailSafe validates existing chat content after AI responses are generated. It do
 
 ## Commands
 
-### Core Commands
-- Validate Chat Content - Validate AI chat responses for hallucinations
-- FailSafe: Validate Code - Validate current file or selection
-- FailSafe: Show Dashboard - Open project dashboard
-
-### Utility Commands
-- FailSafe: Report a Problem - Report issues to GitHub
-- FailSafe: Suggest Failsafe - Suggest custom failsafes
-- FailSafe: Check Version Consistency - Check version across files
-
-## Chat Content Validation
-
-### What It Validates:
-- Code Blocks: Syntax errors, placeholder content, security issues
-- File References: Verifies mentioned files actually exist in workspace
-- Command Claims: Checks if claimed commands are available
-- Implementation Claims: Validates claims about code implementations
-- Testing Claims: Verifies test execution and result claims
-- Hallucination Patterns: Detects common AI hallucination language
-
-### How to Use:
-1. Open a chat file or select chat content in any editor
-2. Run "Validate Chat Content" from the command palette
-3. Review the validation results in the webview panel
-
-### Example Validation Results:
-
-Errors (2)
-- File referenced but doesn't exist: src/nonexistent.ts
-- Potential hallucination detected: "I have implemented the feature"
-
-Warnings (1)
-- Command execution claimed but no evidence provided: npm install
-
-Suggestions (1)
-- Verify that src/nonexistent.ts exists in the workspace
+- Validate Chat Content: Validate AI chat responses for hallucinations
+- FailSafe: Validate Code: Validate current file or selection
+- FailSafe: Show Dashboard: Open project dashboard
+- FailSafe: Report a Problem: Report issues to GitHub
+- FailSafe: Suggest Failsafe: Suggest custom failsafes
+- FailSafe: Check Version Consistency: Check version across files
 
 ## Configuration
 
@@ -85,21 +56,23 @@ Configure FailSafe in your workspace settings:
 }
 ```
 
-## Important Notes
+## Important Limitations
 
-### What This Extension CANNOT Do:
-- Intercept AI requests in real-time
-- Validate AI responses as they're generated
-- Block unsafe AI responses automatically
-- Monitor AI model outputs directly
-- Provide real-time AI safety enforcement
+- **Cannot intercept, block, or modify AI responses in real-time**
+- **Cannot guarantee safety, quality, or performance**
+- **Cannot enforce accountability or provide immutable logs**
+- **Cannot automatically enforce or create failsafes**
+- **Cannot monitor AI model outputs directly**
+- **Cannot provide real-time AI safety enforcement**
+- **Can only validate and analyze after the fact**
 
-### What This Extension CAN Do:
-- Validate existing chat content for hallucinations
-- Check file references mentioned in chat
-- Detect code quality issues in chat responses
-- Identify false claims about implementations
-- Provide post-processing validation with detailed reports
+## What This Extension CAN Do
+
+- Validate existing chat content for hallucinations and false claims (after the fact)
+- Check if code blocks are syntactically valid and not placeholders
+- Verify if files referenced in chat content exist in the workspace
+- Heuristically check for the presence of claimed commands or implementations
+- Prompt the user to create new failsafes based on feedback or errors
 
 ## Use Cases
 
@@ -108,6 +81,19 @@ Configure FailSafe in your workspace settings:
 - Quality Assurance: Ensure AI responses don't contain false information
 - Learning Aid: Understand common AI hallucination patterns
 - Project Management: Basic task tracking and accountability
+
+## Future Plans: Cursorrules and Advanced Features
+
+Some features are not possible in a VS Code/Cursor extension, but may be enabled in the future by a companion tool called **Cursorrules**. This would allow:
+- Real-time interception and blocking of unsafe AI responses
+- Automatic enforcement of safety and compliance rules
+- Immutable, centralized logging and audit trails
+- Real-time monitoring and analytics
+- Centralized policy management
+- Automated failsafe creation and enforcement
+- Integration with external systems
+
+**These features are not part of the current extension, but are planned for future releases as part of a separate Cursorrules system.**
 
 ## Links
 
