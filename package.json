@@ -142,6 +142,7 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
+    "prepackage": "node scripts/check-icon.js",
     "package": "vsce package",
     "publish": "vsce publish"
   },

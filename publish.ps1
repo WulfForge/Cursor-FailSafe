@@ -145,22 +145,25 @@ function Invoke-CommandWithErrorHandling($command, $description, $fatal = $true)
 # Step 1: Compile TypeScript
 Invoke-CommandWithErrorHandling "npm run compile" "Compiling TypeScript"
 
-# Step 2: Run tests
+# Step 2: Run linting
+Invoke-CommandWithErrorHandling "npm run lint" "Running linting" $false
+
+# Step 3: Run tests
 Invoke-CommandWithErrorHandling "npm test" "Running tests" $false
 
-# Step 3: Check icon integrity
+# Step 4: Check icon integrity
 Invoke-CommandWithErrorHandling "npm run prepackage" "Checking icon integrity"
 
-# Step 4: Add files to git
+# Step 5: Add files to git
 Invoke-CommandWithErrorHandling "git add ." "Adding files to git"
 
-# Step 5: Commit changes
+# Step 6: Commit changes
 Invoke-CommandWithErrorHandling "git commit -m '" + $COMMIT_MSG + "'" "Committing changes"
 
-# Step 6: Push to GitHub
+# Step 7: Push to GitHub
 Invoke-CommandWithErrorHandling "git push origin main" "Pushing to GitHub"
 
-# Step 7: Create and push git tag
+# Step 8: Push git tag
 try {
     Write-Host ""
     Write-Host "========================================" -ForegroundColor Cyan
@@ -182,10 +185,10 @@ try {
     Write-Host "WARNING: Git tag operations failed, but continuing..." -ForegroundColor Yellow
 }
 
-# Step 8: Package extension
+# Step 9: Package extension
 Invoke-CommandWithErrorHandling "npm run package" "Packaging extension"
 
-# Step 9: Publish to VS Code Marketplace
+# Step 10: Publish to VS Code Marketplace
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "Publishing to VS Code Marketplace" -ForegroundColor Cyan

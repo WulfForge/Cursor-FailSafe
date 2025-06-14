@@ -54,7 +54,18 @@ if %errorlevel% neq 0 (
 
 echo.
 echo ========================================
-echo Step 3: Running tests...
+echo Step 3: Checking icon integrity...
+echo ========================================
+call npm run prepackage
+if %errorlevel% neq 0 (
+    echo ERROR: Icon integrity check failed!
+    pause
+    exit /b 1
+)
+
+echo.
+echo ========================================
+echo Step 4: Running tests...
 echo ========================================
 call npm test
 if %errorlevel% neq 0 (
@@ -63,7 +74,7 @@ if %errorlevel% neq 0 (
 
 echo.
 echo ========================================
-echo Step 4: Adding files to git...
+echo Step 5: Adding files to git...
 echo ========================================
 git add .
 if %errorlevel% neq 0 (
@@ -74,7 +85,7 @@ if %errorlevel% neq 0 (
 
 echo.
 echo ========================================
-echo Step 5: Committing changes...
+echo Step 6: Committing changes...
 echo ========================================
 git commit -m "!COMMIT_MSG!"
 if %errorlevel% neq 0 (
@@ -85,7 +96,7 @@ if %errorlevel% neq 0 (
 
 echo.
 echo ========================================
-echo Step 6: Pushing to GitHub...
+echo Step 7: Pushing to GitHub...
 echo ========================================
 git push origin main
 if %errorlevel% neq 0 (
@@ -96,7 +107,7 @@ if %errorlevel% neq 0 (
 
 echo.
 echo ========================================
-echo Step 7: Creating git tag...
+echo Step 8: Creating git tag...
 echo ========================================
 git tag v%VERSION%
 if %errorlevel% neq 0 (
@@ -110,7 +121,7 @@ if %errorlevel% neq 0 (
 
 echo.
 echo ========================================
-echo Step 8: Packaging extension...
+echo Step 9: Packaging extension...
 echo ========================================
 call npm run package
 if %errorlevel% neq 0 (
@@ -121,7 +132,7 @@ if %errorlevel% neq 0 (
 
 echo.
 echo ========================================
-echo Step 9: Publishing to VS Code Marketplace...
+echo Step 10: Publishing to VS Code Marketplace...
 echo ========================================
 set /p PUBLISH_CONFIRM="Publish to VS Code Marketplace? (y/N): "
 if /i "!PUBLISH_CONFIRM!"=="y" (
