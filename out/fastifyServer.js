@@ -60,6 +60,8 @@ class FailSafeServer {
         this.isRunning = false;
         this.activeValidations = 0;
         this.logger = logger;
+        this.taskEngine = taskEngine;
+        this.projectPlan = projectPlan;
         this.dataStore = new dataStore_1.DataStore(logger);
         this.chartDataService = new chartDataService_1.RealChartDataService(taskEngine, projectPlan, logger);
         this.server = (0, fastify_1.default)({
@@ -156,10 +158,18 @@ class FailSafeServer {
                 includeBody: false
             });
             // Register Phase 4 - Preventive Innovations plugins
-            await this.server.register(fastify_spec_heatmap_1.default);
-            await this.server.register(fastify_snapshot_validator_1.default);
-            await this.server.register(fastify_auto_stub_1.default);
-            await this.server.register(fastify_preview_1.default);
+            await this.server.register(fastify_spec_heatmap_1.default, { logger: this.logger });
+            await this.server.register(fastify_snapshot_validator_1.default, { logger: this.logger });
+            await this.server.register(fastify_auto_stub_1.default, { logger: this.logger });
+            // Only register preview plugin if UI is available
+            if (this.ui) {
+                await this.server.register(fastify_preview_1.default, {
+                    ui: this.ui,
+                    projectPlan: this.projectPlan,
+                    taskEngine: this.taskEngine,
+                    logger: this.logger
+                });
+            }
             // Auto-load additional plugins from plugins directory
             await this.autoLoadPlugins();
             this.logger.info('All Fastify plugins registered successfully');
@@ -804,6 +814,10 @@ class FailSafeServer {
     }
     getChartDataService() {
         return this.chartDataService;
+    }
+    // Method to set UI after construction
+    setUI(ui) {
+        this.ui = ui;
     }
 }
 exports.FailSafeServer = FailSafeServer;

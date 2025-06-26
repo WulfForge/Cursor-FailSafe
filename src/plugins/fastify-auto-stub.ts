@@ -2,565 +2,137 @@ import { FastifyPluginAsync } from 'fastify';
 import { Type } from '@sinclair/typebox';
 import * as fs from 'fs';
 import * as path from 'path';
+import { Logger } from '../logger';
 
-interface MissingComponent {
+interface AutoStubOptions {
+    logger: Logger;
+    stubDir?: string;
+}
+
+interface StubComponent {
     name: string;
-    type: 'tab' | 'panel' | 'widget' | 'form' | 'command' | 'route';
-    specSection: string;
-    description: string;
-    requiredMethods: string[];
-    requiredProperties: string[];
+    type: 'component' | 'route' | 'plugin' | 'command';
+    path: string;
+    template: string;
+    dependencies: string[];
 }
 
 interface StubGenerationResult {
     success: boolean;
-    generatedFiles: string[];
+    generated: string[];
     errors: string[];
     warnings: string[];
-    missingComponents: MissingComponent[];
 }
 
-const StubGenerationSchema = Type.Object({
-    success: Type.Boolean(),
-    generatedFiles: Type.Array(Type.String()),
-    errors: Type.Array(Type.String()),
-    warnings: Type.Array(Type.String()),
-    missingComponents: Type.Array(Type.Object({
-        name: Type.String(),
-        type: Type.Union([Type.Literal('tab'), Type.Literal('panel'), Type.Literal('widget'), Type.Literal('form'), Type.Literal('command'), Type.Literal('route')]),
-        specSection: Type.String(),
-        description: Type.String(),
-        requiredMethods: Type.Array(Type.String()),
-        requiredProperties: Type.Array(Type.String())
-    }))
-});
+const fastifyAutoStub: FastifyPluginAsync<AutoStubOptions> = async (fastify, options) => {
+    const { logger, stubDir = 'src/stubs' } = options;
 
-const fastifyAutoStub: FastifyPluginAsync = async (fastify) => {
+    // Ensure stub directory exists
+    const fullStubDir = path.join(process.cwd(), stubDir);
+    if (!fs.existsSync(fullStubDir)) {
+        fs.mkdirSync(fullStubDir, { recursive: true });
+    }
+
     // Decorate fastify with auto-stub functionality
     fastify.decorate('autoStub', {
-        async generateStubs(): Promise<StubGenerationResult> {
-            const result: StubGenerationResult = {
-                success: true,
-                generatedFiles: [],
-                errors: [],
-                warnings: [],
-                missingComponents: []
-            };
-
+        async generateStubsForMissingComponents(): Promise<StubGenerationResult> {
             try {
-                // Analyze spec document for required components
-                const missingComponents = await (fastify as any).autoStub.analyzeMissingComponents();
-                result.missingComponents = missingComponents;
-
-                if (missingComponents.length === 0) {
-                    result.warnings.push('No missing components detected');
-                    return result;
+                // Get spec-gate validation result
+                const validationResult = await getSpecGateValidation();
+                
+                if (!validationResult.hasErrors && validationResult.errors.length === 0) {
+                    return {
+                        success: true,
+                        generated: [],
+                        errors: [],
+                        warnings: ['No missing components detected']
+                    };
                 }
-
-                // Generate stubs for each missing component
-                for (const component of missingComponents) {
+                
+                const generated: string[] = [];
+                const errors: string[] = [];
+                const warnings: string[] = [];
+                
+                // Generate stubs for missing components
+                for (const error of validationResult.errors) {
                     try {
-                        const generatedFile = await (fastify as any).autoStub.generateComponentStub(component);
-                        if (generatedFile) {
-                            result.generatedFiles.push(generatedFile);
+                        const stubPath = await generateStubForError(error);
+                        if (stubPath) {
+                            generated.push(stubPath);
                         }
-                    } catch (error) {
-                        result.errors.push(`Failed to generate stub for ${component.name}: ${error}`);
-                        result.success = false;
+                    } catch (stubError) {
+                        errors.push(`Failed to generate stub for ${error}: ${stubError}`);
                     }
                 }
-
-                // Update commands registration if needed
-                if (missingComponents.some((c: any) => c.type === 'command')) {
-                    await (fastify as any).autoStub.updateCommandsRegistration(missingComponents.filter((c: any) => c.type === 'command'));
+                
+                // Generate stubs for missing routes
+                const missingRoutes = await identifyMissingRoutes();
+                for (const route of missingRoutes) {
+                    try {
+                        const stubPath = await generateRouteStub(route);
+                        if (stubPath) {
+                            generated.push(stubPath);
+                        }
+                    } catch (stubError) {
+                        errors.push(`Failed to generate route stub for ${route}: ${stubError}`);
+                    }
                 }
-
-                // Update UI registration if needed
-                if (missingComponents.some((c: any) => c.type === 'tab' || c.type === 'panel')) {
-                    await (fastify as any).autoStub.updateUIRegistration(missingComponents.filter((c: any) => c.type === 'tab' || c.type === 'panel'));
+                
+                // Generate stubs for missing plugins
+                const missingPlugins = await identifyMissingPlugins();
+                for (const plugin of missingPlugins) {
+                    try {
+                        const stubPath = await generatePluginStub(plugin);
+                        if (stubPath) {
+                            generated.push(stubPath);
+                        }
+                    } catch (stubError) {
+                        errors.push(`Failed to generate plugin stub for ${plugin}: ${stubError}`);
+                    }
                 }
-
+                
+                return {
+                    success: errors.length === 0,
+                    generated,
+                    errors,
+                    warnings
+                };
+                
             } catch (error) {
-                result.errors.push(`Auto-stub generation failed: ${error}`);
-                result.success = false;
+                logger.error('Auto-stub generation failed:', error);
+                return {
+                    success: false,
+                    generated: [],
+                    errors: [`Auto-stub generation failed: ${error}`],
+                    warnings: []
+                };
             }
-
-            return result;
         },
 
-        async analyzeMissingComponents(): Promise<MissingComponent[]> {
-            const missingComponents: MissingComponent[] = [];
-            
-            // Check for missing UI tabs
-            const requiredTabs = ['Dashboard', 'Console', 'Logs', 'ProjectPlan', 'ProgressDetails', 'AccountabilityReport', 'FeasibilityAnalysis', 'ActionLog', 'FailsafeConfigPanel'];
-            const existingTabs = await (fastify as any).autoStub.getExistingTabs();
-            
-            for (const tab of requiredTabs) {
-                if (!existingTabs.includes(tab)) {
-                    missingComponents.push({
-                        name: `show${tab}`,
-                        type: 'tab',
-                        specSection: '7. UI Binding',
-                        description: `Missing ${tab} tab implementation`,
-                        requiredMethods: ['showWebview', 'handleMessages', 'updateContent'],
-                        requiredProperties: ['panel', 'webview', 'disposables']
-                    });
-                }
+        async generateStubForComponent(componentName: string, componentType: string): Promise<string | null> {
+            const stubComponent = getStubTemplate(componentName, componentType);
+            if (!stubComponent) {
+                return null;
             }
-
-            // Check for missing commands
-            const requiredCommands = ['showDashboard', 'showConsole', 'showLogs', 'showProjectPlan', 'showProgressDetails', 'showAccountabilityReport', 'showFeasibilityAnalysis', 'showActionLog', 'showFailsafeConfigPanel'];
-            const existingCommands = await (fastify as any).autoStub.getExistingCommands();
             
-            for (const command of requiredCommands) {
-                if (!existingCommands.includes(command)) {
-                    missingComponents.push({
-                        name: command,
-                        type: 'command',
-                        specSection: '5. API Surface',
-                        description: `Missing ${command} command implementation`,
-                        requiredMethods: ['execute', 'validate', 'handleError'],
-                        requiredProperties: ['commandId', 'title', 'category']
-                    });
-                }
-            }
-
-            // Check for missing routes
-            const requiredRoutes = ['/validate', '/rules', '/sprints', '/tasks', '/status', '/events', '/metrics', '/design-doc'];
-            const existingRoutes = await (fastify as any).autoStub.getExistingRoutes();
+            const stubPath = path.join(fullStubDir, stubComponent.path);
+            const stubDir = path.dirname(stubPath);
             
-            for (const route of requiredRoutes) {
-                if (!existingRoutes.includes(route)) {
-                    missingComponents.push({
-                        name: route,
-                        type: 'route',
-                        specSection: '5. API Surface',
-                        description: `Missing ${route} route implementation`,
-                        requiredMethods: ['GET', 'POST', 'PATCH', 'DELETE'],
-                        requiredProperties: ['schema', 'handler', 'validation']
-                    });
-                }
-            }
-
-            return missingComponents;
-        },
-
-        async getExistingTabs(): Promise<string[]> {
-            const tabs: string[] = [];
-            
-            // Check UI file for existing tab methods
-            const uiPath = path.join(process.cwd(), 'src/ui.ts');
-            if (fs.existsSync(uiPath)) {
-                const content = fs.readFileSync(uiPath, 'utf-8');
-                const methodMatches = content.match(/public async show(\w+)\(\)/g);
-                if (methodMatches) {
-                    for (const match of methodMatches) {
-                        const tabName = match.match(/public async show(\w+)\(\)/)?.[1];
-                        if (tabName) {
-                            tabs.push(tabName);
-                        }
-                    }
-                }
-            }
-
-            return tabs;
-        },
-
-        async getExistingCommands(): Promise<string[]> {
-            const commands: string[] = [];
-            
-            // Check commands file for existing command registrations
-            const commandsPath = path.join(process.cwd(), 'src/commands.ts');
-            if (fs.existsSync(commandsPath)) {
-                const content = fs.readFileSync(commandsPath, 'utf-8');
-                const commandMatches = content.match(/failsafe\.(\w+)/g);
-                if (commandMatches) {
-                    for (const match of commandMatches) {
-                        const commandName = match.match(/failsafe\.(\w+)/)?.[1];
-                        if (commandName) {
-                            commands.push(commandName);
-                        }
-                    }
-                }
-            }
-
-            return commands;
-        },
-
-        async getExistingRoutes(): Promise<string[]> {
-            const routes: string[] = [];
-            
-            // Check Fastify server file for existing routes
-            const serverPath = path.join(process.cwd(), 'src/fastifyServer.ts');
-            if (fs.existsSync(serverPath)) {
-                const content = fs.readFileSync(serverPath, 'utf-8');
-                const routeMatches = content.match(/\.get\(['"`]([^'"`]+)['"`]/g);
-                if (routeMatches) {
-                    for (const match of routeMatches) {
-                        const route = match.match(/\.get\(['"`]([^'"`]+)['"`]/)?.[1];
-                        if (route) {
-                            routes.push(route);
-                        }
-                    }
-                }
-            }
-
-            return routes;
-        },
-
-        async generateComponentStub(component: MissingComponent): Promise<string | null> {
-            const stubDir = path.join(process.cwd(), 'src/stubs');
             if (!fs.existsSync(stubDir)) {
                 fs.mkdirSync(stubDir, { recursive: true });
             }
-
-            let stubContent = '';
-            let fileName = '';
-
-            switch (component.type) {
-                case 'tab':
-                    fileName = `${component.name}.ts`;
-                    stubContent = (fastify as any).autoStub.generateTabStub(component);
-                    break;
-                case 'command':
-                    fileName = `${component.name}Command.ts`;
-                    stubContent = (fastify as any).autoStub.generateCommandStub(component);
-                    break;
-                case 'route':
-                    fileName = `${component.name}Route.ts`;
-                    stubContent = (fastify as any).autoStub.generateRouteStub(component);
-                    break;
-                default:
-                    fileName = `${component.name}Stub.ts`;
-                    stubContent = (fastify as any).autoStub.generateGenericStub(component);
-            }
-
-            const filePath = path.join(stubDir, fileName);
-            fs.writeFileSync(filePath, stubContent);
-            return filePath;
-        },
-
-        generateTabStub(component: MissingComponent): string {
-            return `/**
- * TODO: AUTO-GENERATED STUB - ${component.name}
- * 
- * This component was automatically generated because it was missing from the implementation.
- * Please implement the actual functionality according to the design document section: ${component.specSection}
- * 
- * Required methods: ${component.requiredMethods.join(', ')}
- * Required properties: ${component.requiredProperties.join(', ')}
- * 
- * Description: ${component.description}
- */
-
-import * as vscode from 'vscode';
-
-export class ${component.name}Tab {
-    private panel: vscode.WebviewPanel | undefined;
-    private disposables: vscode.Disposable[] = [];
-
-    constructor() {
-        // TODO: Initialize tab
-    }
-
-    public async showWebview(): Promise<void> {
-        // TODO: Implement webview creation
-        this.panel = vscode.window.createWebviewPanel(
-            '${component.name.toLowerCase()}',
-            '${component.name}',
-            vscode.ViewColumn.One,
-            {
-                enableScripts: true,
-                retainContextWhenHidden: true
-            }
-        );
-
-        this.panel.webview.html = \`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>${component.name}</title>
-                <style>
-                    body { font-family: Arial, sans-serif; padding: 20px; }
-                    .stub-notice { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
-                </style>
-            </head>
-            <body>
-                <div class="stub-notice">
-                    <h2>⚠️ AUTO-GENERATED STUB</h2>
-                    <p>This ${component.name} tab is a placeholder. Please implement the actual functionality.</p>
-                    <p><strong>Spec Section:</strong> ${component.specSection}</p>
-                    <p><strong>Description:</strong> ${component.description}</p>
-                </div>
-                <h1>${component.name}</h1>
-                <p>Implementation required.</p>
-            </body>
-            </html>
-        \`;
-
-        this.panel.onDidDispose(() => {
-            this.dispose();
-        });
-    }
-
-    public handleMessages(message: any): void {
-        // TODO: Implement message handling
-        console.log('Message received:', message);
-    }
-
-    public updateContent(): void {
-        // TODO: Implement content updates
-        if (this.panel) {
-            // Update webview content
-        }
-    }
-
-    public dispose(): void {
-        this.disposables.forEach(d => d.dispose());
-        this.disposables = [];
-    }
-}
-`;
-        },
-
-        generateCommandStub(component: MissingComponent): string {
-            return `/**
- * TODO: AUTO-GENERATED STUB - ${component.name} Command
- * 
- * This command was automatically generated because it was missing from the implementation.
- * Please implement the actual functionality according to the design document section: ${component.specSection}
- * 
- * Required methods: ${component.requiredMethods.join(', ')}
- * Required properties: ${component.requiredProperties.join(', ')}
- * 
- * Description: ${component.description}
- */
-
-import * as vscode from 'vscode';
-
-export class ${component.name}Command {
-    private commandId = 'failsafe.${component.name.toLowerCase()}';
-    private title = '${component.name}';
-    private category = 'FailSafe';
-
-    constructor() {
-        // TODO: Initialize command
-    }
-
-    public async execute(): Promise<void> {
-        // TODO: Implement command execution
-        vscode.window.showInformationMessage('${component.name} command executed (stub)');
-        
-        // TODO: Add actual implementation
-        // - Validate input
-        // - Execute business logic
-        // - Handle errors
-        // - Update UI
-    }
-
-    public async validate(): Promise<boolean> {
-        // TODO: Implement validation logic
-        return true;
-    }
-
-    public async handleError(error: Error): Promise<void> {
-        // TODO: Implement error handling
-        vscode.window.showErrorMessage(\`${component.name} command failed: \${error.message}\`);
-    }
-
-    public register(context: vscode.ExtensionContext): vscode.Disposable {
-        return vscode.commands.registerCommand(this.commandId, this.execute.bind(this));
-    }
-}
-`;
-        },
-
-        generateRouteStub(component: MissingComponent): string {
-            return `/**
- * TODO: AUTO-GENERATED STUB - ${component.name} Route
- * 
- * This route was automatically generated because it was missing from the implementation.
- * Please implement the actual functionality according to the design document section: ${component.specSection}
- * 
- * Required methods: ${component.requiredMethods.join(', ')}
- * Required properties: ${component.requiredProperties.join(', ')}
- * 
- * Description: ${component.description}
- */
-
-import { FastifyPluginAsync } from 'fastify';
-import { Type } from '@sinclair/typebox';
-
-const ${component.name.replace(/[^a-zA-Z0-9]/g, '')}Schema = Type.Object({
-    // TODO: Define request/response schema
-    message: Type.String()
-});
-
-const fastify${component.name.replace(/[^a-zA-Z0-9]/g, '')}: FastifyPluginAsync = async (fastify) => {
-    // TODO: Implement route handlers
-    
-    fastify.get('${component.name}', {
-        schema: {
-            response: {
-                200: ${component.name.replace(/[^a-zA-Z0-9]/g, '')}Schema
-            }
-        }
-    }, async (request, reply) => {
-        // TODO: Implement GET handler
-        return {
-            message: '${component.name} route stub - implementation required',
-            specSection: '${component.specSection}',
-            description: '${component.description}'
-        };
-    });
-
-    fastify.post('${component.name}', {
-        schema: {
-            body: ${component.name.replace(/[^a-zA-Z0-9]/g, '')}Schema,
-            response: {
-                200: ${component.name.replace(/[^a-zA-Z0-9]/g, '')}Schema
-            }
-        }
-    }, async (request, reply) => {
-        // TODO: Implement POST handler
-        return {
-            message: '${component.name} route stub - implementation required',
-            specSection: '${component.specSection}',
-            description: '${component.description}'
-        };
-    });
-};
-
-export default fastify${component.name.replace(/[^a-zA-Z0-9]/g, '')};
-`;
-        },
-
-        generateGenericStub(component: MissingComponent): string {
-            return `/**
- * TODO: AUTO-GENERATED STUB - ${component.name}
- * 
- * This component was automatically generated because it was missing from the implementation.
- * Please implement the actual functionality according to the design document section: ${component.specSection}
- * 
- * Required methods: ${component.requiredMethods.join(', ')}
- * Required properties: ${component.requiredProperties.join(', ')}
- * 
- * Description: ${component.description}
- */
-
-export class ${component.name} {
-    constructor() {
-        // TODO: Initialize component
-    }
-
-    // TODO: Implement required methods
-    ${component.requiredMethods.map(method => `
-    public async ${method}(): Promise<void> {
-        // TODO: Implement ${method}
-        console.log('${method} called on ${component.name} (stub)');
-    }`).join('\n')}
-
-    // TODO: Implement required properties
-    ${component.requiredProperties.map(prop => `
-    private ${prop}: any; // TODO: Define proper type`).join('\n')}
-}
-`;
-        },
-
-        async updateCommandsRegistration(missingCommands: MissingComponent[]): Promise<void> {
-            const commandsPath = path.join(process.cwd(), 'src/commands.ts');
-            if (!fs.existsSync(commandsPath)) {
-                return;
-            }
-
-            let content = fs.readFileSync(commandsPath, 'utf-8');
             
-            // Add import statements for missing commands
-            const importSection = missingCommands.map(cmd => 
-                `import { ${cmd.name}Command } from './stubs/${cmd.name}Command';`
-            ).join('\n');
-
-            if (importSection) {
-                // Find the last import statement and add after it
-                const lastImportIndex = content.lastIndexOf('import');
-                const nextLineIndex = content.indexOf('\n', lastImportIndex) + 1;
-                content = content.slice(0, nextLineIndex) + importSection + '\n' + content.slice(nextLineIndex);
-            }
-
-            // Add command registrations
-            const registrationSection = missingCommands.map(cmd => 
-                `            vscode.commands.registerCommand('failsafe.${cmd.name.toLowerCase()}', this.${cmd.name.toLowerCase()}.bind(this)),`
-            ).join('\n');
-
-            if (registrationSection) {
-                // Find the commands array and add to it
-                const commandsArrayIndex = content.indexOf('const commands = [');
-                if (commandsArrayIndex !== -1) {
-                    const arrayEndIndex = content.indexOf('];', commandsArrayIndex);
-                    content = content.slice(0, arrayEndIndex) + '\n' + registrationSection + content.slice(arrayEndIndex);
-                }
-            }
-
-            // Add command methods
-            const methodSection = missingCommands.map(cmd => `
-    private async ${cmd.name.toLowerCase()}(): Promise<void> {
-        try {
-            await this.${cmd.name.toLowerCase()}Command.execute();
-        } catch (error) {
-            this.logger.error('Error in ${cmd.name.toLowerCase()} command', error);
-            vscode.window.showErrorMessage('Failed to execute ${cmd.name.toLowerCase()}. Check logs for details.');
-        }
-    }`).join('\n');
-
-            if (methodSection) {
-                // Add methods before the closing brace of the class
-                const classEndIndex = content.lastIndexOf('}');
-                content = content.slice(0, classEndIndex) + methodSection + '\n' + content.slice(classEndIndex);
-            }
-
-            fs.writeFileSync(commandsPath, content);
+            fs.writeFileSync(stubPath, stubComponent.template);
+            logger.info(`Generated stub: ${stubPath}`);
+            
+            return stubPath;
         },
 
-        async updateUIRegistration(missingComponents: MissingComponent[]): Promise<void> {
-            const uiPath = path.join(process.cwd(), 'src/ui.ts');
-            if (!fs.existsSync(uiPath)) {
-                return;
+        async cleanupStubs(): Promise<void> {
+            if (fs.existsSync(fullStubDir)) {
+                fs.rmSync(fullStubDir, { recursive: true, force: true });
+                logger.info('Cleaned up stub directory');
             }
-
-            let content = fs.readFileSync(uiPath, 'utf-8');
-            
-            // Add import statements for missing components
-            const importSection = missingComponents.map(comp => 
-                `import { ${comp.name}Tab } from './stubs/${comp.name}';`
-            ).join('\n');
-
-            if (importSection) {
-                // Find the last import statement and add after it
-                const lastImportIndex = content.lastIndexOf('import');
-                const nextLineIndex = content.indexOf('\n', lastImportIndex) + 1;
-                content = content.slice(0, nextLineIndex) + importSection + '\n' + content.slice(nextLineIndex);
-            }
-
-            // Add component methods
-            const methodSection = missingComponents.map(comp => `
-    public async ${comp.name}(): Promise<void> {
-        try {
-            const tab = new ${comp.name}Tab();
-            await tab.showWebview();
-        } catch (error) {
-            this.logger.error('Error showing ${comp.name}', error);
-            vscode.window.showErrorMessage('Failed to show ${comp.name}. Check logs for details.');
-        }
-    }`).join('\n');
-
-            if (methodSection) {
-                // Add methods before the closing brace of the class
-                const classEndIndex = content.lastIndexOf('}');
-                content = content.slice(0, classEndIndex) + methodSection + '\n' + content.slice(classEndIndex);
-            }
-
-            fs.writeFileSync(uiPath, content);
         }
     });
 
@@ -568,35 +140,359 @@ export class ${component.name} {
     fastify.post('/auto-stub/generate', {
         schema: {
             response: {
-                200: StubGenerationSchema
+                200: Type.Object({
+                    success: Type.Boolean(),
+                    generated: Type.Array(Type.String()),
+                    errors: Type.Array(Type.String()),
+                    warnings: Type.Array(Type.String()),
+                    message: Type.String()
+                })
             }
         }
     }, async (request, reply) => {
-        const result = await (fastify as any).autoStub.generateStubs();
-        return result;
+        try {
+            const result = await (fastify as any).autoStub.generateStubsForMissingComponents();
+            
+            return {
+                ...result,
+                message: result.success ? 'Stubs generated successfully' : 'Stub generation completed with errors'
+            };
+        } catch (error) {
+            logger.error('Auto-stub generation failed:', error);
+            reply.status(500).send({ error: 'Auto-stub generation failed' });
+        }
+    });
+
+    fastify.post('/auto-stub/cleanup', {
+        schema: {
+            response: {
+                200: Type.Object({
+                    success: Type.Boolean(),
+                    message: Type.String()
+                })
+            }
+        }
+    }, async (request, reply) => {
+        try {
+            await (fastify as any).autoStub.cleanupStubs();
+            
+            return {
+                success: true,
+                message: 'Stubs cleaned up successfully'
+            };
+        } catch (error) {
+            logger.error('Stub cleanup failed:', error);
+            reply.status(500).send({ error: 'Stub cleanup failed' });
+        }
     });
 
     fastify.get('/auto-stub/status', {
         schema: {
             response: {
                 200: Type.Object({
-                    hasStubs: Type.Boolean(),
+                    stubDir: Type.String(),
                     stubCount: Type.Number(),
-                    stubFiles: Type.Array(Type.String())
+                    stubs: Type.Array(Type.String())
                 })
             }
         }
     }, async (request, reply) => {
-        const stubDir = path.join(process.cwd(), 'src/stubs');
-        const hasStubs = fs.existsSync(stubDir);
-        const stubFiles = hasStubs ? fs.readdirSync(stubDir).filter(file => file.endsWith('.ts')) : [];
-        
-        return {
-            hasStubs,
-            stubCount: stubFiles.length,
-            stubFiles
-        };
+        try {
+            const stubs = await getStubFiles();
+            
+            return {
+                stubDir: fullStubDir,
+                stubCount: stubs.length,
+                stubs
+            };
+        } catch (error) {
+            logger.error('Stub status check failed:', error);
+            reply.status(500).send({ error: 'Stub status check failed' });
+        }
     });
+
+    // Helper functions
+    async function getSpecGateValidation(): Promise<{
+        hasErrors: boolean;
+        errors: string[];
+        warnings: string[];
+    }> {
+        try {
+            // Import spec-gate validation logic
+            const { validateUIComponents, extractRequiredComponents } = require('../../scripts/spec-gate.js');
+            
+            // Read the UI specification
+            const specPath = path.join(process.cwd(), 'failsafe_ui_specification.md');
+            
+            if (!fs.existsSync(specPath)) {
+                return {
+                    hasErrors: true,
+                    errors: ['UI specification file not found'],
+                    warnings: []
+                };
+            }
+            
+            const specContent = fs.readFileSync(specPath, 'utf-8');
+            const requiredComponents = extractRequiredComponents(specContent);
+            const validationResult = validateUIComponents(requiredComponents);
+            
+            return validationResult;
+        } catch (error) {
+            logger.error('Spec-gate validation failed:', error);
+            return {
+                hasErrors: false,
+                errors: [],
+                warnings: []
+            };
+        }
+    }
+
+    async function generateStubForError(error: string): Promise<string | null> {
+        // Parse error to determine component type and name
+        const componentMatch = error.match(/(\w+)\s+(component|route|plugin|command)/i);
+        if (!componentMatch) {
+            return null;
+        }
+        
+        const [, componentName, componentType] = componentMatch;
+        return await (fastify as any).autoStub.generateStubForComponent(componentName, componentType);
+    }
+
+    async function identifyMissingRoutes(): Promise<string[]> {
+        const missingRoutes: string[] = [];
+        
+        // Check for common missing routes
+        const expectedRoutes = [
+            '/dashboard',
+            '/console',
+            '/logs',
+            '/sprint',
+            '/config',
+            '/metrics',
+            '/health',
+            '/events'
+        ];
+        
+        for (const route of expectedRoutes) {
+            const routeExists = await checkRouteExists(route);
+            if (!routeExists) {
+                missingRoutes.push(route);
+            }
+        }
+        
+        return missingRoutes;
+    }
+
+    async function identifyMissingPlugins(): Promise<string[]> {
+        const missingPlugins: string[] = [];
+        
+        // Check for common missing plugins
+        const expectedPlugins = [
+            'fastify-spec-gate',
+            'fastify-event-bus',
+            'fastify-health',
+            'fastify-metrics',
+            'fastify-request-logger',
+            'fastify-spec-heatmap',
+            'fastify-snapshot-validator',
+            'fastify-auto-stub',
+            'fastify-preview'
+        ];
+        
+        for (const plugin of expectedPlugins) {
+            const pluginExists = await checkPluginExists(plugin);
+            if (!pluginExists) {
+                missingPlugins.push(plugin);
+            }
+        }
+        
+        return missingPlugins;
+    }
+
+    async function generateRouteStub(route: string): Promise<string | null> {
+        const routeName = route.replace(/^\//, '').replace(/\//g, '-');
+        const stubPath = `routes/${routeName}.ts`;
+        
+        const template = `import { FastifyPluginAsync } from 'fastify';
+
+// TODO: AUTO-GENERATED STUB - Implement ${route} route
+// This stub was generated because the route was missing from the implementation
+// Replace this with actual route implementation before shipping
+
+const ${routeName}Route: FastifyPluginAsync = async (fastify) => {
+    fastify.get('${route}', async (request, reply) => {
+        // TODO: Implement ${route} GET handler
+        return { message: '${route} route - TODO: Implement actual functionality' };
+    });
+    
+    // TODO: Add other HTTP methods as needed (POST, PUT, DELETE, etc.)
+};
+
+export default ${routeName}Route;
+`;
+        
+        const fullPath = path.join(fullStubDir, stubPath);
+        const stubDir = path.dirname(fullPath);
+        
+        if (!fs.existsSync(stubDir)) {
+            fs.mkdirSync(stubDir, { recursive: true });
+        }
+        
+        fs.writeFileSync(fullPath, template);
+        logger.info(`Generated route stub: ${fullPath}`);
+        
+        return fullPath;
+    }
+
+    async function generatePluginStub(plugin: string): Promise<string | null> {
+        const pluginName = plugin.replace(/^fastify-/, '');
+        const stubPath = `plugins/${plugin}.ts`;
+        
+        const template = `import { FastifyPluginAsync } from 'fastify';
+
+// TODO: AUTO-GENERATED STUB - Implement ${plugin} plugin
+// This stub was generated because the plugin was missing from the implementation
+// Replace this with actual plugin implementation before shipping
+
+interface ${pluginName}Options {
+    // TODO: Define plugin options
+}
+
+const ${plugin}: FastifyPluginAsync<${pluginName}Options> = async (fastify, options) => {
+    // TODO: Implement ${plugin} plugin functionality
+    
+    // Example: Register routes, decorators, hooks, etc.
+    fastify.log.info('${plugin} plugin loaded (stub)');
+    
+    // TODO: Add actual plugin implementation
+    // - Register routes
+    // - Add decorators
+    // - Set up hooks
+    // - Configure options
+};
+
+export default ${plugin};
+`;
+        
+        const fullPath = path.join(fullStubDir, stubPath);
+        const stubDir = path.dirname(fullPath);
+        
+        if (!fs.existsSync(stubDir)) {
+            fs.mkdirSync(stubDir, { recursive: true });
+        }
+        
+        fs.writeFileSync(fullPath, template);
+        logger.info(`Generated plugin stub: ${fullPath}`);
+        
+        return fullPath;
+    }
+
+    function getStubTemplate(componentName: string, componentType: string): StubComponent | null {
+        const templates: Record<string, StubComponent> = {
+            'dashboard': {
+                name: 'Dashboard',
+                type: 'component',
+                path: 'components/Dashboard.tsx',
+                template: `import React from 'react';
+
+// TODO: AUTO-GENERATED STUB - Implement Dashboard component
+// This stub was generated because the Dashboard component was missing from the implementation
+// Replace this with actual component implementation before shipping
+
+interface DashboardProps {
+    // TODO: Define component props
+}
+
+export const Dashboard: React.FC<DashboardProps> = (props) => {
+    return (
+        <div className="dashboard-stub">
+            <h2>Dashboard Component</h2>
+            <p>TODO: Implement actual dashboard functionality</p>
+            <div className="stub-warning">
+                ⚠️ This is an auto-generated stub. Replace with real implementation.
+            </div>
+        </div>
+    );
+};
+
+export default Dashboard;
+`,
+                dependencies: ['react']
+            },
+            'console': {
+                name: 'Console',
+                type: 'component',
+                path: 'components/Console.tsx',
+                template: `import React from 'react';
+
+// TODO: AUTO-GENERATED STUB - Implement Console component
+// This stub was generated because the Console component was missing from the implementation
+// Replace this with actual component implementation before shipping
+
+interface ConsoleProps {
+    // TODO: Define component props
+}
+
+export const Console: React.FC<ConsoleProps> = (props) => {
+    return (
+        <div className="console-stub">
+            <h2>Console Component</h2>
+            <p>TODO: Implement actual console functionality</p>
+            <div className="stub-warning">
+                ⚠️ This is an auto-generated stub. Replace with real implementation.
+            </div>
+        </div>
+    );
+};
+
+export default Console;
+`,
+                dependencies: ['react']
+            }
+        };
+        
+        return templates[componentName.toLowerCase()] || null;
+    }
+
+    async function checkRouteExists(route: string): Promise<boolean> {
+        // Check if route is implemented in the server
+        const serverFile = path.join(process.cwd(), 'src/fastifyServer.ts');
+        if (fs.existsSync(serverFile)) {
+            const content = fs.readFileSync(serverFile, 'utf-8');
+            return content.includes(route);
+        }
+        return false;
+    }
+
+    async function checkPluginExists(plugin: string): Promise<boolean> {
+        // Check if plugin file exists
+        const pluginFile = path.join(process.cwd(), `src/plugins/${plugin}.ts`);
+        return fs.existsSync(pluginFile);
+    }
+
+    async function getStubFiles(): Promise<string[]> {
+        const stubs: string[] = [];
+        
+        function scanDirectory(dir: string, relativePath = '') {
+            if (!fs.existsSync(dir)) return;
+            
+            const items = fs.readdirSync(dir);
+            for (const item of items) {
+                const fullPath = path.join(dir, item);
+                const relativeItemPath = path.join(relativePath, item);
+                const stats = fs.statSync(fullPath);
+                
+                if (stats.isDirectory()) {
+                    scanDirectory(fullPath, relativeItemPath);
+                } else if (stats.isFile() && item.endsWith('.ts')) {
+                    stubs.push(relativeItemPath);
+                }
+            }
+        }
+        
+        scanDirectory(fullStubDir);
+        return stubs;
+    }
 };
 
 export default fastifyAutoStub;

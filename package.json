@@ -378,6 +378,18 @@
         "title": "FailSafe: Reorder Tasks",
         "category": "FailSafe",
         "description": "Reorder tasks within the current sprint"
+      },
+      {
+        "command": "failsafe.openPreview",
+        "title": "FailSafe: Open Preview",
+        "category": "FailSafe",
+        "description": "Open the FailSafe preview panel with live UI preview"
+      },
+      {
+        "command": "failsafe.togglePreviewSync",
+        "title": "FailSafe: Toggle Preview Sync",
+        "category": "FailSafe",
+        "description": "Enable/disable auto-refresh for the preview panel"
       }
     ],
     "chat": {
@@ -674,6 +686,8 @@
     "vsce": "^2.7.0"
   },
   "dependencies": {
+    "@types/chokidar": "^1.7.5",
+    "chokidar": "^4.0.3",
     "pino-pretty": "^10.3.1"
   },
   "extensionDependencies": [],

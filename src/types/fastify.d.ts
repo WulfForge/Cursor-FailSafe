@@ -3,18 +3,14 @@ import { FastifyInstance } from 'fastify';
 declare module 'fastify' {
     interface FastifyInstance {
         autoStub: {
-            generateStubs(): Promise<any>;
-            analyzeMissingComponents(): Promise<any[]>;
-            generateComponentStub(component: any): Promise<string | null>;
-            updateCommandsRegistration(components: any[]): Promise<void>;
-            updateUIRegistration(components: any[]): Promise<void>;
-            getExistingTabs(): Promise<string[]>;
-            getExistingCommands(): Promise<string[]>;
-            getExistingRoutes(): Promise<string[]>;
-            generateTabStub(component: any): string;
-            generateCommandStub(component: any): string;
-            generateRouteStub(component: any): string;
-            generateGenericStub(component: any): string;
+            generateStubsForMissingComponents(): Promise<{
+                success: boolean;
+                generated: string[];
+                errors: string[];
+                warnings: string[];
+            }>;
+            generateStubForComponent(componentName: string, componentType: string): Promise<string | null>;
+            cleanupStubs(): Promise<void>;
         };
         
         preview: {
@@ -31,6 +27,19 @@ declare module 'fastify' {
         };
         
         snapshotValidator: {
+            validateSnapshot(previousSnapshotId?: string): Promise<{
+                added: string[];
+                removed: string[];
+                modified: string[];
+                uiChanges: {
+                    componentsAdded: string[];
+                    componentsRemoved: string[];
+                    methodsAdded: string[];
+                    methodsRemoved: string[];
+                    routesAdded: string[];
+                    routesRemoved: string[];
+                };
+            }>;
             createSnapshot(): Promise<any>;
             getLatestSnapshot(): Promise<any>;
             compareSnapshots(snapshot1: any, snapshot2: any): Promise<any>;
@@ -45,6 +54,8 @@ declare module 'fastify' {
             extractComponentChildren(content: string, methodName: string): any[];
             extractClassProperties(content: string, className: string): any;
             extractClassChildren(content: string, className: string): any[];
+            listSnapshots(): Promise<{ id: string; timestamp: string; size: number }[]>;
+            rollbackToSnapshot(snapshotId: string): Promise<boolean>;
         };
         
         specHeatmap: {

@@ -154,6 +154,8 @@ class UI {
         this.serverPort = 3000;
         this.metricsData = null;
         this.realTimeEvents = [];
+        this.previewPanel = null;
+        this.previewSyncEnabled = true;
         this.projectPlan = projectPlan;
         this.taskEngine = taskEngine;
         this.logger = logger;
@@ -341,6 +343,15 @@ class UI {
             vscode.commands.registerCommand('failsafe.showActionLog', () => this.showActionLog()),
         ];
         this.disposables.push(...commands);
+        // Register preview panel command
+        this.disposables.push(vscode.commands.registerCommand('failsafe.openPreview', () => {
+            this.showPreviewPanel();
+        }));
+        // Register preview sync toggle command
+        this.disposables.push(vscode.commands.registerCommand('failsafe.togglePreviewSync', () => {
+            this.previewSyncEnabled = !this.previewSyncEnabled;
+            vscode.window.showInformationMessage(`Preview sync ${this.previewSyncEnabled ? 'enabled' : 'disabled'}`);
+        }));
     }
     updateStatusBar(state) {
         try {
@@ -682,25 +693,20 @@ class UI {
         // Generate chart data using real data sources
         const chartData = await this.generateChartData(dashboard, planValidation);
         // Generate the main content
+        const mythologiqLogoUri = this.context && this.dashboardPanel?.webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'images', 'MythologIQ.png'));
         const content = `
         <div class="dashboard-content">
-            <div class="header">
-                <div class="header-content">
-                    <div class="logo-container">
-                        <div class="failsafe-logo">🛡️</div>
-                        <div>
-                            <h1>FailSafe Dashboard</h1>
-                            <p>Project Management & Accountability System</p>
-                        </div>
-                    </div>
+            <header class="flex items-center justify-between bg-surface text-primary rounded-t-lg px-6 py-4 border-b border-muted">
+                <div class="flex items-center gap-4">
+                    <img src="${iconUri}" alt="FailSafe Icon" class="w-10 h-10" />
+                    <span class="text-2xl font-display font-bold">FailSafe</span>
                 </div>
                 <div class="plan-status ${planValidation.status}">
                     <span class="status-icon">${planColor}</span>
                     <span class="status-text">${planStatus}</span>
                 </div>
-            </div>
-
-            <div class="main-content">
+            </header>
+            <main class="main-content">
                 <div class="grid-container">
                     <div class="current-task-section">
                         <h2>Current Task</h2>
@@ -783,7 +789,16 @@ class UI {
                         </button>
                     </div>
                 </div>
-            </div>
+            </main>
+            <footer class="flex items-center justify-between bg-surface text-muted rounded-b-lg px-6 py-3 border-t border-muted mt-8">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm">v${require('../../package.json').version}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <img src="${mythologiqLogoUri}" alt="MythologIQ Logo" class="w-8 h-8" />
+                    <span class="text-xs font-sans">MythologIQ</span>
+                </div>
+            </footer>
         </div>
 
         <script>
@@ -3922,6 +3937,204 @@ class UI {
     }
     getSystemStatusText() {
         return this.statusBarState;
+    }
+    async showPreviewPanel() {
+        try {
+            // Create or focus the preview panel
+            if (this.previewPanel) {
+                this.previewPanel.reveal();
+                return;
+            }
+            this.previewPanel = vscode.window.createWebviewPanel('failsafePreview', 'FailSafe Preview', vscode.ViewColumn.Two, {
+                enableScripts: true,
+                retainContextWhenHidden: true
+            });
+            // Set up the preview panel content
+            await this.updatePreviewContent();
+            // Handle panel disposal
+            this.previewPanel.onDidDispose(() => {
+                this.previewPanel = null;
+            });
+            // Set up hot-reload listener
+            this.setupPreviewHotReload();
+        }
+        catch (error) {
+            this.logger.error('Failed to show preview panel:', error);
+            vscode.window.showErrorMessage('Failed to show preview panel: ' + error);
+        }
+    }
+    async updatePreviewContent(tab = 'dashboard') {
+        if (!this.previewPanel)
+            return;
+        const serverPort = await this.getServerPort();
+        const previewUrl = `http://127.0.0.1:${serverPort}/preview?tab=${tab}`;
+        const content = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FailSafe Preview</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1e1e1e;
+            color: #ffffff;
+        }
+        
+        .preview-header {
+            background: #2d2d30;
+            padding: 10px;
+            border-bottom: 1px solid #3e3e42;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tab-selector {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .tab-button {
+            background: #3e3e42;
+            border: none;
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .tab-button.active {
+            background: #007acc;
+        }
+        
+        .tab-button:hover {
+            background: #4e4e52;
+        }
+        
+        .sync-toggle {
+            background: #3e3e42;
+            border: none;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: auto;
+        }
+        
+        .sync-toggle.enabled {
+            background: #28a745;
+        }
+        
+        .preview-frame {
+            width: 100%;
+            height: calc(100vh - 60px);
+            border: none;
+            background: #ffffff;
+        }
+        
+        .status-bar {
+            background: #2d2d30;
+            padding: 5px 10px;
+            font-size: 11px;
+            color: #cccccc;
+            border-top: 1px solid #3e3e42;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-header">
+        <div class="tab-selector">
+            <button class="tab-button active" onclick="switchTab('dashboard')">Dashboard</button>
+            <button class="tab-button" onclick="switchTab('console')">Console</button>
+            <button class="tab-button" onclick="switchTab('logs')">Logs</button>
+            <button class="tab-button" onclick="switchTab('sprint')">Sprint</button>
+            <button class="tab-button" onclick="switchTab('config')">Config</button>
+        </div>
+        <button class="sync-toggle enabled" id="syncToggle" onclick="toggleSync()">
+            🔄 Sync: ON
+        </button>
+    </div>
+    
+    <iframe id="previewFrame" class="preview-frame" src="${previewUrl}"></iframe>
+    
+    <div class="status-bar">
+        Preview URL: ${previewUrl} | Auto-refresh: <span id="syncStatus">Enabled</span>
+    </div>
+    
+    <script>
+        const vscode = acquireVsCodeApi();
+        let currentTab = 'dashboard';
+        let syncEnabled = true;
+        
+        function switchTab(tab) {
+            currentTab = tab;
+            const serverPort = ${serverPort};
+            const previewUrl = \`http://127.0.0.1:\${serverPort}/preview?tab=\${tab}\`;
+            
+            document.getElementById('previewFrame').src = previewUrl;
+            
+            // Update active tab button
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update status bar
+            document.querySelector('.status-bar').textContent = \`Preview URL: \${previewUrl} | Auto-refresh: \${syncEnabled ? 'Enabled' : 'Disabled'}\`;
+        }
+        
+        function toggleSync() {
+            syncEnabled = !syncEnabled;
+            const toggleBtn = document.getElementById('syncToggle');
+            const statusSpan = document.getElementById('syncStatus');
+            
+            if (syncEnabled) {
+                toggleBtn.textContent = '🔄 Sync: ON';
+                toggleBtn.classList.add('enabled');
+                statusSpan.textContent = 'Enabled';
+            } else {
+                toggleBtn.textContent = '⏸️ Sync: OFF';
+                toggleBtn.classList.remove('enabled');
+                statusSpan.textContent = 'Disabled';
+            }
+            
+            // Notify VS Code extension
+            vscode.postMessage({ command: 'togglePreviewSync', enabled: syncEnabled });
+        }
+        
+        // Listen for messages from VS Code extension
+        window.addEventListener('message', event => {
+            const message = event.data;
+            if (message.command === 'refreshPreview' && syncEnabled) {
+                document.getElementById('previewFrame').src = document.getElementById('previewFrame').src;
+            }
+        });
+    </script>
+</body>
+</html>
+        `;
+        this.previewPanel.webview.html = content;
+    }
+    setupPreviewHotReload() {
+        // Set up file save listener for hot-reload
+        const fileSaveListener = vscode.workspace.onDidSaveTextDocument((document) => {
+            if (this.previewPanel && this.previewSyncEnabled) {
+                // Check if the saved file is relevant to the preview
+                const relevantExtensions = ['.ts', '.tsx', '.js', '.jsx', '.css', '.html'];
+                const isRelevant = relevantExtensions.some(ext => document.fileName.endsWith(ext));
+                if (isRelevant) {
+                    // Send refresh message to the preview panel
+                    this.previewPanel.webview.postMessage({ command: 'refreshPreview' });
+                }
+            }
+        });
+        this.disposables.push(fileSaveListener);
     }
 }
 exports.UI = UI;

@@ -5,6 +5,7 @@ import { TaskEngine } from './taskEngine';
 import { ProjectPlan } from './projectPlan';
 import { DataStore } from './dataStore';
 import { RealChartDataService } from './chartDataService';
+import { UI } from './ui';
 import { schemas, Rule, Sprint, Task } from './schemas';
 import * as vscode from 'vscode';
 import * as path from 'path';
@@ -29,9 +30,14 @@ export class FailSafeServer {
     private readonly dataStore: DataStore;
     private readonly chartDataService: RealChartDataService;
     private readonly activeValidations = 0;
+    private readonly taskEngine: TaskEngine;
+    private readonly projectPlan: ProjectPlan;
+    private ui?: UI; // Will be set later
 
     constructor(logger: Logger, taskEngine: TaskEngine, projectPlan: ProjectPlan) {
         this.logger = logger;
+        this.taskEngine = taskEngine;
+        this.projectPlan = projectPlan;
         this.dataStore = new DataStore(logger);
         this.chartDataService = new RealChartDataService(taskEngine, projectPlan, logger);
         
@@ -143,10 +149,19 @@ export class FailSafeServer {
             });
 
             // Register Phase 4 - Preventive Innovations plugins
-            await this.server.register(fastifySpecHeatmap);
-            await this.server.register(fastifySnapshotValidator);
-            await this.server.register(fastifyAutoStub);
-            await this.server.register(fastifyPreview);
+            await this.server.register(fastifySpecHeatmap, { logger: this.logger });
+            await this.server.register(fastifySnapshotValidator, { logger: this.logger });
+            await this.server.register(fastifyAutoStub, { logger: this.logger });
+            
+            // Only register preview plugin if UI is available
+            if (this.ui) {
+                await this.server.register(fastifyPreview, { 
+                    ui: this.ui, 
+                    projectPlan: this.projectPlan, 
+                    taskEngine: this.taskEngine, 
+                    logger: this.logger 
+                });
+            }
 
             // Auto-load additional plugins from plugins directory
             await this.autoLoadPlugins();
@@ -851,5 +866,10 @@ export class FailSafeServer {
 
     public getChartDataService(): RealChartDataService {
         return this.chartDataService;
+    }
+
+    // Method to set UI after construction
+    public setUI(ui: UI): void {
+        this.ui = ui;
     }
 } 

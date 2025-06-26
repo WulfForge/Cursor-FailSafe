@@ -35,10 +35,12 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
-const fastifyPreview = async (fastify) => {
+const fastifyPreview = async (fastify, options) => {
+    const { ui, projectPlan, taskEngine, logger } = options;
     // Register plugin decorators
     fastify.decorate('preview', {
-        async generateComponentPreview(componentId, options = {}) {
+        async generateComponentPreview(componentId, options) {
+            const opts = { ui, projectPlan, taskEngine, logger, ...options };
             try {
                 // Generate preview for a specific component
                 const component = await fastify.preview.getComponentById(componentId);
@@ -60,7 +62,8 @@ const fastifyPreview = async (fastify) => {
                 throw error;
             }
         },
-        async generateDesignPreview(designDocPath, options = {}) {
+        async generateDesignPreview(designDocPath, options) {
+            const opts = { ui, projectPlan, taskEngine, logger, ...options };
             try {
                 if (!fs.existsSync(designDocPath)) {
                     throw new Error(`Design document not found: ${designDocPath}`);
@@ -73,7 +76,7 @@ const fastifyPreview = async (fastify) => {
                     content: await fastify.preview.generateDesignPreviewHTML(content),
                     version: '1.0.0',
                     lastModified: stats.mtime,
-                    previewUrl: options.port ? `http://localhost:${options.port}/preview/design` : undefined
+                    previewUrl: opts.port ? `http://localhost:${opts.port}/preview/design` : undefined
                 };
                 return preview;
             }
@@ -82,17 +85,18 @@ const fastifyPreview = async (fastify) => {
                 throw error;
             }
         },
-        async startPreviewServer(options = {}) {
+        async startPreviewServer(options) {
+            const opts = { ui, projectPlan, taskEngine, logger, ...options };
             try {
-                const port = options.port || 3001;
-                const host = options.host || 'localhost';
+                const port = opts.port || 3001;
+                const host = opts.host || 'localhost';
                 // Start a simple preview server
                 const previewServer = fastify.createServer();
                 // Register preview routes
                 await previewServer.register(async (instance) => {
                     instance.get('/preview/component/:id', async (request, reply) => {
                         const { id } = request.params;
-                        const preview = await fastify.preview.generateComponentPreview(id, options);
+                        const preview = await fastify.preview.generateComponentPreview(id, opts);
                         return reply.send(preview);
                     });
                     instance.get('/preview/design', async (request, reply) => {
@@ -100,7 +104,7 @@ const fastifyPreview = async (fastify) => {
                         if (!designPath) {
                             return reply.status(400).send({ error: 'Design path required' });
                         }
-                        const preview = await fastify.preview.generateDesignPreview(designPath, options);
+                        const preview = await fastify.preview.generateDesignPreview(designPath, opts);
                         return reply.send(preview);
                     });
                     instance.get('/preview/ui', async (request, reply) => {
@@ -362,6 +366,145 @@ const fastifyPreview = async (fastify) => {
         const result = await fastify.preview.startPreviewServer(options);
         return reply.send(result);
     });
+    // Register the preview route
+    fastify.get('/preview', async (request, reply) => {
+        const { tab = 'dashboard' } = request.query;
+        try {
+            let htmlContent = '';
+            let specGateStatus = { hasErrors: false, errors: [], warnings: [] };
+            // Check if required dependencies are available
+            if (!ui) {
+                return reply.status(500).send({ error: 'UI service not available' });
+            }
+            if (!projectPlan) {
+                return reply.status(500).send({ error: 'Project plan service not available' });
+            }
+            if (!logger) {
+                return reply.status(500).send({ error: 'Logger service not available' });
+            }
+            // Generate content based on tab
+            switch (tab) {
+                case 'dashboard':
+                    const dashboard = ui.getDashboardData();
+                    const planValidation = await projectPlan.validatePlan();
+                    htmlContent = await ui.generateDashboard();
+                    specGateStatus = await validateSpecGate();
+                    break;
+                case 'console':
+                    htmlContent = await generateConsoleHTML();
+                    specGateStatus = await validateSpecGate();
+                    break;
+                case 'logs':
+                    htmlContent = await generateLogsHTML();
+                    specGateStatus = await validateSpecGate();
+                    break;
+                case 'sprint':
+                    htmlContent = await generateSprintHTML();
+                    specGateStatus = await validateSpecGate();
+                    break;
+                case 'config':
+                    htmlContent = await generateConfigHTML();
+                    specGateStatus = await validateSpecGate();
+                    break;
+                default:
+                    htmlContent = '<div class="error">Invalid tab specified</div>';
+            }
+            // Add spec-gate overlay if there are issues
+            if (specGateStatus.hasErrors || specGateStatus.errors.length > 0 || specGateStatus.warnings.length > 0) {
+                const overlay = generateSpecGateOverlay(specGateStatus);
+                htmlContent = overlay + htmlContent;
+            }
+            // Return the HTML content
+            reply.type('text/html');
+            return htmlContent;
+        }
+        catch (error) {
+            if (logger) {
+                logger.error('Preview generation failed:', error);
+            }
+            reply.status(500).send({ error: 'Preview generation failed' });
+        }
+    });
+    // Helper function to validate spec-gate
+    async function validateSpecGate() {
+        try {
+            // Import spec-gate validation logic
+            const { validateUIComponents, extractRequiredComponents } = require('../../scripts/spec-gate.js');
+            // Read the UI specification
+            const fs = require('fs');
+            const path = require('path');
+            const specPath = path.join(process.cwd(), 'failsafe_ui_specification.md');
+            if (!fs.existsSync(specPath)) {
+                return { hasErrors: true, errors: ['UI specification file not found'], warnings: [] };
+            }
+            const specContent = fs.readFileSync(specPath, 'utf-8');
+            const requiredComponents = extractRequiredComponents(specContent);
+            const validationResult = validateUIComponents(requiredComponents);
+            return validationResult;
+        }
+        catch (error) {
+            if (logger) {
+                logger.error('Spec-gate validation failed:', error);
+            }
+            return { hasErrors: false, errors: [], warnings: [] };
+        }
+    }
+    // Helper function to generate spec-gate overlay
+    function generateSpecGateOverlay(status) {
+        const { hasErrors, errors, warnings } = status;
+        if (!hasErrors && errors.length === 0 && warnings.length === 0) {
+            return '';
+        }
+        return `
+            <div style="position: fixed; top: 0; left: 0; right: 0; background: #dc3545; color: white; padding: 10px; z-index: 1000; font-family: monospace;">
+                <strong>⚠️ Spec-Gate Issues Detected</strong>
+                ${errors.length > 0 ? `<br>Errors: ${errors.join(', ')}` : ''}
+                ${warnings.length > 0 ? `<br>Warnings: ${warnings.join(', ')}` : ''}
+                <br><small>Fix these issues before shipping.</small>
+            </div>
+        `;
+    }
+    // Helper functions to generate HTML for each tab
+    async function generateConsoleHTML() {
+        return `
+            <div class="console-preview">
+                <h2>Console Preview</h2>
+                <div class="console-content">
+                    <p>Console tab content will be rendered here.</p>
+                </div>
+            </div>
+        `;
+    }
+    async function generateLogsHTML() {
+        return `
+            <div class="logs-preview">
+                <h2>Logs Preview</h2>
+                <div class="logs-content">
+                    <p>Logs tab content will be rendered here.</p>
+                </div>
+            </div>
+        `;
+    }
+    async function generateSprintHTML() {
+        return `
+            <div class="sprint-preview">
+                <h2>Sprint Plan Preview</h2>
+                <div class="sprint-content">
+                    <p>Sprint plan content will be rendered here.</p>
+                </div>
+            </div>
+        `;
+    }
+    async function generateConfigHTML() {
+        return `
+            <div class="config-preview">
+                <h2>Configuration Preview</h2>
+                <div class="config-content">
+                    <p>Configuration panel content will be rendered here.</p>
+                </div>
+            </div>
+        `;
+    }
 };
 exports.default = fastifyPreview;
 //# sourceMappingURL=fastify-preview.js.map

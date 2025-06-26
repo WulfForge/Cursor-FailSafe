@@ -89,7 +89,7 @@ const fastifyMetrics = async (fastify, options) => {
             dailyMetric.avgResponseTime = (currentTotal + value) / dailyMetric.requests;
         }
         else {
-            dailyMetric[type] += value;
+            (dailyMetric[type]) += value;
         }
         saveMetrics();
     };
