@@ -753,7 +753,7 @@ class CursorrulesWizard {
                 <script>
                     let currentStep = 1;
                     const totalSteps = 4;
-                    ${isEditing ? `const isEditing = true; const ruleId = '${rule?.id}';` : 'const isEditing = false;'}
+                    ${isEditing ? `const isEditing = true; const ruleId = '${rule.id}';` : 'const isEditing = false;'}
 
                     function nextStep() {
                         if (validateCurrentStep()) {
@@ -1020,7 +1020,7 @@ class CursorrulesWizard {
             md += `**Regex complexity:** ${summary.regexComplexity}\n`;
         }
         md += `\n## Results\n`;
-        results.forEach((r, i) => {
+        results.forEach((r) => {
             md += `- **${r.matched ? '✅ MATCH' : '❌ NO MATCH'}**\n`;
             md += `  - Content: \
 ${r.content}\n`;
@@ -1048,7 +1048,7 @@ ${r.error}\n`;
                 return [];
             }
             // Evaluate content against all rules
-            const matches = this.engine.evaluateContent(content, { fileName });
+            const matches = this.engine.evaluateContent(content);
             // Convert matches to violation format
             const violations = matches.map(match => {
                 const rule = this.engine.getRule(match.ruleId);

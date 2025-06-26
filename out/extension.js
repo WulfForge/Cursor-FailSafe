@@ -36,21 +36,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FailSafeExtension = void 0;
 exports.activate = activate;
 exports.deactivate = deactivate;
+/// <reference types="node" />
 const vscode = __importStar(require("vscode"));
 const commands_1 = require("./commands");
+const logger_1 = require("./logger");
 const projectPlan_1 = require("./projectPlan");
 const taskEngine_1 = require("./taskEngine");
-const logger_1 = require("./logger");
 const validator_1 = require("./validator");
 const testRunner_1 = require("./testRunner");
-const versionManager_1 = require("./versionManager");
 const cursorrulesEngine_1 = require("./cursorrulesEngine");
-const cursorrulesWizard_1 = require("./cursorrulesWizard");
 const cursorrulesManager_1 = require("./cursorrulesManager");
+const cursorrulesWizard_1 = require("./cursorrulesWizard");
 const chatValidator_1 = require("./chatValidator");
-const troubleshootingStateManager_1 = require("./troubleshootingStateManager");
 const sprintPlanner_1 = require("./sprintPlanner");
 const designDocumentManager_1 = require("./designDocumentManager");
+const versionManager_1 = require("./versionManager");
+const troubleshootingStateManager_1 = require("./troubleshootingStateManager");
 const fastifyServer_1 = require("./fastifyServer");
 const path = __importStar(require("path"));
 const sidebarProvider_1 = require("./sidebarProvider");
@@ -411,7 +412,7 @@ class FailSafeExtension {
             });
             if (justification) {
                 violations.forEach(violation => {
-                    this.cursorrulesEngine.recordOverride(violation.rule.id, justification);
+                    this.cursorrulesEngine.recordOverride(violation.rule.id);
                 });
                 vscode.window.showInformationMessage('All rule violations overridden');
             }

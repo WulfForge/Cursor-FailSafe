@@ -92,7 +92,7 @@ async function testCursorrules(context) {
         }
         // Test 5: Test override recording
         logger.info('Testing override recording...');
-        engine.recordOverride(rule.id, 'Testing override functionality');
+        engine.recordOverride(rule.id);
         logger.info('Override recorded');
         // Test 6: Test rule deletion
         logger.info('Testing rule deletion...');

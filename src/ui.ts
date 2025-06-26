@@ -177,6 +177,10 @@ export class UI {
     private readonly userFailsafes: { name: string; description: string; enabled: boolean }[] = [];
     private readonly context?: vscode.ExtensionContext;
     private readonly chartDataService: RealChartDataService;
+    private eventSource: EventSource | null = null;
+    private serverPort: number = 3000;
+    private metricsData: any = null;
+    private realTimeEvents: any[] = [];
 
     constructor(projectPlan: ProjectPlan, taskEngine: TaskEngine, logger: Logger, context?: vscode.ExtensionContext) {
         this.projectPlan = projectPlan;
@@ -199,17 +203,157 @@ export class UI {
         try {
             // Set up status bar items
             this.setupStatusBar();
-
+            
             // Set up event listeners
             this.setupEventListeners();
-
+            
             // Register commands
             this.registerCommands();
-
+            
+            // Initialize SSE connection for real-time events
+            await this.initializeSSE();
+            
+            // Load initial metrics data
+            await this.loadMetricsData();
+            
             this.logger.info('UI initialized successfully');
         } catch (error) {
-            this.logger.error('Failed to initialize UI', error);
+            this.logger.error('Failed to initialize UI:', error);
+            throw error;
         }
+    }
+
+    private async initializeSSE(): Promise<void> {
+        try {
+            // Get server port from Fastify server
+            const serverPort = await this.getServerPort();
+            this.serverPort = serverPort;
+            
+            // Create EventSource for real-time events
+            const eventUrl = `http://localhost:${serverPort}/events`;
+            this.eventSource = new EventSource(eventUrl);
+            
+            this.eventSource.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    this.handleRealTimeEvent(data);
+                } catch (error) {
+                    this.logger.warn('Failed to parse SSE event:', error);
+                }
+            };
+            
+            this.eventSource.onerror = (error) => {
+                this.logger.warn('SSE connection error:', error);
+                // Reconnect after 5 seconds
+                setTimeout(() => this.initializeSSE(), 5000);
+            };
+            
+            this.logger.info(`SSE connection established on port ${serverPort}`);
+        } catch (error) {
+            this.logger.warn('Failed to initialize SSE connection:', error);
+        }
+    }
+
+    private async getServerPort(): Promise<number> {
+        try {
+            // Try to get port from Fastify server instance
+            const response = await fetch(`http://localhost:3000/status`);
+            const data = await response.json();
+            return data.port || 3000;
+        } catch {
+            return 3000; // Default fallback
+        }
+    }
+
+    private handleRealTimeEvent(event: any): void {
+        // Add event to real-time events array (keep last 100)
+        this.realTimeEvents.push(event);
+        if (this.realTimeEvents.length > 100) {
+            this.realTimeEvents.shift();
+        }
+        
+        // Update action log
+        this.actionLog.push({
+            timestamp: event.timestamp,
+            description: `🔔 ${event.type}: ${JSON.stringify(event.data)}`
+        });
+        
+        // Update UI based on event type
+        switch (event.type) {
+            case 'validation':
+                this.handleValidationEvent(event);
+                break;
+            case 'rule_trigger':
+                this.handleRuleTriggerEvent(event);
+                break;
+            case 'task_event':
+                this.handleTaskEvent(event);
+                break;
+            case 'system':
+                this.handleSystemEvent(event);
+                break;
+        }
+        
+        // Refresh dashboard if open
+        if (this.dashboardPanel) {
+            this.refreshDashboard();
+        }
+        
+        // Refresh sidebar
+        this.refreshSidebar();
+    }
+
+    private handleValidationEvent(event: any): void {
+        this.logger.info('Validation event received:', event);
+        // Update validation status in UI
+        if (event.data.status === 'failed') {
+            this.statusBarState = 'blocked';
+            this.updateStatusBar('blocked');
+        }
+    }
+
+    private handleRuleTriggerEvent(event: any): void {
+        this.logger.info('Rule trigger event received:', event);
+        // Handle rule triggers
+    }
+
+    private handleTaskEvent(event: any): void {
+        this.logger.info('Task event received:', event);
+        // Handle task events
+    }
+
+    private handleSystemEvent(event: any): void {
+        this.logger.info('System event received:', event);
+        // Handle system events
+    }
+
+    private async loadMetricsData(): Promise<void> {
+        try {
+            const response = await fetch(`http://localhost:${this.serverPort}/metrics?range=7d`);
+            if (response.ok) {
+                this.metricsData = await response.json();
+                this.logger.info('Metrics data loaded successfully');
+            }
+        } catch (error) {
+            this.logger.warn('Failed to load metrics data:', error);
+        }
+    }
+
+    private async refreshDashboard(): Promise<void> {
+        if (this.dashboardPanel) {
+            const dashboard = this.getDashboardData();
+            const planValidation = await this.projectPlan.validatePlan();
+            const content = await this.generateWebviewContent(dashboard, planValidation);
+            this.dashboardPanel.webview.html = content;
+        }
+    }
+
+    public getRealTimeEvents(): any[] {
+        return [...this.realTimeEvents];
+    }
+
+    public getMetricsData(): any {
+        return this.metricsData;
     }
 
     private setupStatusBar(): void {

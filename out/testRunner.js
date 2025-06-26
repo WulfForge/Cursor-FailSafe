@@ -89,10 +89,10 @@ class TestRunner {
             });
             let output = '';
             const errors = [];
-            process.stdout?.on('data', (data) => {
+            process.stdout.on('data', (data) => {
                 output += data.toString();
             });
-            process.stderr?.on('data', (data) => {
+            process.stderr.on('data', (data) => {
                 const errorText = data.toString();
                 errors.push(errorText);
                 output += errorText; // Include stderr in output for parsing

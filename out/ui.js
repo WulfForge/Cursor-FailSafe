@@ -150,6 +150,10 @@ class UI {
         this.statusBarState = 'active';
         this.actionLog = [];
         this.userFailsafes = [];
+        this.eventSource = null;
+        this.serverPort = 3000;
+        this.metricsData = null;
+        this.realTimeEvents = [];
         this.projectPlan = projectPlan;
         this.taskEngine = taskEngine;
         this.logger = logger;
@@ -171,11 +175,134 @@ class UI {
             this.setupEventListeners();
             // Register commands
             this.registerCommands();
+            // Initialize SSE connection for real-time events
+            await this.initializeSSE();
+            // Load initial metrics data
+            await this.loadMetricsData();
             this.logger.info('UI initialized successfully');
         }
         catch (error) {
-            this.logger.error('Failed to initialize UI', error);
+            this.logger.error('Failed to initialize UI:', error);
+            throw error;
         }
+    }
+    async initializeSSE() {
+        try {
+            // Get server port from Fastify server
+            const serverPort = await this.getServerPort();
+            this.serverPort = serverPort;
+            // Create EventSource for real-time events
+            const eventUrl = `http://localhost:${serverPort}/events`;
+            this.eventSource = new EventSource(eventUrl);
+            this.eventSource.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    this.handleRealTimeEvent(data);
+                }
+                catch (error) {
+                    this.logger.warn('Failed to parse SSE event:', error);
+                }
+            };
+            this.eventSource.onerror = (error) => {
+                this.logger.warn('SSE connection error:', error);
+                // Reconnect after 5 seconds
+                setTimeout(() => this.initializeSSE(), 5000);
+            };
+            this.logger.info(`SSE connection established on port ${serverPort}`);
+        }
+        catch (error) {
+            this.logger.warn('Failed to initialize SSE connection:', error);
+        }
+    }
+    async getServerPort() {
+        try {
+            // Try to get port from Fastify server instance
+            const response = await fetch(`http://localhost:3000/status`);
+            const data = await response.json();
+            return data.port || 3000;
+        }
+        catch {
+            return 3000; // Default fallback
+        }
+    }
+    handleRealTimeEvent(event) {
+        // Add event to real-time events array (keep last 100)
+        this.realTimeEvents.push(event);
+        if (this.realTimeEvents.length > 100) {
+            this.realTimeEvents.shift();
+        }
+        // Update action log
+        this.actionLog.push({
+            timestamp: event.timestamp,
+            description: `🔔 ${event.type}: ${JSON.stringify(event.data)}`
+        });
+        // Update UI based on event type
+        switch (event.type) {
+            case 'validation':
+                this.handleValidationEvent(event);
+                break;
+            case 'rule_trigger':
+                this.handleRuleTriggerEvent(event);
+                break;
+            case 'task_event':
+                this.handleTaskEvent(event);
+                break;
+            case 'system':
+                this.handleSystemEvent(event);
+                break;
+        }
+        // Refresh dashboard if open
+        if (this.dashboardPanel) {
+            this.refreshDashboard();
+        }
+        // Refresh sidebar
+        this.refreshSidebar();
+    }
+    handleValidationEvent(event) {
+        this.logger.info('Validation event received:', event);
+        // Update validation status in UI
+        if (event.data.status === 'failed') {
+            this.statusBarState = 'blocked';
+            this.updateStatusBar('blocked');
+        }
+    }
+    handleRuleTriggerEvent(event) {
+        this.logger.info('Rule trigger event received:', event);
+        // Handle rule triggers
+    }
+    handleTaskEvent(event) {
+        this.logger.info('Task event received:', event);
+        // Handle task events
+    }
+    handleSystemEvent(event) {
+        this.logger.info('System event received:', event);
+        // Handle system events
+    }
+    async loadMetricsData() {
+        try {
+            const response = await fetch(`http://localhost:${this.serverPort}/metrics?range=7d`);
+            if (response.ok) {
+                this.metricsData = await response.json();
+                this.logger.info('Metrics data loaded successfully');
+            }
+        }
+        catch (error) {
+            this.logger.warn('Failed to load metrics data:', error);
+        }
+    }
+    async refreshDashboard() {
+        if (this.dashboardPanel) {
+            const dashboard = this.getDashboardData();
+            const planValidation = await this.projectPlan.validatePlan();
+            const content = await this.generateWebviewContent(dashboard, planValidation);
+            this.dashboardPanel.webview.html = content;
+        }
+    }
+    getRealTimeEvents() {
+        return [...this.realTimeEvents];
+    }
+    getMetricsData() {
+        return this.metricsData;
     }
     setupStatusBar() {
         this.statusBarItem.text = '$(workspace-trusted) FailSafe: Active';

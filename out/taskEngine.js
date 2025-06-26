@@ -34,6 +34,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TaskEngine = void 0;
+/// <reference types="node" />
 const vscode = __importStar(require("vscode"));
 const types_1 = require("./types");
 class TaskEngine {

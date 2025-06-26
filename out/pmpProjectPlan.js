@@ -34,6 +34,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PMPProjectPlanManager = void 0;
+/// <reference types="node" />
 // ===============================
 // INACTIVE/DEPRECATED MODULE
 // This file is not used in the current sprint-based workflow.
@@ -813,7 +814,7 @@ Return only valid JSON without any additional text.`;
      * Parse priority from string
      */
     parsePriority(priorityStr) {
-        const priority = priorityStr?.toLowerCase();
+        const priority = priorityStr.toLowerCase();
         switch (priority) {
             case 'critical':
             case 'high':
@@ -831,42 +832,41 @@ Return only valid JSON without any additional text.`;
      */
     getAvailableImportSources() {
         const sources = [];
-        const cursorRulesDir = path.join(this.workspaceRoot, '.cursorrules');
-        if (fs.existsSync(cursorRulesDir)) {
-            const ruleFiles = fs.readdirSync(cursorRulesDir).filter(f => f.endsWith('.md'));
-            ruleFiles.forEach(file => {
-                sources.push({
-                    type: 'cursor_rule',
-                    source: path.join(cursorRulesDir, file),
-                    confidence: 0.8
-                });
-            });
-        }
-        const projectFiles = [
-            'project.json', 'project.yaml', 'project.yml',
-            'README.md', 'CHANGELOG.md', 'TODO.md',
-            'tasks.csv', 'backlog.md'
-        ];
-        projectFiles.forEach(file => {
-            const filePath = path.join(this.workspaceRoot, file);
-            if (fs.existsSync(filePath)) {
-                sources.push({
-                    type: 'file',
-                    source: filePath,
-                    format: path.extname(file).substring(1),
-                    confidence: 0.9
-                });
-            }
+        // Add cursor rule sources
+        sources.push({
+            type: 'cursor_rule',
+            source: 'cursor_rules.json',
+            confidence: 0.9
         });
-        const extensions = vscode.extensions.all;
-        const projectExtensions = extensions.filter(ext => ext.id.includes('project') ||
-            ext.id.includes('task') ||
-            ext.id.includes('planning'));
-        projectExtensions.forEach(ext => {
-            sources.push({
-                type: 'extension',
-                source: ext.id,
-                confidence: 0.7
+        // Add file sources
+        const workspaceFiles = vscode.workspace.findFiles('**/*.{json,yaml,yml,md,csv}', '**/node_modules/**');
+        workspaceFiles.then(files => {
+            files.forEach(file => {
+                const ext = path.extname(file.fsPath).toLowerCase();
+                let format;
+                switch (ext) {
+                    case '.json':
+                        format = 'json';
+                        break;
+                    case '.yaml':
+                    case '.yml':
+                        format = 'yaml';
+                        break;
+                    case '.md':
+                        format = 'markdown';
+                        break;
+                    case '.csv':
+                        format = 'csv';
+                        break;
+                }
+                if (format) {
+                    sources.push({
+                        type: 'file',
+                        source: file.fsPath,
+                        format,
+                        confidence: 0.8
+                    });
+                }
             });
         });
         return sources;

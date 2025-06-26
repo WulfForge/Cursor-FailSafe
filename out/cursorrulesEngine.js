@@ -150,13 +150,12 @@ class CursorrulesEngine {
     getEnabledRules() {
         return this.rules.filter(rule => rule.enabled);
     }
-    evaluateContent(content, context) {
+    evaluateContent(content) {
         const matches = [];
-        const lines = content.split('\n');
         for (const rule of this.rules) {
             if (!rule.enabled)
                 continue;
-            const match = this.evaluateRule(rule, content, lines);
+            const match = this.evaluateRule(rule, content);
             if (match.matched) {
                 matches.push(match);
                 this.updateRuleStats(rule.id);
@@ -169,7 +168,7 @@ class CursorrulesEngine {
         }
         return matches;
     }
-    evaluateRule(rule, content, lines) {
+    evaluateRule(rule, content) {
         let matched = false;
         let match = '';
         let confidence = 0;
@@ -292,7 +291,7 @@ class CursorrulesEngine {
             rule.usageStats.lastTriggered = new Date().toISOString();
         }
     }
-    recordOverride(ruleId, justification) {
+    recordOverride(ruleId) {
         const rule = this.rules.find(r => r.id === ruleId);
         if (rule) {
             if (!rule.usageStats) {
@@ -686,9 +685,10 @@ class CursorrulesEngine {
     async validateText(text) {
         try {
             const enabledRules = this.getEnabledRules();
+            const content = text;
             const violations = [];
             for (const rule of enabledRules) {
-                const matches = this.evaluateContent(text);
+                const matches = this.evaluateContent(content);
                 const ruleMatches = matches.filter(match => match.ruleId === rule.id && match.matched);
                 for (const match of ruleMatches) {
                     violations.push({

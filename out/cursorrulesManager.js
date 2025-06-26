@@ -66,7 +66,7 @@ class CursorrulesManager {
                     const rules = this.engine.getAllRules();
                     const selectedRule = await this.selectRule(rules);
                     if (selectedRule) {
-                        const updatedRule = await this.editRule(selectedRule);
+                        const updatedRule = await this.editRule();
                         if (updatedRule) {
                             this.engine.updateRule(selectedRule.id, updatedRule);
                             vscode.window.showInformationMessage('Cursorrule updated successfully');
@@ -130,7 +130,7 @@ class CursorrulesManager {
             return null;
         }
     }
-    async editRule(rule) {
+    async editRule() {
         // This would integrate with the wizard
         return null;
     }
