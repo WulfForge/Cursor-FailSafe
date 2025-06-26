@@ -27,6 +27,7 @@ export class Commands {
     private readonly cursorrulesEngine: CursorrulesEngine;
     private readonly cursorrulesManager: CursorrulesManager;
     private readonly designDocumentManager: DesignDocumentManager;
+    private readonly fastifyServer?: any; // Will be set by extension.ts
 
     constructor(context: vscode.ExtensionContext) {
         this.extensionContext = context;
@@ -73,7 +74,17 @@ export class Commands {
             vscode.commands.registerCommand('failsafe.viewDesignDocument', this.viewDesignDocument.bind(this)),
             vscode.commands.registerCommand('failsafe.manageDesignDocument', this.manageDesignDocument.bind(this)),
             vscode.commands.registerCommand('failsafe.checkForDrift', this.checkForDrift.bind(this)),
-            vscode.commands.registerCommand('failsafe.updateChart', this.updateChart.bind(this))
+            vscode.commands.registerCommand('failsafe.updateChart', this.updateChart.bind(this)),
+            vscode.commands.registerCommand('failsafe.showConsole', this.showConsole.bind(this)),
+            vscode.commands.registerCommand('failsafe.showLogs', this.showLogs.bind(this)),
+            vscode.commands.registerCommand('failsafe.showProjectPlan', this.showProjectPlan.bind(this)),
+            vscode.commands.registerCommand('failsafe.showProgressDetails', this.showProgressDetails.bind(this)),
+            vscode.commands.registerCommand('failsafe.showAccountabilityReport', this.showAccountabilityReport.bind(this)),
+            vscode.commands.registerCommand('failsafe.showFeasibilityAnalysis', this.showFeasibilityAnalysis.bind(this)),
+            vscode.commands.registerCommand('failsafe.showActionLog', this.showActionLog.bind(this)),
+            vscode.commands.registerCommand('failsafe.showFailsafeConfigPanel', this.showFailsafeConfigPanel.bind(this)),
+            vscode.commands.registerCommand('failsafe.openPreview', this.openPreview.bind(this)),
+            vscode.commands.registerCommand('failsafe.togglePreviewSync', this.togglePreviewSync.bind(this))
         ];
 
         commands.forEach(command => context.subscriptions.push(command));
@@ -2748,20 +2759,260 @@ function simulatedFunction() {
             <!DOCTYPE html>
             <html>
             <head>
+                <meta charset="UTF-8">
                 <title>Version Consistency Check</title>
                 <style>
                     body { font-family: Arial, sans-serif; padding: 20px; }
-                    .inconsistency { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+                    .version-item { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+                    .inconsistent { background-color: #ffebee; border-color: #f44336; }
+                    .consistent { background-color: #e8f5e8; border-color: #4caf50; }
                 </style>
             </head>
             <body>
                 <h1>Version Consistency Check</h1>
-                <div class="inconsistency">
-                    <h3>Issues Found</h3>
-                    <p>No version inconsistencies found.</p>
+                <div id="version-results">
+                    <p>Checking version consistency across project files...</p>
                 </div>
             </body>
             </html>
         `;
+    }
+
+    private async showConsole(): Promise<void> {
+        try {
+            await this.ui.showConsole();
+        } catch (error) {
+            this.logger.error('Error showing console', error);
+            vscode.window.showErrorMessage('Failed to show console. Check logs for details.');
+        }
+    }
+
+    private async showLogs(): Promise<void> {
+        try {
+            await this.ui.showLogs();
+        } catch (error) {
+            this.logger.error('Error showing logs', error);
+            vscode.window.showErrorMessage('Failed to show logs. Check logs for details.');
+        }
+    }
+
+    private async showProjectPlan(): Promise<void> {
+        try {
+            await this.ui.showProjectPlan();
+        } catch (error) {
+            this.logger.error('Error showing project plan', error);
+            vscode.window.showErrorMessage('Failed to show project plan. Check logs for details.');
+        }
+    }
+
+    private async showProgressDetails(): Promise<void> {
+        try {
+            await this.ui.showProgressDetails();
+        } catch (error) {
+            this.logger.error('Error showing progress details', error);
+            vscode.window.showErrorMessage('Failed to show progress details. Check logs for details.');
+        }
+    }
+
+    private async showAccountabilityReport(): Promise<void> {
+        try {
+            await this.ui.showAccountabilityReport();
+        } catch (error) {
+            this.logger.error('Error showing accountability report', error);
+            vscode.window.showErrorMessage('Failed to show accountability report. Check logs for details.');
+        }
+    }
+
+    private async showFeasibilityAnalysis(): Promise<void> {
+        try {
+            await this.ui.showFeasibilityAnalysis();
+        } catch (error) {
+            this.logger.error('Error showing feasibility analysis', error);
+            vscode.window.showErrorMessage('Failed to show feasibility analysis. Check logs for details.');
+        }
+    }
+
+    private async showActionLog(): Promise<void> {
+        try {
+            await this.ui.showActionLog();
+        } catch (error) {
+            this.logger.error('Error showing action log', error);
+            vscode.window.showErrorMessage('Failed to show action log. Check logs for details.');
+        }
+    }
+
+    private async showFailsafeConfigPanel(): Promise<void> {
+        try {
+            await this.ui.showFailsafeConfigPanel();
+        } catch (error) {
+            this.logger.error('Error showing failsafe config panel', error);
+            vscode.window.showErrorMessage('Failed to show failsafe config panel. Check logs for details.');
+        }
+    }
+
+    private async openPreview(): Promise<void> {
+        try {
+            const panel = vscode.window.createWebviewPanel(
+                'failsafePreview',
+                'FailSafe Preview',
+                vscode.ViewColumn.Two,
+                {
+                    enableScripts: true,
+                    retainContextWhenHidden: true
+                }
+            );
+
+            // Get the current tab from context or default to dashboard
+            const currentTab = vscode.workspace.getConfiguration('failsafe').get('currentTab', 'dashboard');
+            const serverPort = this.fastifyServer?.getPort() || 3000;
+            const previewUrl = `http://127.0.0.1:${serverPort}/preview?tab=${currentTab}&format=html`;
+
+            panel.webview.html = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>FailSafe Preview</title>
+    <style>
+        body { margin: 0; padding: 0; }
+        .preview-container { width: 100%; height: 100vh; }
+        .preview-iframe { width: 100%; height: 100%; border: none; }
+        .tab-selector { 
+            position: fixed; 
+            top: 10px; 
+            right: 10px; 
+            z-index: 1000; 
+            background: white; 
+            padding: 10px; 
+            border-radius: 4px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .sync-toggle {
+            position: fixed;
+            top: 50px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="tab-selector">
+        <label for="tabSelect">Tab:</label>
+        <select id="tabSelect" onchange="changeTab()">
+            <option value="dashboard">Dashboard</option>
+            <option value="console">Console</option>
+            <option value="logs">Logs</option>
+            <option value="projectplan">Project Plan</option>
+            <option value="progressdetails">Progress Details</option>
+            <option value="accountabilityreport">Accountability Report</option>
+            <option value="feasibilityanalysis">Feasibility Analysis</option>
+            <option value="actionlog">Action Log</option>
+            <option value="failsafeconfigpanel">Config Panel</option>
+        </select>
+    </div>
+    
+    <div class="sync-toggle">
+        <label>
+            <input type="checkbox" id="syncToggle" checked onchange="toggleSync()">
+            Auto-refresh
+        </label>
+    </div>
+    
+    <div class="preview-container">
+        <iframe id="previewFrame" class="preview-iframe" src="${previewUrl}"></iframe>
+    </div>
+    
+    <script>
+        const vscode = acquireVsCodeApi();
+        let syncEnabled = true;
+        
+        function changeTab() {
+            const tab = document.getElementById('tabSelect').value;
+            const serverPort = ${serverPort};
+            const newUrl = \`http://127.0.0.1:\${serverPort}/preview?tab=\${tab}&format=html\`;
+            document.getElementById('previewFrame').src = newUrl;
+            
+            // Update VS Code configuration
+            vscode.postMessage({
+                command: 'updateCurrentTab',
+                tab: tab
+            });
+        }
+        
+        function toggleSync() {
+            syncEnabled = document.getElementById('syncToggle').checked;
+            vscode.postMessage({
+                command: 'toggleSync',
+                enabled: syncEnabled
+            });
+        }
+        
+        // Set initial tab
+        document.getElementById('tabSelect').value = '${currentTab}';
+        
+        // Listen for file save events from VS Code
+        window.addEventListener('message', event => {
+            const message = event.data;
+            if (message.command === 'fileSaved' && syncEnabled) {
+                // Refresh the preview
+                const iframe = document.getElementById('previewFrame');
+                iframe.src = iframe.src;
+            }
+        });
+    </script>
+</body>
+</html>`;
+
+            // Handle messages from the webview
+            panel.webview.onDidReceiveMessage(
+                message => {
+                    switch (message.command) {
+                        case 'updateCurrentTab':
+                            vscode.workspace.getConfiguration('failsafe').update('currentTab', message.tab, true);
+                            break;
+                        case 'toggleSync':
+                            vscode.workspace.getConfiguration('failsafe').update('previewSyncEnabled', message.enabled, true);
+                            break;
+                    }
+                },
+                undefined,
+                this.extensionContext?.subscriptions || []
+            );
+
+            // Set up file save listener for auto-refresh
+            const fileSaveListener = vscode.workspace.onDidSaveTextDocument(document => {
+                if (vscode.workspace.getConfiguration('failsafe').get('previewSyncEnabled', true)) {
+                    panel.webview.postMessage({ command: 'fileSaved' });
+                }
+            });
+
+            panel.onDidDispose(() => {
+                fileSaveListener.dispose();
+            });
+
+        } catch (error) {
+            this.logger.error('Error opening preview', error);
+            vscode.window.showErrorMessage('Failed to open preview. Check logs for details.');
+        }
+    }
+
+    private async togglePreviewSync(): Promise<void> {
+        try {
+            const currentSync = vscode.workspace.getConfiguration('failsafe').get('previewSyncEnabled', true);
+            const newSync = !currentSync;
+            
+            await vscode.workspace.getConfiguration('failsafe').update('previewSyncEnabled', newSync, true);
+            
+            vscode.window.showInformationMessage(
+                `Preview auto-refresh ${newSync ? 'enabled' : 'disabled'}`
+            );
+        } catch (error) {
+            this.logger.error('Error toggling preview sync', error);
+            vscode.window.showErrorMessage('Failed to toggle preview sync. Check logs for details.');
+        }
     }
 } 

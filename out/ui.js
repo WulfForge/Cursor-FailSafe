@@ -3406,508 +3406,514 @@ class UI {
         }
     }
     async showFailsafeConfigPanel() {
-        try {
-            const panel = vscode.window.createWebviewPanel('failsafeConfig', 'FailSafe Configuration', vscode.ViewColumn.One, {
-                enableScripts: true,
-                retainContextWhenHidden: true
-            });
-            const userFailsafes = this.getUserFailsafes();
-            const content = `
-                <div class="failsafe-config-container">
-                    <h1>⚙️ FailSafe Configuration</h1>
-                    
-                    <div class="config-overview">
-                        <div class="overview-card">
-                            <h2>System Status</h2>
-                            <div class="status-indicators">
-                                <div class="status-item">
-                                    <span class="status-label">Current State:</span>
-                                    <span class="status-value ${this.statusBarState}">${this.statusBarState.toUpperCase()}</span>
-                                </div>
-                                <div class="status-item">
-                                    <span class="status-label">Active Failsafes:</span>
-                                    <span class="status-value">${userFailsafes.filter(f => f.enabled).length}</span>
-                                </div>
-                                <div class="status-item">
-                                    <span class="status-label">Total Failsafes:</span>
-                                    <span class="status-value">${userFailsafes.length}</span>
-                                </div>
+        // Implementation for failsafe config panel
+        const panel = vscode.window.createWebviewPanel('failsafeConfig', 'FailSafe Configuration', vscode.ViewColumn.One, {
+            enableScripts: true,
+            retainContextWhenHidden: true
+        });
+        panel.webview.html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>FailSafe Configuration</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    .config-section { margin-bottom: 20px; }
+                    .config-item { margin: 10px 0; }
+                    label { display: block; margin-bottom: 5px; }
+                    input, select { width: 100%; padding: 8px; }
+                    button { padding: 10px 20px; margin: 5px; }
+                </style>
+            </head>
+            <body>
+                <h1>FailSafe Configuration</h1>
+                <div class="config-section">
+                    <h2>User Failsafes</h2>
+                    <div id="failsafes-list">
+                        ${this.userFailsafes.map(fs => `
+                            <div class="config-item">
+                                <label>${fs.name}</label>
+                                <p>${fs.description}</p>
+                                <input type="checkbox" ${fs.enabled ? 'checked' : ''} disabled>
+                                <span>Enabled</span>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="failsafes-section">
-                        <h2>🛡️ Failsafe Rules</h2>
-                        <div class="failsafes-list">
-                            ${userFailsafes.map((failsafe, index) => `
-                                <div class="failsafe-item">
-                                    <div class="failsafe-header">
-                                        <div class="failsafe-info">
-                                            <h3>${failsafe.name}</h3>
-                                            <p>${failsafe.description}</p>
-                                        </div>
-                                        <div class="failsafe-toggle">
-                                            <label class="switch">
-                                                <input type="checkbox" ${failsafe.enabled ? 'checked' : ''} 
-                                                       onchange="toggleFailsafe(${index}, this.checked)">
-                                                <span class="slider round"></span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="failsafe-actions">
-                                        <button class="action-btn" onclick="editFailsafe(${index})">
-                                            ✏️ Edit
-                                        </button>
-                                        <button class="action-btn" onclick="testFailsafe(${index})">
-                                            🧪 Test
-                                        </button>
-                                        <button class="action-btn danger" onclick="deleteFailsafe(${index})">
-                                            🗑️ Delete
-                                        </button>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                        
-                        <div class="add-failsafe">
-                            <button class="add-btn" onclick="vscode.postMessage({command: 'addFailsafe'})">
-                                ➕ Add New Failsafe
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="settings-section">
-                        <h2>🔧 General Settings</h2>
-                        <div class="settings-grid">
-                            <div class="setting-item">
-                                <label class="setting-label">Auto-advance Tasks</label>
-                                <label class="switch">
-                                    <input type="checkbox" id="autoAdvance" checked>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            
-                            <div class="setting-item">
-                                <label class="setting-label">Linear Progression Enforcement</label>
-                                <label class="switch">
-                                    <input type="checkbox" id="linearProgression" checked>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            
-                            <div class="setting-item">
-                                <label class="setting-label">Blocking Detection</label>
-                                <label class="switch">
-                                    <input type="checkbox" id="blockingDetection" checked>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            
-                            <div class="setting-item">
-                                <label class="setting-label">Accountability Tracking</label>
-                                <label class="switch">
-                                    <input type="checkbox" id="accountabilityTracking" checked>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            
-                            <div class="setting-item">
-                                <label class="setting-label">Progress Validation</label>
-                                <label class="switch">
-                                    <input type="checkbox" id="progressValidation" checked>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            
-                            <div class="setting-item">
-                                <label class="setting-label">Feasibility Analysis</label>
-                                <label class="switch">
-                                    <input type="checkbox" id="feasibilityAnalysis" checked>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="action-buttons">
-                        <button class="action-button" onclick="vscode.postMessage({command: 'saveConfig'})">
-                            💾 Save Configuration
-                        </button>
-                        <button class="action-button" onclick="vscode.postMessage({command: 'resetConfig'})">
-                            🔄 Reset to Defaults
-                        </button>
-                        <button class="action-button" onclick="vscode.postMessage({command: 'exportConfig'})">
-                            📤 Export Configuration
-                        </button>
-                        <button class="action-button" onclick="vscode.postMessage({command: 'importConfig'})">
-                            📥 Import Configuration
-                        </button>
+                        `).join('')}
                     </div>
                 </div>
-            `;
-            panel.webview.html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FailSafe Configuration</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: #f5f5f5;
-            color: #333;
-        }
-        
-        .failsafe-config-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        h1 {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            margin: 0;
-            padding: 30px;
-            text-align: center;
-            font-size: 2em;
-        }
-        
-        h2 {
-            color: #2c3e50;
-            margin: 30px 0 20px 0;
-            padding: 0 30px;
-            font-size: 1.5em;
-        }
-        
-        .config-overview {
-            padding: 0 30px;
-        }
-        
-        .overview-card {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            border: 1px solid #e9ecef;
-        }
-        
-        .status-indicators {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        .status-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-        
-        .status-label {
-            color: #6c757d;
-            font-weight: 500;
-        }
-        
-        .status-value {
-            font-weight: bold;
-            color: #3498db;
-        }
-        
-        .status-value.active {
-            color: #28a745;
-        }
-        
-        .status-value.validating {
-            color: #ffc107;
-        }
-        
-        .status-value.blocked {
-            color: #e74c3c;
-        }
-        
-        .failsafes-section {
-            padding: 0 30px;
-        }
-        
-        .failsafes-list {
-            margin-bottom: 20px;
-        }
-        
-        .failsafe-item {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            border: 1px solid #e9ecef;
-            margin-bottom: 15px;
-        }
-        
-        .failsafe-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-        }
-        
-        .failsafe-info h3 {
-            margin: 0 0 5px 0;
-            color: #2c3e50;
-        }
-        
-        .failsafe-info p {
-            margin: 0;
-            color: #6c757d;
-            font-size: 0.9em;
-        }
-        
-        .failsafe-toggle {
-            margin-left: 20px;
-        }
-        
-        .failsafe-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .action-btn {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            color: #6c757d;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: all 0.3s ease;
-        }
-        
-        .action-btn:hover {
-            background: #e9ecef;
-            color: #495057;
-        }
-        
-        .action-btn.danger:hover {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .add-failsafe {
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .add-btn {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
-        }
-        
-        .add-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
-        }
-        
-        .settings-section {
-            padding: 0 30px;
-        }
-        
-        .settings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        
-        .setting-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            border: 1px solid #e9ecef;
-        }
-        
-        .setting-label {
-            font-weight: 500;
-            color: #2c3e50;
-        }
-        
-        /* Switch styles */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
-        }
-        
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-        }
-        
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-        }
-        
-        input:checked + .slider {
-            background-color: #2196F3;
-        }
-        
-        input:focus + .slider {
-            box-shadow: 0 0 1px #2196F3;
-        }
-        
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-        
-        .slider.round {
-            border-radius: 34px;
-        }
-        
-        .slider.round:before {
-            border-radius: 50%;
-        }
-        
-        .action-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            padding: 30px;
-        }
-        
-        .action-button {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            border: none;
-            padding: 15px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .action-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
-        }
-    </style>
-</head>
-<body>
-    ${content}
-    
-    <script>
-        function toggleFailsafe(index, enabled) {
-            vscode.postMessage({
-                command: 'toggleFailsafe',
-                index: index,
-                enabled: enabled
-            });
-        }
-        
-        function editFailsafe(index) {
-            vscode.postMessage({
-                command: 'editFailsafe',
-                index: index
-            });
-        }
-        
-        function testFailsafe(index) {
-            vscode.postMessage({
-                command: 'testFailsafe',
-                index: index
-            });
-        }
-        
-        function deleteFailsafe(index) {
-            if (confirm('Are you sure you want to delete this failsafe?')) {
-                vscode.postMessage({
-                    command: 'deleteFailsafe',
-                    index: index
-                });
+                <div class="config-section">
+                    <h2>System Status</h2>
+                    <p>Status: ${this.statusBarState}</p>
+                    <p>Server Port: ${this.serverPort}</p>
+                    <p>Events Connected: ${this.eventSource ? 'Yes' : 'No'}</p>
+                </div>
+            </body>
+            </html>
+        `;
+    }
+    async showConsole() {
+        const panel = vscode.window.createWebviewPanel('failsafeConsole', 'FailSafe Console', vscode.ViewColumn.One, {
+            enableScripts: true,
+            retainContextWhenHidden: true
+        });
+        // Get recent requests from the server
+        let recentRequests = [];
+        try {
+            const response = await fetch(`http://localhost:${this.serverPort}/requests?recent=true&limit=200`);
+            if (response.ok) {
+                const data = await response.json();
+                recentRequests = data.requests || [];
             }
         }
-    </script>
-</body>
-</html>
-`;
-            panel.webview.onDidReceiveMessage(async (msg) => {
-                switch (msg.command) {
-                    case 'addFailsafe':
-                        vscode.window.showInformationMessage('Adding new failsafe...');
-                        break;
-                    case 'toggleFailsafe':
-                        // Implementation for toggling failsafe
-                        vscode.window.showInformationMessage(`Toggling failsafe ${msg.index} to ${msg.enabled}`);
-                        break;
-                    case 'editFailsafe':
-                        vscode.window.showInformationMessage(`Editing failsafe ${msg.index}`);
-                        break;
-                    case 'testFailsafe':
-                        vscode.window.showInformationMessage(`Testing failsafe ${msg.index}`);
-                        break;
-                    case 'deleteFailsafe':
-                        vscode.window.showInformationMessage(`Deleting failsafe ${msg.index}`);
-                        break;
-                    case 'saveConfig':
-                        vscode.window.showInformationMessage('Configuration saved');
-                        break;
-                    case 'resetConfig': {
-                        const shouldReset = await vscode.window.showInformationMessage('Are you sure you want to reset to defaults?', 'Yes', 'No');
-                        if (shouldReset === 'Yes') {
-                            vscode.window.showInformationMessage('Configuration reset to defaults');
-                        }
-                        break;
-                    }
-                    case 'exportConfig':
-                        vscode.window.showInformationMessage('Exporting configuration...');
-                        break;
-                    case 'importConfig':
-                        vscode.window.showInformationMessage('Importing configuration...');
-                        break;
-                }
-            });
-        }
         catch (error) {
-            this.logger.error('Failed to show failsafe config panel:', error);
-            vscode.window.showErrorMessage('Failed to show failsafe config panel: ' + error);
+            this.logger.warn('Failed to fetch recent requests:', error);
         }
+        panel.webview.html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>FailSafe Console</title>
+                <style>
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #1e1e1e; color: #d4d4d4; }
+                    .console-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+                    .quick-actions { display: flex; gap: 10px; margin-bottom: 20px; }
+                    .action-btn { padding: 8px 16px; background: #007acc; color: white; border: none; border-radius: 4px; cursor: pointer; }
+                    .action-btn:hover { background: #005a9e; }
+                    .action-btn.danger { background: #d73a49; }
+                    .action-btn.danger:hover { background: #b31d28; }
+                    .requests-section { margin-bottom: 30px; }
+                    .requests-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                    .requests-table th, .requests-table td { padding: 8px; text-align: left; border-bottom: 1px solid #404040; }
+                    .requests-table th { background: #2d2d30; font-weight: bold; }
+                    .status-200 { color: #4caf50; }
+                    .status-4xx, .status-5xx { color: #f44336; }
+                    .events-section { margin-top: 30px; }
+                    .event-item { padding: 10px; margin: 5px 0; background: #2d2d30; border-radius: 4px; border-left: 4px solid #007acc; }
+                    .event-item.validation { border-left-color: #4caf50; }
+                    .event-item.error { border-left-color: #f44336; }
+                    .event-item.warning { border-left-color: #ff9800; }
+                    .toast { position: fixed; top: 20px; right: 20px; padding: 15px; border-radius: 4px; color: white; z-index: 1000; }
+                    .toast.success { background: #4caf50; }
+                    .toast.error { background: #f44336; }
+                    .toast.warning { background: #ff9800; }
+                </style>
+            </head>
+            <body>
+                <div class="console-header">
+                    <h1>🖥️ FailSafe Console</h1>
+                    <div class="status-indicator">
+                        <span id="connection-status">${this.eventSource ? '🟢 Connected' : '🔴 Disconnected'}</span>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="action-btn" onclick="validateCurrent()">🔍 Validate Current File</button>
+                    <button class="action-btn" onclick="validateAll()">🔍 Validate All Files</button>
+                    <button class="action-btn" onclick="getStatus()">📊 Get Status</button>
+                    <button class="action-btn" onclick="getDesignDoc()">📋 Get Design Doc</button>
+                    <button class="action-btn danger" onclick="clearRequests()">🗑️ Clear Requests</button>
+                </div>
+
+                <div class="requests-section">
+                    <h2>📋 Recent Requests (Last 200)</h2>
+                    <table class="requests-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Method</th>
+                                <th>URL</th>
+                                <th>Status</th>
+                                <th>Response Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requests-body">
+                            ${recentRequests.map(req => `
+                                <tr>
+                                    <td>${new Date(req.timestamp).toLocaleTimeString()}</td>
+                                    <td>${req.method}</td>
+                                    <td>${req.url}</td>
+                                    <td class="status-${req.statusCode >= 400 ? '4xx' : req.statusCode >= 500 ? '5xx' : '200'}">${req.statusCode}</td>
+                                    <td>${req.responseTime}ms</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="events-section">
+                    <h2>📡 Real-time Events</h2>
+                    <div id="events-container">
+                        ${this.realTimeEvents.map(event => `
+                            <div class="event-item ${event.type}">
+                                <strong>${event.type.toUpperCase()}</strong> - ${new Date(event.timestamp).toLocaleTimeString()}
+                                <br><small>${JSON.stringify(event.data)}</small>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <script>
+                    const vscode = acquireVsCodeApi();
+                    let eventSource = null;
+
+                    // Initialize SSE connection
+                    function initSSE() {
+                        try {
+                            eventSource = new EventSource('http://localhost:${this.serverPort}/events');
+                            eventSource.onmessage = function(event) {
+                                const data = JSON.parse(event.data);
+                                addEvent(data);
+                                updateConnectionStatus(true);
+                            };
+                            eventSource.onerror = function() {
+                                updateConnectionStatus(false);
+                                setTimeout(initSSE, 5000);
+                            };
+                        } catch (error) {
+                            console.error('SSE connection failed:', error);
+                            updateConnectionStatus(false);
+                        }
+                    }
+
+                    function updateConnectionStatus(connected) {
+                        const status = document.getElementById('connection-status');
+                        status.textContent = connected ? '🟢 Connected' : '🔴 Disconnected';
+                        status.style.color = connected ? '#4caf50' : '#f44336';
+                    }
+
+                    function addEvent(event) {
+                        const container = document.getElementById('events-container');
+                        const eventDiv = document.createElement('div');
+                        eventDiv.className = \`event-item \${event.type}\`;
+                        eventDiv.innerHTML = \`
+                            <strong>\${event.type.toUpperCase()}</strong> - \${new Date(event.timestamp).toLocaleTimeString()}
+                            <br><small>\${JSON.stringify(event.data)}</small>
+                        \`;
+                        container.insertBefore(eventDiv, container.firstChild);
+                        
+                        // Keep only last 50 events
+                        while (container.children.length > 50) {
+                            container.removeChild(container.lastChild);
+                        }
+                    }
+
+                    function showToast(message, type = 'success') {
+                        const toast = document.createElement('div');
+                        toast.className = \`toast \${type}\`;
+                        toast.textContent = message;
+                        document.body.appendChild(toast);
+                        setTimeout(() => toast.remove(), 3000);
+                    }
+
+                    async function validateCurrent() {
+                        try {
+                            const response = await fetch('http://localhost:${this.serverPort}/validate', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ files: ['current'] })
+                            });
+                            const result = await response.json();
+                            if (result.status === 'fail') {
+                                showToast('Validation failed: ' + result.results.errors.join(', '), 'error');
+                            } else {
+                                showToast('Validation passed!', 'success');
+                            }
+                        } catch (error) {
+                            showToast('Validation request failed: ' + error.message, 'error');
+                        }
+                    }
+
+                    async function validateAll() {
+                        try {
+                            const response = await fetch('http://localhost:${this.serverPort}/validate', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ files: ['all'] })
+                            });
+                            const result = await response.json();
+                            if (result.status === 'fail') {
+                                showToast('Validation failed: ' + result.results.errors.join(', '), 'error');
+                            } else {
+                                showToast('All files validated successfully!', 'success');
+                            }
+                        } catch (error) {
+                            showToast('Validation request failed: ' + error.message, 'error');
+                        }
+                    }
+
+                    async function getStatus() {
+                        try {
+                            const response = await fetch('http://localhost:${this.serverPort}/status');
+                            const result = await response.json();
+                            showToast('Status: ' + JSON.stringify(result), 'success');
+                        } catch (error) {
+                            showToast('Status request failed: ' + error.message, 'error');
+                        }
+                    }
+
+                    async function getDesignDoc() {
+                        try {
+                            const response = await fetch('http://localhost:${this.serverPort}/design-doc');
+                            const result = await response.text();
+                            showToast('Design doc retrieved (' + result.length + ' chars)', 'success');
+                        } catch (error) {
+                            showToast('Design doc request failed: ' + error.message, 'error');
+                        }
+                    }
+
+                    async function clearRequests() {
+                        try {
+                            const response = await fetch('http://localhost:${this.serverPort}/requests', {
+                                method: 'DELETE'
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                showToast('Requests cleared successfully!', 'success');
+                                document.getElementById('requests-body').innerHTML = '';
+                            } else {
+                                showToast('Failed to clear requests', 'error');
+                            }
+                        } catch (error) {
+                            showToast('Clear requests failed: ' + error.message, 'error');
+                        }
+                    }
+
+                    // Initialize SSE on page load
+                    initSSE();
+                </script>
+            </body>
+            </html>
+        `;
+    }
+    async showLogs() {
+        const panel = vscode.window.createWebviewPanel('failsafeLogs', 'FailSafe Logs', vscode.ViewColumn.One, {
+            enableScripts: true,
+            retainContextWhenHidden: true
+        });
+        panel.webview.html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>FailSafe Logs</title>
+                <style>
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #1e1e1e; color: #d4d4d4; }
+                    .logs-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+                    .log-controls { display: flex; gap: 10px; margin-bottom: 20px; }
+                    .control-btn { padding: 8px 16px; background: #007acc; color: white; border: none; border-radius: 4px; cursor: pointer; }
+                    .control-btn:hover { background: #005a9e; }
+                    .control-btn.danger { background: #d73a49; }
+                    .control-btn.danger:hover { background: #b31d28; }
+                    .log-entry { padding: 12px; margin: 8px 0; background: #2d2d30; border-radius: 4px; border-left: 4px solid #007acc; cursor: pointer; transition: background 0.2s; }
+                    .log-entry:hover { background: #3d3d40; }
+                    .log-entry.info { border-left-color: #007acc; }
+                    .log-entry.warning { border-left-color: #ff9800; }
+                    .log-entry.error { border-left-color: #f44336; }
+                    .log-entry.critical { border-left-color: #9c27b0; }
+                    .log-entry.success { border-left-color: #4caf50; }
+                    .log-timestamp { color: #888; font-size: 0.9em; }
+                    .log-type { font-weight: bold; margin-right: 10px; }
+                    .log-message { margin-top: 5px; }
+                    .log-data { background: #1e1e1e; padding: 8px; margin-top: 8px; border-radius: 3px; font-family: monospace; font-size: 0.9em; color: #ccc; }
+                    .filter-section { margin-bottom: 20px; }
+                    .filter-input { padding: 8px; background: #2d2d30; border: 1px solid #404040; color: #d4d4d4; border-radius: 4px; margin-right: 10px; }
+                    .toast { position: fixed; top: 20px; right: 20px; padding: 15px; border-radius: 4px; color: white; z-index: 1000; }
+                    .toast.success { background: #4caf50; }
+                    .toast.error { background: #f44336; }
+                </style>
+            </head>
+            <body>
+                <div class="logs-header">
+                    <h1>📋 FailSafe Logs</h1>
+                    <div class="status-indicator">
+                        <span id="log-status">🟢 Live Streaming</span>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <input type="text" id="log-filter" class="filter-input" placeholder="Filter logs..." onkeyup="filterLogs()">
+                    <select id="severity-filter" class="filter-input" onchange="filterLogs()">
+                        <option value="">All Severities</option>
+                        <option value="info">Info</option>
+                        <option value="warning">Warning</option>
+                        <option value="error">Error</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                    <button class="control-btn" onclick="clearLogs()">🗑️ Clear Logs</button>
+                    <button class="control-btn" onclick="exportLogs()">📤 Export Logs</button>
+                </div>
+
+                <div class="log-controls">
+                    <button class="control-btn" onclick="refreshLogs()">🔄 Refresh</button>
+                    <button class="control-btn" onclick="toggleAutoScroll()">📌 Toggle Auto-scroll</button>
+                    <button class="control-btn danger" onclick="clearAllLogs()">🗑️ Clear All</button>
+                </div>
+
+                <div id="logs-container">
+                    ${this.actionLog.map(log => `
+                        <div class="log-entry info" data-severity="info" data-timestamp="${log.timestamp}">
+                            <div class="log-timestamp">${new Date(log.timestamp).toLocaleString()}</div>
+                            <div class="log-type">INFO</div>
+                            <div class="log-message">${log.description}</div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <script>
+                    const vscode = acquireVsCodeApi();
+                    let eventSource = null;
+                    let autoScroll = true;
+
+                    // Initialize SSE connection for log events
+                    function initLogSSE() {
+                        try {
+                            eventSource = new EventSource('http://localhost:${this.serverPort}/events');
+                            eventSource.onmessage = function(event) {
+                                const data = JSON.parse(event.data);
+                                addLogEntry(data);
+                                updateLogStatus(true);
+                            };
+                            eventSource.onerror = function() {
+                                updateLogStatus(false);
+                                setTimeout(initLogSSE, 5000);
+                            };
+                        } catch (error) {
+                            console.error('Log SSE connection failed:', error);
+                            updateLogStatus(false);
+                        }
+                    }
+
+                    function updateLogStatus(connected) {
+                        const status = document.getElementById('log-status');
+                        status.textContent = connected ? '🟢 Live Streaming' : '🔴 Disconnected';
+                        status.style.color = connected ? '#4caf50' : '#f44336';
+                    }
+
+                    function addLogEntry(event) {
+                        const container = document.getElementById('logs-container');
+                        const logDiv = document.createElement('div');
+                        logDiv.className = \`log-entry \${event.severity}\`;
+                        logDiv.setAttribute('data-severity', event.severity);
+                        logDiv.setAttribute('data-timestamp', event.timestamp);
+                        
+                        logDiv.innerHTML = \`
+                            <div class="log-timestamp">\${new Date(event.timestamp).toLocaleString()}</div>
+                            <div class="log-type">\${event.type.toUpperCase()}</div>
+                            <div class="log-message">\${event.data.message || JSON.stringify(event.data)}</div>
+                            \${event.data.details ? \`<div class="log-data">\${JSON.stringify(event.data.details, null, 2)}</div>\` : ''}
+                        \`;
+                        
+                        // Add click handler for copy to clipboard
+                        logDiv.onclick = function() {
+                            copyToClipboard(logDiv.textContent);
+                        };
+                        
+                        container.insertBefore(logDiv, container.firstChild);
+                        
+                        // Keep only last 500 log entries
+                        while (container.children.length > 500) {
+                            container.removeChild(container.lastChild);
+                        }
+                        
+                        if (autoScroll) {
+                            container.scrollTop = 0;
+                        }
+                    }
+
+                    function copyToClipboard(text) {
+                        navigator.clipboard.writeText(text).then(function() {
+                            showToast('Log entry copied to clipboard!', 'success');
+                        }).catch(function() {
+                            showToast('Failed to copy to clipboard', 'error');
+                        });
+                    }
+
+                    function showToast(message, type = 'success') {
+                        const toast = document.createElement('div');
+                        toast.className = \`toast \${type}\`;
+                        toast.textContent = message;
+                        document.body.appendChild(toast);
+                        setTimeout(() => toast.remove(), 3000);
+                    }
+
+                    function filterLogs() {
+                        const filterText = document.getElementById('log-filter').value.toLowerCase();
+                        const severityFilter = document.getElementById('severity-filter').value;
+                        const entries = document.querySelectorAll('.log-entry');
+                        
+                        entries.forEach(entry => {
+                            const text = entry.textContent.toLowerCase();
+                            const severity = entry.getAttribute('data-severity');
+                            const matchesText = filterText === '' || text.includes(filterText);
+                            const matchesSeverity = severityFilter === '' || severity === severityFilter;
+                            
+                            entry.style.display = matchesText && matchesSeverity ? 'block' : 'none';
+                        });
+                    }
+
+                    async function refreshLogs() {
+                        try {
+                            const response = await fetch('http://localhost:${this.serverPort}/events/recent?type=log&limit=100');
+                            const data = await response.json();
+                            const container = document.getElementById('logs-container');
+                            container.innerHTML = '';
+                            
+                            data.events.forEach(event => {
+                                addLogEntry(event);
+                            });
+                            
+                            showToast('Logs refreshed!', 'success');
+                        } catch (error) {
+                            showToast('Failed to refresh logs: ' + error.message, 'error');
+                        }
+                    }
+
+                    function toggleAutoScroll() {
+                        autoScroll = !autoScroll;
+                        showToast(autoScroll ? 'Auto-scroll enabled' : 'Auto-scroll disabled', 'success');
+                    }
+
+                    async function clearLogs() {
+                        const container = document.getElementById('logs-container');
+                        container.innerHTML = '';
+                        showToast('Logs cleared!', 'success');
+                    }
+
+                    async function clearAllLogs() {
+                        if (confirm('Are you sure you want to clear all logs?')) {
+                            try {
+                                await fetch('http://localhost:${this.serverPort}/requests', { method: 'DELETE' });
+                                const container = document.getElementById('logs-container');
+                                container.innerHTML = '';
+                                showToast('All logs cleared!', 'success');
+                            } catch (error) {
+                                showToast('Failed to clear all logs: ' + error.message, 'error');
+                            }
+                        }
+                    }
+
+                    async function exportLogs() {
+                        const entries = document.querySelectorAll('.log-entry');
+                        const logs = Array.from(entries).map(entry => entry.textContent).join('\\n\\n');
+                        
+                        const blob = new Blob([logs], { type: 'text/plain' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'failsafe-logs-' + new Date().toISOString().split('T')[0] + '.txt';
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        
+                        showToast('Logs exported!', 'success');
+                    }
+
+                    // Initialize SSE on page load
+                    initLogSSE();
+                </script>
+            </body>
+            </html>
+        `;
     }
     refreshSidebar() {
         if (this.sidebarProvider) {

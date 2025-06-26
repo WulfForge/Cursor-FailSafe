@@ -2,7 +2,7 @@
 import * as vscode from 'vscode';
 import { ProjectPlan } from './projectPlan';
 import { Logger } from './logger';
-import { Task, TaskStatus, TaskNudge } from './types';
+import { Task, TaskStatus, TaskNudge, TaskPriority, TaskDependency } from './types';
 import { DataStore } from './dataStore';
 
 export interface TaskExecutionContext {
@@ -23,12 +23,18 @@ export interface TaskExecutionResult {
     nextAction?: 'continue' | 'retry' | 'skip' | 'block';
 }
 
+interface TaskContext {
+    projectPlan: ProjectPlan;
+    logger: Logger;
+    dataStore: DataStore;
+}
+
 export class TaskEngine {
     private readonly projectPlan: ProjectPlan;
     private readonly logger: Logger;
     private readonly ui?: unknown;
     private isActive = false;
-    private checkIntervalMs: NodeJS.Timeout | null = null; // 30 seconds
+    private checkIntervalMs: ReturnType<typeof setInterval> | null = null; // 30 seconds
     private readonly overdueThresholdMs = 300000; // 5 minutes
     private readonly stallThresholdMs = 600000; // 10 minutes
     private readonly maxRetryAttempts = 3;

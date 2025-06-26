@@ -45,6 +45,8 @@ const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const types_1 = require("./types");
+// Add Node.js types reference
+/// <reference types="node" />
 // Use built-in fetch or node-fetch as fallback
 let fetch;
 try {

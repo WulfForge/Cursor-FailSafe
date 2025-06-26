@@ -11,6 +11,9 @@ import * as path from 'path';
 import { Logger } from './logger';
 import { Task, TaskStatus, TaskPriority } from './types';
 
+// Add Node.js types reference
+/// <reference types="node" />
+
 // Use built-in fetch or node-fetch as fallback
 let fetch: any;
 try {

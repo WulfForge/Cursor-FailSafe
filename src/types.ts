@@ -213,4 +213,13 @@ export interface Event {
     data: Record<string, unknown>;
     severity: 'info' | 'warning' | 'critical';
     timestamp?: string;
+}
+
+export interface TaskDependency {
+    id: string;
+    taskId: string;
+    dependentTaskId: string;
+    type: 'blocks' | 'requires' | 'related';
+    description?: string;
+    createdAt: Date;
 } 
