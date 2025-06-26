@@ -1,0 +1,471 @@
+[
+  {
+    "timestamp": "2025-06-22T04:53:16.596Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.599Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.604Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.609Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.615Z",
+    "level": "info",
+    "message": "Saved 1 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.617Z",
+    "level": "info",
+    "message": "Created Cursorrule: Filesystem Hallucination Detection",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.632Z",
+    "level": "info",
+    "message": "Saved 2 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.647Z",
+    "level": "info",
+    "message": "Created Cursorrule: Proactive File Existence Check",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.661Z",
+    "level": "info",
+    "message": "Saved 3 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.662Z",
+    "level": "info",
+    "message": "Created Cursorrule: File Content Claim Validation",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.664Z",
+    "level": "info",
+    "message": "Saved 4 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.665Z",
+    "level": "info",
+    "message": "Created Cursorrule: File Modification Time Claim",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.667Z",
+    "level": "info",
+    "message": "Saved 5 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.667Z",
+    "level": "info",
+    "message": "Created Cursorrule: Directory Structure Claim",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.668Z",
+    "level": "info",
+    "message": "Saved 6 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.669Z",
+    "level": "info",
+    "message": "Created Cursorrule: File Size Claim",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.670Z",
+    "level": "info",
+    "message": "Saved 7 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.671Z",
+    "level": "info",
+    "message": "Created Cursorrule: Minimal Hallucination Detection",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.673Z",
+    "level": "info",
+    "message": "Saved 8 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.674Z",
+    "level": "info",
+    "message": "Created Cursorrule: Version Consistency Check",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.675Z",
+    "level": "info",
+    "message": "Saved 9 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.676Z",
+    "level": "info",
+    "message": "Created Cursorrule: Implementation Verification",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.680Z",
+    "level": "info",
+    "message": "Saved 10 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.689Z",
+    "level": "info",
+    "message": "Created Cursorrule: Task Completion Claim",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.691Z",
+    "level": "info",
+    "message": "Saved 11 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.692Z",
+    "level": "info",
+    "message": "Created Cursorrule: Audit Results Claim",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.694Z",
+    "level": "info",
+    "message": "Saved 12 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.694Z",
+    "level": "info",
+    "message": "Created Cursorrule: Compilation Status Claim",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.696Z",
+    "level": "info",
+    "message": "Saved 13 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.696Z",
+    "level": "info",
+    "message": "Created Cursorrule: Test Results Claim",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.698Z",
+    "level": "info",
+    "message": "Saved 14 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.698Z",
+    "level": "info",
+    "message": "Created Cursorrule: Hallucination Admission",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.700Z",
+    "level": "info",
+    "message": "Saved 15 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.700Z",
+    "level": "info",
+    "message": "Created Cursorrule: Vague Offer Detection",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.702Z",
+    "level": "info",
+    "message": "Saved 16 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.703Z",
+    "level": "info",
+    "message": "Created Cursorrule: Absolute Statement Detection",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.704Z",
+    "level": "info",
+    "message": "Saved 17 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.705Z",
+    "level": "info",
+    "message": "Created Cursorrule: Performance Claim Detection",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.707Z",
+    "level": "info",
+    "message": "Saved 18 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.707Z",
+    "level": "info",
+    "message": "Created Cursorrule: Auto Version Management",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.709Z",
+    "level": "info",
+    "message": "Saved 19 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.710Z",
+    "level": "info",
+    "message": "Created Cursorrule: AI Task Execution",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.712Z",
+    "level": "info",
+    "message": "Saved 20 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.713Z",
+    "level": "info",
+    "message": "Created Cursorrule: GitHub Workflow Management",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.714Z",
+    "level": "info",
+    "message": "Saved 21 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.715Z",
+    "level": "info",
+    "message": "Created Cursorrule: Product Discovery Protocol",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.717Z",
+    "level": "info",
+    "message": "Saved 22 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.718Z",
+    "level": "info",
+    "message": "Created Cursorrule: Beginner Guidance",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.720Z",
+    "level": "info",
+    "message": "Saved 23 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.723Z",
+    "level": "info",
+    "message": "Created Cursorrule: Error Recovery Assistance",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.734Z",
+    "level": "info",
+    "message": "Saved 24 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.738Z",
+    "level": "info",
+    "message": "Created Cursorrule: Best Practice Suggestions",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.743Z",
+    "level": "info",
+    "message": "Saved 25 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.744Z",
+    "level": "info",
+    "message": "Created Cursorrule: Dependency Management",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.746Z",
+    "level": "info",
+    "message": "Saved 26 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.747Z",
+    "level": "info",
+    "message": "Created Cursorrule: Testing Guidance",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.750Z",
+    "level": "info",
+    "message": "Saved 27 Cursorrules",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.751Z",
+    "level": "info",
+    "message": "Created Cursorrule: Documentation Assistance",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.755Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.756Z",
+    "level": "info",
+    "message": "Sprint templates loaded",
+    "data": {
+      "templateCount": 2
+    },
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.757Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.758Z",
+    "level": "info",
+    "message": "FailSafe extension activating...",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.759Z",
+    "level": "info",
+    "message": "Registering FailSafe commands",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.761Z",
+    "level": "info",
+    "message": "Registered 13 commands",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.762Z",
+    "level": "info",
+    "message": "Basic project plan initialized",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.763Z",
+    "level": "info",
+    "message": "Task engine initializing...",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.764Z",
+    "level": "info",
+    "message": "Basic project plan initialized",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.767Z",
+    "level": "warn",
+    "message": "Version consistency issues found",
+    "data": [
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.768Z",
+    "level": "info",
+    "message": "Version manager initialized",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.769Z",
+    "level": "info",
+    "message": "All components initialized successfully",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:53:16.770Z",
+    "level": "info",
+    "message": "FailSafe extension activated successfully",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:54:04.633Z",
+    "level": "info",
+    "message": "Dashboard opened successfully",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:55:25.876Z",
+    "level": "info",
+    "message": "Sprint created",
+    "data": {
+      "sprintId": "sprint-1750568125875-xc9rdf10g",
+      "name": "Test 1"
+    },
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T04:55:29.313Z",
+    "level": "info",
+    "message": "Sprint started",
+    "data": {
+      "sprintId": "sprint-1750568125875-xc9rdf10g"
+    },
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T05:39:15.236Z",
+    "level": "info",
+    "message": "Dashboard opened successfully",
+    "sessionId": "session-20250622-005316"
+  },
+  {
+    "timestamp": "2025-06-22T05:39:18.098Z",
+    "level": "info",
+    "message": "Dashboard opened successfully",
+    "sessionId": "session-20250622-005316"
+  }
+]

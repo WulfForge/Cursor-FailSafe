@@ -1,0 +1,974 @@
+[
+  {
+    "timestamp": "2025-06-25T16:18:59.935Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:18:59.942Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:18:59.946Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:18:59.958Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:18:59.972Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:18:59.979Z",
+    "level": "info",
+    "message": "Sprint data loaded",
+    "data": {
+      "currentSprint": "sprint-1750568125875-xc9rdf10g",
+      "historyCount": 0
+    },
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.014Z",
+    "level": "info",
+    "message": "Sprint templates loaded",
+    "data": {
+      "templateCount": 2
+    },
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.033Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.051Z",
+    "level": "info",
+    "message": "Sprint data loaded",
+    "data": {
+      "currentSprint": "sprint-1750568125875-xc9rdf10g",
+      "historyCount": 0
+    },
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.061Z",
+    "level": "info",
+    "message": "Sprint templates loaded",
+    "data": {
+      "templateCount": 2
+    },
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.066Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.138Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.200Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.202Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.205Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.213Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.234Z",
+    "level": "info",
+    "message": "Global AI response pipeline initialized",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.242Z",
+    "level": "info",
+    "message": "AI Response Hooks initialized",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.250Z",
+    "level": "info",
+    "message": "AI response hook registered: vscode-chat",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.257Z",
+    "level": "info",
+    "message": "AI response hook registered: github-copilot",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.277Z",
+    "level": "info",
+    "message": "AI response hook registered: cursor-ai",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.279Z",
+    "level": "info",
+    "message": "AI response hook registered: general-ai",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.292Z",
+    "level": "info",
+    "message": "AI response hooks initialized",
+    "data": {
+      "hookCount": 4,
+      "enabled": true
+    },
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.294Z",
+    "level": "info",
+    "message": "Global AI response hooks initialized",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.298Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.310Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.313Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.316Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.322Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.327Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.337Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.358Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.365Z",
+    "level": "info",
+    "message": "Chat Response Interceptor initialized",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.400Z",
+    "level": "info",
+    "message": "FailSafe Extension initialized with AI response pipeline, hooks, and Chat Response Interceptor",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.422Z",
+    "level": "info",
+    "message": "FailSafe extension activating...",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.449Z",
+    "level": "info",
+    "message": "Extension context: c:\\Users\\krkna\\.cursor\\extensions\\mythologiq.failsafe-cursor-2.5.0",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.470Z",
+    "level": "info",
+    "message": "Workspace folders: 1",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.495Z",
+    "level": "info",
+    "message": "Basic project plan initialized",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.502Z",
+    "level": "info",
+    "message": "Task engine initializing...",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.518Z",
+    "level": "info",
+    "message": "Basic project plan initialized",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.559Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.562Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.600Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.624Z",
+    "level": "warn",
+    "message": "Version consistency issues found",
+    "data": [
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.635Z",
+    "level": "info",
+    "message": "Version manager initialized successfully",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.639Z",
+    "level": "info",
+    "message": "All components initialized successfully",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.652Z",
+    "level": "info",
+    "message": "Registering commands...",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.678Z",
+    "level": "info",
+    "message": "All FailSafe commands registered successfully",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.717Z",
+    "level": "info",
+    "message": "Commands registered successfully",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.721Z",
+    "level": "info",
+    "message": "Registering sidebar provider...",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.740Z",
+    "level": "info",
+    "message": "Sidebar provider registered successfully",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.746Z",
+    "level": "info",
+    "message": "Setting up chat response interceptor...",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.749Z",
+    "level": "info",
+    "message": "Setting up chat response listeners...",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.759Z",
+    "level": "info",
+    "message": "Chat response listeners set up successfully",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.761Z",
+    "level": "info",
+    "message": "Chat response interceptor set up successfully",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.764Z",
+    "level": "info",
+    "message": "Version checking file watcher set up successfully",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:00.774Z",
+    "level": "info",
+    "message": "FailSafe extension activated successfully",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:01.791Z",
+    "level": "info",
+    "message": "Attempting to auto-open dashboard...",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:01.794Z",
+    "level": "info",
+    "message": "Dashboard auto-opened successfully",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:03.397Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:03.401Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:03.406Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:19:03.448Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:32:31.973Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:32:31.974Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:32:31.975Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:32:31.976Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:32:32.458Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:32:32.459Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:32:32.461Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:32:32.462Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:00.635Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:00.636Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:00.638Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:00.640Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:01.908Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:01.909Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:01.911Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:01.912Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:03.379Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:03.380Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:03.381Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:03.382Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:03.901Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:03.902Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:03.903Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:03.904Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:35.029Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:35.031Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:35.033Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:35.035Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:37.130Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:37.132Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:37.134Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T16:33:37.135Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:14:51.868Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:14:51.870Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:14:51.872Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:15:52.805Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:15:52.806Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:15:52.808Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:15:52.809Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:15:53.604Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:15:53.605Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:15:53.607Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:15:53.608Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:15:59.848Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:15:59.849Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:15:59.852Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:15:59.853Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:16:02.764Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:16:02.765Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:16:02.767Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:16:39.689Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:16:39.691Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:16:39.693Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:12.786Z",
+    "level": "info",
+    "message": "Version warning logged: CHANGELOG.md missing current version entry",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:12.788Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:12.789Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:12.791Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "CHANGELOG.md missing current version entry",
+      "README.md badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:12.984Z",
+    "level": "info",
+    "message": "Version warning logged: CHANGELOG.md missing current version entry",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:12.986Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:12.987Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:12.989Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "CHANGELOG.md missing current version entry",
+      "README.md badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:13.392Z",
+    "level": "info",
+    "message": "Version warning logged: CHANGELOG.md missing current version entry",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:13.393Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:13.394Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:13.396Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "CHANGELOG.md missing current version entry",
+      "README.md badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:21.358Z",
+    "level": "info",
+    "message": "Version warning logged: CHANGELOG.md missing current version entry",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:21.360Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:21.361Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:21.363Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "CHANGELOG.md missing current version entry",
+      "README.md badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:21.932Z",
+    "level": "info",
+    "message": "Version warning logged: CHANGELOG.md missing current version entry",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:21.933Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:21.935Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:21.936Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "CHANGELOG.md missing current version entry",
+      "README.md badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:52.094Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:52.095Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:52.096Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "README.md badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:52.414Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:52.415Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:52.417Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "README.md badge version mismatch"
+    ],
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:57.406Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:43:57.408Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250625-121859"
+  },
+  {
+    "timestamp": "2025-06-25T17:45:52.538Z",
+    "level": "error",
+    "message": "Failed to check version consistency:",
+    "data": {
+      "name": "Canceled"
+    },
+    "sessionId": "session-20250625-121859"
+  }
+]

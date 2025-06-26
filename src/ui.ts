@@ -799,25 +799,22 @@ export class UI {
         const chartData = await this.generateChartData(dashboard, planValidation);
 
         // Generate the main content
+        const mythologiqLogoUri = this.context && this.dashboardPanel?.webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, 'images', 'MythologIQ.png')
+        );
         const content = `
         <div class="dashboard-content">
-            <div class="header">
-                <div class="header-content">
-                    <div class="logo-container">
-                        <div class="failsafe-logo">🛡️</div>
-                        <div>
-                            <h1>FailSafe Dashboard</h1>
-                            <p>Project Management & Accountability System</p>
-                        </div>
-                    </div>
+            <header class="flex items-center justify-between bg-surface text-primary rounded-t-lg px-6 py-4 border-b border-muted">
+                <div class="flex items-center gap-4">
+                    <img src="${iconUri}" alt="FailSafe Icon" class="w-10 h-10" />
+                    <span class="text-2xl font-display font-bold">FailSafe</span>
                 </div>
                 <div class="plan-status ${planValidation.status}">
                     <span class="status-icon">${planColor}</span>
                     <span class="status-text">${planStatus}</span>
                 </div>
-            </div>
-
-            <div class="main-content">
+            </header>
+            <main class="main-content">
                 <div class="grid-container">
                     <div class="current-task-section">
                         <h2>Current Task</h2>
@@ -900,7 +897,16 @@ export class UI {
                         </button>
                     </div>
                 </div>
-            </div>
+            </main>
+            <footer class="flex items-center justify-between bg-surface text-muted rounded-b-lg px-6 py-3 border-t border-muted mt-8">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm">v${require('../../package.json').version}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <img src="${mythologiqLogoUri}" alt="MythologIQ Logo" class="w-8 h-8" />
+                    <span class="text-xs font-sans">MythologIQ</span>
+                </div>
+            </footer>
         </div>
 
         <script>

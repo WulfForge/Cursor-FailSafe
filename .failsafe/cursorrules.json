@@ -1,0 +1,423 @@
+[
+  {
+    "name": "Filesystem Hallucination Detection",
+    "pattern": "\\b(?:file|directory|folder|path)\\s+(?:exists|is\\s+present|can\\s+be\\s+found|is\\s+available)\\b",
+    "patternType": "regex",
+    "purpose": "hallucination_detection",
+    "severity": "error",
+    "enabled": true,
+    "id": "rule_1750567996615_ymchm77xm",
+    "createdAt": "2025-06-22T04:53:16.615Z",
+    "updatedAt": "2025-06-22T04:53:16.615Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "id": "rule_1750567996620_cfupsa977",
+    "name": "Proactive File Existence Check",
+    "pattern": "\\b(?:file|directory|folder|path)\\s+(?:exists|is\\s+present|can\\s+be\\s+found|is\\s+available)\\b",
+    "patternType": "regex",
+    "purpose": "hallucination_detection",
+    "severity": "error",
+    "enabled": true,
+    "createdAt": "2025-06-22T04:53:16.620Z",
+    "updatedAt": "2025-06-22T04:53:16.620Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "id": "rule_1750567996657_8rikmx20f",
+    "name": "File Content Claim Validation",
+    "pattern": "\\b(?:content|text|data)\\s+(?:in|of|from)\\s+(?:file|document)\\b",
+    "patternType": "regex",
+    "purpose": "hallucination_detection",
+    "severity": "error",
+    "enabled": true,
+    "createdAt": "2025-06-22T04:53:16.657Z",
+    "updatedAt": "2025-06-22T04:53:16.657Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "id": "rule_1750567996664_46q67vhxu",
+    "name": "File Modification Time Claim",
+    "pattern": "\\b(?:modified|updated|changed)\\s+(?:on|at|when)\\b",
+    "patternType": "regex",
+    "purpose": "hallucination_detection",
+    "severity": "error",
+    "enabled": true,
+    "createdAt": "2025-06-22T04:53:16.664Z",
+    "updatedAt": "2025-06-22T04:53:16.664Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "id": "rule_1750567996666_x563n9bf9",
+    "name": "Directory Structure Claim",
+    "pattern": "\\b(?:directory|folder)\\s+(?:structure|layout|organization)\\b",
+    "patternType": "regex",
+    "purpose": "hallucination_detection",
+    "severity": "error",
+    "enabled": true,
+    "createdAt": "2025-06-22T04:53:16.666Z",
+    "updatedAt": "2025-06-22T04:53:16.666Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "id": "rule_1750567996668_2qdzsodrl",
+    "name": "File Size Claim",
+    "pattern": "\\b(?:file|document)\\s+(?:size|length|bytes)\\b",
+    "patternType": "regex",
+    "purpose": "hallucination_detection",
+    "severity": "error",
+    "enabled": true,
+    "createdAt": "2025-06-22T04:53:16.668Z",
+    "updatedAt": "2025-06-22T04:53:16.668Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Minimal Hallucination Detection",
+    "pattern": "\\b(?:I\\s+can\\s+see|there\\s+is|I\\s+found|I\\s+located|the\\s+file\\s+contains|I\\s+can\\s+see\\s+in\\s+the\\s+file)\\b",
+    "patternType": "regex",
+    "purpose": "minimal_validation",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1750567996670_jaj13n6yu",
+    "createdAt": "2025-06-22T04:53:16.670Z",
+    "updatedAt": "2025-06-22T04:53:16.670Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Version Consistency Check",
+    "pattern": "\\b(?:version|v\\d+\\.\\d+\\.\\d+|semver)\\b",
+    "patternType": "regex",
+    "purpose": "version_consistency",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1750567996672_2cjjabvkc",
+    "createdAt": "2025-06-22T04:53:16.672Z",
+    "updatedAt": "2025-06-22T04:53:16.672Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Implementation Verification",
+    "pattern": "\\b(?:I\\s+implemented|I\\s+created|I\\s+built|I\\s+developed)\\b",
+    "patternType": "regex",
+    "purpose": "implementation_verification",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1750567996675_vco1gm7hf",
+    "createdAt": "2025-06-22T04:53:16.675Z",
+    "updatedAt": "2025-06-22T04:53:16.675Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Task Completion Claim",
+    "pattern": "\\b(?:completed|finished|done|implemented|resolved)\\b",
+    "patternType": "regex",
+    "purpose": "task_completion",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1750567996680_j3nb7m069",
+    "createdAt": "2025-06-22T04:53:16.680Z",
+    "updatedAt": "2025-06-22T04:53:16.680Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Audit Results Claim",
+    "pattern": "\\b(?:audit|review|analysis|assessment)\\s+(?:shows|indicates|reveals)\\b",
+    "patternType": "regex",
+    "purpose": "audit_results",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1750567996690_gxd8yfvds",
+    "createdAt": "2025-06-22T04:53:16.690Z",
+    "updatedAt": "2025-06-22T04:53:16.690Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Compilation Status Claim",
+    "pattern": "\\b(?:compiles|builds|runs|executes)\\s+(?:successfully|without\\s+errors)\\b",
+    "patternType": "regex",
+    "purpose": "compilation_status",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1750567996693_6v3iy9tzn",
+    "createdAt": "2025-06-22T04:53:16.693Z",
+    "updatedAt": "2025-06-22T04:53:16.693Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Test Results Claim",
+    "pattern": "\\b(?:tests\\s+pass|test\\s+results|coverage|tested)\\b",
+    "patternType": "regex",
+    "purpose": "test_results",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1750567996695_8rh8u5by7",
+    "createdAt": "2025-06-22T04:53:16.695Z",
+    "updatedAt": "2025-06-22T04:53:16.695Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Hallucination Admission",
+    "pattern": "\\b(?:I\\s+don\\s*'t\\s+know|I\\s+can\\s*'t\\s+see|I\\s+don\\s*'t\\s+have\\s+access)\\b",
+    "patternType": "regex",
+    "purpose": "hallucination_admission",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1750567996697_ci0g2a8kl",
+    "createdAt": "2025-06-22T04:53:16.697Z",
+    "updatedAt": "2025-06-22T04:53:16.697Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Vague Offer Detection",
+    "pattern": "\\b(?:I\\s+can\\s+help|I\\s+can\\s+assist|I\\s+can\\s+guide)\\b",
+    "patternType": "regex",
+    "purpose": "vague_offers",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1750567996699_9vcdfw1ld",
+    "createdAt": "2025-06-22T04:53:16.699Z",
+    "updatedAt": "2025-06-22T04:53:16.699Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Absolute Statement Detection",
+    "pattern": "\\b(?:always|never|every|all|none|impossible|guaranteed)\\b",
+    "patternType": "regex",
+    "purpose": "absolute_statements",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1750567996701_8eak3lgdr",
+    "createdAt": "2025-06-22T04:53:16.701Z",
+    "updatedAt": "2025-06-22T04:53:16.701Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Performance Claim Detection",
+    "pattern": "\\b(?:fast|slow|efficient|optimized|performance|speed)\\b",
+    "patternType": "regex",
+    "purpose": "performance_claims",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1750567996704_zvxlcvair",
+    "createdAt": "2025-06-22T04:53:16.704Z",
+    "updatedAt": "2025-06-22T04:53:16.704Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Auto Version Management",
+    "pattern": "\\b(?:version|release|update|bump)\\b",
+    "patternType": "regex",
+    "purpose": "auto_version_management",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1750567996706_j8eq68z9w",
+    "createdAt": "2025-06-22T04:53:16.706Z",
+    "updatedAt": "2025-06-22T04:53:16.706Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "AI Task Execution",
+    "pattern": "\\b(?:I\\s+will|I\\s+can|I\\s+should|let\\s+me)\\b",
+    "patternType": "regex",
+    "purpose": "ai_task_execution",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1750567996708_6lyki3lno",
+    "createdAt": "2025-06-22T04:53:16.708Z",
+    "updatedAt": "2025-06-22T04:53:16.708Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "GitHub Workflow Management",
+    "pattern": "\\b(?:branch|merge|commit|push|pull|issue|pr)\\b",
+    "patternType": "regex",
+    "purpose": "github_workflow_management",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1750567996711_lupn7ggze",
+    "createdAt": "2025-06-22T04:53:16.711Z",
+    "updatedAt": "2025-06-22T04:53:16.711Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Product Discovery Protocol",
+    "pattern": "\\b(?:plan|strategy|roadmap|milestone|goal)\\b",
+    "patternType": "regex",
+    "purpose": "product_discovery_protocol",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1750567996714_zqi4n54ba",
+    "createdAt": "2025-06-22T04:53:16.714Z",
+    "updatedAt": "2025-06-22T04:53:16.714Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Beginner Guidance",
+    "pattern": "\\b(?:how\\s+to|what\\s+is|explain|guide|tutorial)\\b",
+    "patternType": "regex",
+    "purpose": "beginner_guidance",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1750567996717_3zmne45ly",
+    "createdAt": "2025-06-22T04:53:16.717Z",
+    "updatedAt": "2025-06-22T04:53:16.717Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Error Recovery Assistance",
+    "pattern": "\\b(?:error|exception|fail|crash|bug)\\b",
+    "patternType": "regex",
+    "purpose": "error_recovery_assistance",
+    "severity": "warning",
+    "enabled": true,
+    "id": "rule_1750567996719_2tkiuz08t",
+    "createdAt": "2025-06-22T04:53:16.719Z",
+    "updatedAt": "2025-06-22T04:53:16.719Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Best Practice Suggestions",
+    "pattern": "\\b(?:best\\s+practice|recommendation|suggestion|tip)\\b",
+    "patternType": "regex",
+    "purpose": "best_practice_suggestions",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1750567996733_mlcitpzum",
+    "createdAt": "2025-06-22T04:53:16.733Z",
+    "updatedAt": "2025-06-22T04:53:16.733Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Dependency Management",
+    "pattern": "\\b(?:dependency|package|import|require|install)\\b",
+    "patternType": "regex",
+    "purpose": "dependency_management",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1750567996743_x16gxj8gk",
+    "createdAt": "2025-06-22T04:53:16.743Z",
+    "updatedAt": "2025-06-22T04:53:16.743Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Testing Guidance",
+    "pattern": "\\b(?:test|spec|coverage|assert|mock)\\b",
+    "patternType": "regex",
+    "purpose": "testing_guidance",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1750567996745_dgdz9el47",
+    "createdAt": "2025-06-22T04:53:16.746Z",
+    "updatedAt": "2025-06-22T04:53:16.746Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Documentation Assistance",
+    "pattern": "\\b(?:document|comment|readme|api|guide)\\b",
+    "patternType": "regex",
+    "purpose": "documentation_assistance",
+    "severity": "info",
+    "enabled": true,
+    "id": "rule_1750567996749_ept90jxhs",
+    "createdAt": "2025-06-22T04:53:16.749Z",
+    "updatedAt": "2025-06-22T04:53:16.749Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "No Repetitive Confirmation or Stalling",
+    "pattern": "(let me know if you want to review|otherwise, I will proceed as planned|waiting for confirmation|if you have any new requests|just let me know).*?[.!?]",
+    "patternType": "regex",
+    "purpose": "workflow",
+    "severity": "warning",
+    "enabled": true,
+    "message": "Detected repetitive confirmation or stalling. Proceed with the work unless explicitly told to wait.",
+    "id": "rule_1750825374510_3027aho39",
+    "createdAt": "2025-06-25T04:22:54.510Z",
+    "updatedAt": "2025-06-25T04:22:54.510Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  }
+]
