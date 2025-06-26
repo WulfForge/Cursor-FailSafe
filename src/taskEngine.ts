@@ -1,7 +1,9 @@
+/// <reference types="node" />
 import * as vscode from 'vscode';
 import { ProjectPlan } from './projectPlan';
 import { Logger } from './logger';
 import { Task, TaskStatus, TaskNudge } from './types';
+import { DataStore } from './dataStore';
 
 export interface TaskExecutionContext {
     taskId: string;
@@ -22,23 +24,22 @@ export interface TaskExecutionResult {
 }
 
 export class TaskEngine {
-    private projectPlan: ProjectPlan;
-    private logger: Logger;
-    private ui: any; // UI interface for action logging and status updates
+    private readonly projectPlan: ProjectPlan;
+    private readonly logger: Logger;
+    private readonly ui?: unknown;
     private isActive = false;
-    private checkInterval: NodeJS.Timeout | null = null;
-    private readonly CHECK_INTERVAL_MS = 30000; // 30 seconds
-    private readonly OVERDUE_THRESHOLD_MS = 120 * 60 * 1000; // 2 hours
-    private readonly STALL_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
-    private readonly MAX_RETRY_ATTEMPTS = 3;
-    private readonly AUTO_RETRY_DELAY_MS = 5000; // 5 seconds
-    private readonly HANGUP_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes for documentation tasks
-    private readonly HANGUP_CHECK_INTERVAL_MS = 2 * 60 * 1000; // Check every 2 minutes
+    private checkIntervalMs: NodeJS.Timeout | null = null; // 30 seconds
+    private readonly overdueThresholdMs = 300000; // 5 minutes
+    private readonly stallThresholdMs = 600000; // 10 minutes
+    private readonly maxRetryAttempts = 3;
+    private readonly autoRetryDelayMs = 5000; // 5 seconds
+    private readonly hangupThresholdMs = 1800000; // 30 minutes
+    private readonly hangupCheckIntervalMs = 60000; // 1 minute
 
     // Track task execution contexts
-    private executionContexts: Map<string, TaskExecutionContext> = new Map();
+    private readonly executionContexts: Map<string, TaskExecutionContext> = new Map();
 
-    constructor(projectPlan: ProjectPlan, logger: Logger, ui?: any) {
+    constructor(projectPlan: ProjectPlan, logger: Logger, ui?: unknown) {
         this.projectPlan = projectPlan;
         this.logger = logger;
         this.ui = ui;
@@ -61,17 +62,17 @@ export class TaskEngine {
         }
 
         this.isActive = true;
-        this.checkInterval = setInterval(() => {
+        this.checkIntervalMs = setInterval(() => {
             this.checkTasks();
-        }, this.CHECK_INTERVAL_MS);
+        }, 30000);
 
         this.logger.info('Task engine started');
     }
 
     public stop(): void {
-        if (this.checkInterval) {
-            clearInterval(this.checkInterval);
-            this.checkInterval = null;
+        if (this.checkIntervalMs) {
+            clearInterval(this.checkIntervalMs);
+            this.checkIntervalMs = null;
         }
         this.isActive = false;
         this.logger.info('Task engine stopped');
@@ -114,11 +115,11 @@ export class TaskEngine {
         const now = Date.now();
 
         tasks.forEach(task => {
-            if (task.status === TaskStatus.IN_PROGRESS && task.startTime) {
+            if (task.status === TaskStatus.inProgress && task.startTime) {
                 const elapsed = now - task.startTime.getTime();
                 const estimatedDuration = task.estimatedDuration * 60 * 1000;
 
-                if (elapsed > estimatedDuration + this.OVERDUE_THRESHOLD_MS) {
+                if (elapsed > estimatedDuration + this.overdueThresholdMs) {
                     nudges.push({
                         taskId: task.id,
                         type: 'overdue',
@@ -138,10 +139,10 @@ export class TaskEngine {
         const now = Date.now();
 
         tasks.forEach(task => {
-            if (task.status === TaskStatus.IN_PROGRESS && task.startTime) {
+            if (task.status === TaskStatus.inProgress && task.startTime) {
                 const elapsed = now - task.startTime.getTime();
 
-                if (elapsed > this.STALL_THRESHOLD_MS) {
+                if (elapsed > this.stallThresholdMs) {
                     nudges.push({
                         taskId: task.id,
                         type: 'stalled',
@@ -177,7 +178,7 @@ export class TaskEngine {
         const nudges: TaskNudge[] = [];
 
         tasks.forEach(task => {
-            if (task.status === TaskStatus.BLOCKED && task.blockers.length > 0) {
+            if (task.status === TaskStatus.blocked && task.blockers.length > 0) {
                 nudges.push({
                     taskId: task.id,
                     type: 'blocked',
@@ -289,9 +290,9 @@ export class TaskEngine {
             throw new Error(`Maximum retry attempts (${executionContext.maxAttempts}) exceeded for task ${taskId}`);
         }
 
-        if (task.status === TaskStatus.IN_PROGRESS) {
+        if (task.status === TaskStatus.inProgress) {
             // Reset the task to not started so it can be restarted
-            task.status = TaskStatus.NOT_STARTED;
+            task.status = TaskStatus.notStarted;
             task.startTime = undefined;
             task.blockers = [];
 
@@ -359,7 +360,7 @@ export class TaskEngine {
 
         // Filter tasks by feasibility and sort by priority
         const feasibleTasks = readyTasks.filter(task => {
-            const feasibility = this.projectPlan.analyzeFeasibility(task.description);
+            const feasibility = this.projectPlan.analyzeFeasibility();
             return feasibility.feasibility !== 'infeasible';
         });
 
@@ -567,7 +568,7 @@ export class TaskEngine {
         }
 
         // Check feasibility before execution
-        const feasibility = this.projectPlan.analyzeFeasibility(context || task.description);
+        const feasibility = this.projectPlan.analyzeFeasibility();
         if (feasibility.feasibility === 'infeasible') {
             return {
                 success: false,
@@ -594,7 +595,7 @@ export class TaskEngine {
             startTime: new Date(),
             lastActivity: new Date(),
             attempts: 1,
-            maxAttempts: this.MAX_RETRY_ATTEMPTS,
+            maxAttempts: this.maxRetryAttempts,
             autoRetry: true,
             timeout: task.estimatedDuration * 60 * 1000
         };
@@ -631,7 +632,7 @@ export class TaskEngine {
     /**
      * Complete task execution with validation
      */
-    public async completeTask(taskId: string, result?: unknown): Promise<TaskExecutionResult> {
+    public async completeTask(taskId: string): Promise<TaskExecutionResult> {
         const task = this.projectPlan.getAllTasks().find(t => t.id === taskId);
         if (!task) {
             return {
@@ -737,11 +738,11 @@ export class TaskEngine {
 
     private async detectHangup(): Promise<void> {
         const currentTask = this.projectPlan.getCurrentTask();
-        if (!currentTask) return;
+        if (!currentTask || !currentTask.startTime) return;
 
-        const taskDuration = Date.now() - currentTask.startTime!.getTime();
+        const taskDuration = Date.now() - currentTask.startTime.getTime();
         const isDocumentationTask = this.isDocumentationTask(currentTask);
-        const hangupThreshold = isDocumentationTask ? this.HANGUP_THRESHOLD_MS : this.STALL_THRESHOLD_MS;
+        const hangupThreshold = isDocumentationTask ? this.hangupThresholdMs : this.stallThresholdMs;
 
         if (taskDuration > hangupThreshold) {
             const hangupType = isDocumentationTask ? 'documentation' : 'general';
@@ -752,7 +753,7 @@ export class TaskEngine {
             });
 
             // Log to action log
-            this.ui.actionLog.push({
+            (this.ui as any).actionLog.push({
                 timestamp: new Date().toISOString(),
                 description: `🚨 Hangup detected on ${currentTask.name} (${Math.round(taskDuration / 60000)} minutes)`
             });
@@ -776,7 +777,7 @@ export class TaskEngine {
             });
 
             // Update status bar
-            this.ui.updateStatusBar('blocked');
+            (this.ui as any).updateStatusBar('blocked');
         }
     }
 
@@ -796,7 +797,7 @@ export class TaskEngine {
             'OK'
         );
         
-        this.ui.actionLog.push({
+        (this.ui as any).actionLog.push({
             timestamp: new Date().toISOString(),
             description: '💡 Break suggested due to hangup detection'
         });
@@ -814,7 +815,7 @@ export class TaskEngine {
             placeHolder: 'Choose help option for: ' + task.name
         }).then(choice => {
             if (choice) {
-                this.ui.actionLog.push({
+                (this.ui as any).actionLog.push({
                     timestamp: new Date().toISOString(),
                     description: `🆘 Help requested: ${choice} for ${task.name}`
                 });
@@ -844,9 +845,128 @@ export class TaskEngine {
             'Create Subtasks', 'OK'
         ).then(choice => {
             if (choice === 'Create Subtasks') {
-                // This could open a task breakdown interface
-                vscode.window.showInformationMessage('Task breakdown feature coming soon!');
+                this.createTaskBreakdown(task);
             }
         });
+    }
+
+    private async createTaskBreakdown(task: Task): Promise<void> {
+        try {
+            // Get user input for subtask creation
+            const subtaskCount = await vscode.window.showInputBox({
+                prompt: 'How many subtasks would you like to create?',
+                placeHolder: '3-5',
+                value: '3'
+            });
+
+            if (!subtaskCount) return;
+
+            const count = parseInt(subtaskCount);
+            if (isNaN(count) || count < 2 || count > 10) {
+                vscode.window.showErrorMessage('Please enter a number between 2 and 10');
+                return;
+            }
+
+            // Create subtasks based on task complexity
+            const subtasks: Partial<Task>[] = [];
+            const taskKeywords = this.extractTaskKeywords(task);
+            
+            for (let i = 1; i <= count; i++) {
+                const subtaskName = await vscode.window.showInputBox({
+                    prompt: `Subtask ${i} name:`,
+                    placeHolder: `Part ${i} of ${task.name}`,
+                    value: this.generateSubtaskName(task, i, count, taskKeywords)
+                });
+
+                if (!subtaskName) break;
+
+                const subtaskDescription = await vscode.window.showInputBox({
+                    prompt: `Subtask ${i} description:`,
+                    placeHolder: `Detailed description for ${subtaskName}`,
+                    value: this.generateSubtaskDescription(task, i, count, subtaskName)
+                });
+
+                subtasks.push({
+                    name: subtaskName,
+                    description: subtaskDescription || `Subtask ${i} of ${task.name}`,
+                    priority: task.priority,
+                    estimatedHours: Math.max(0.5, (task.estimatedHours || 2) / count),
+                    dependencies: i > 1 ? [`${task.id}-subtask-${i-1}`] : [],
+                    status: i === 1 ? TaskStatus.notStarted : TaskStatus.blocked
+                });
+            }
+
+            if (subtasks.length > 0) {
+                // Add subtasks to project plan
+                const addedSubtasks = await this.projectPlan.addSubtasks(task.id, subtasks);
+                
+                // Block the original task
+                await this.projectPlan.blockTask(task.id, 'Task broken down into subtasks');
+                
+                vscode.window.showInformationMessage(
+                    `Created ${addedSubtasks.length} subtasks for "${task.name}". Original task is now blocked.`,
+                    'View Subtasks', 'OK'
+                ).then(choice => {
+                    if (choice === 'View Subtasks') {
+                        vscode.commands.executeCommand('failsafe.showPlan');
+                    }
+                });
+
+                this.logger.info('Task breakdown completed', {
+                    originalTaskId: task.id,
+                    subtaskCount: addedSubtasks.length,
+                    subtaskIds: addedSubtasks.map(t => t.id)
+                });
+            }
+
+        } catch (error) {
+            this.logger.error('Failed to create task breakdown', error);
+            vscode.window.showErrorMessage('Failed to create task breakdown. Please try again.');
+        }
+    }
+
+    private extractTaskKeywords(task: Task): string[] {
+        const text = `${task.name} ${task.description}`.toLowerCase();
+        const keywords = [];
+        
+        // Extract common development keywords
+        const devKeywords = [
+            'implement', 'create', 'build', 'develop', 'design', 'test', 'debug',
+            'refactor', 'optimize', 'document', 'deploy', 'configure', 'setup',
+            'install', 'update', 'fix', 'resolve', 'analyze', 'review'
+        ];
+
+        for (const keyword of devKeywords) {
+            if (text.includes(keyword)) {
+                keywords.push(keyword);
+            }
+        }
+
+        return keywords;
+    }
+
+    private generateSubtaskName(task: Task, index: number, total: number, keywords: string[]): string {
+        const baseName = task.name;
+        
+        if (keywords.length > 0) {
+            const keyword = keywords[0];
+            return `${keyword.charAt(0).toUpperCase() + keyword.slice(1)} ${baseName} (${index}/${total})`;
+        }
+
+        const phases = ['Setup', 'Implementation', 'Testing', 'Documentation', 'Deployment'];
+        const phaseIndex = Math.min(index - 1, phases.length - 1);
+        return `${phases[phaseIndex]} ${baseName} (${index}/${total})`;
+    }
+
+    private generateSubtaskDescription(task: Task, index: number, total: number, subtaskName: string): string {
+        const baseDescription = task.description || task.name;
+        
+        if (index === 1) {
+            return `Initial setup and preparation for ${baseDescription}`;
+        } else if (index === total) {
+            return `Final completion and verification of ${baseDescription}`;
+        } else {
+            return `Core implementation phase ${index} of ${total} for ${baseDescription}`;
+        }
     }
 } 

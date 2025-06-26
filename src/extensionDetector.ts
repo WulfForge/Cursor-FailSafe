@@ -20,9 +20,9 @@ export interface ExtensionCapability {
 }
 
 export class ExtensionDetector {
-    private logger: Logger;
-    private installedExtensions: Map<string, ExtensionInfo> = new Map();
-    private extensionCommands: Map<string, string[]> = new Map();
+    private readonly logger: Logger;
+    private readonly installedExtensions: Map<string, ExtensionInfo> = new Map();
+    private readonly extensionCommands: Map<string, string[]> = new Map();
 
     constructor(logger: Logger) {
         this.logger = logger;

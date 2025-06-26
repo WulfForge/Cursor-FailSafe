@@ -28,12 +28,12 @@ export interface VersionConsistency {
 }
 
 export class VersionManager {
-    private logger: Logger;
-    private versionFile: string;
-    private packageJsonPath: string;
-    private changelogPath: string;
-    private readmePath: string;
-    private workspaceRoot: string;
+    private readonly logger: Logger;
+    private readonly versionFile: string;
+    private readonly packageJsonPath: string;
+    private readonly changelogPath: string;
+    private readonly readmePath: string;
+    private readonly workspaceRoot: string;
 
     constructor(logger: Logger, workspaceRoot: string) {
         this.logger = logger;
@@ -46,11 +46,33 @@ export class VersionManager {
 
     public async initialize(): Promise<void> {
         try {
+            // Ensure workspace root exists
+            if (!this.workspaceRoot || !vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
+                this.logger.warn('No workspace root found, version manager will have limited functionality');
+                return;
+            }
+
+            // Check if key files exist
+            const packageJsonExists = await this.fileExists(this.packageJsonPath);
+            if (!packageJsonExists) {
+                this.logger.warn('package.json not found in workspace root');
+            }
+
             await this.loadVersionInfo();
             await this.validateVersionConsistency();
-            this.logger.info('Version manager initialized');
+            this.logger.info('Version manager initialized successfully');
         } catch (error) {
             this.logger.error('Failed to initialize version manager', error);
+            // Don't throw error to prevent extension activation failure
+        }
+    }
+
+    private async fileExists(filePath: string): Promise<boolean> {
+        try {
+            await fs.promises.access(filePath);
+            return true;
+        } catch {
+            return false;
         }
     }
 
@@ -63,12 +85,15 @@ export class VersionManager {
             // Get current version from package.json
             const packageJsonPath = path.join(this.workspaceRoot, 'package.json');
             if (!fs.existsSync(packageJsonPath)) {
-                issues.push('package.json not found');
+                const issue = 'package.json not found';
+                issues.push(issue);
+                recommendations.push('Create package.json file with version information');
+                await this.logVersionWarning(issue, { file: 'package.json', action: 'create' });
                 return { isConsistent: false, issues, recommendations, files };
             }
 
             const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-            const currentVersion = packageJson.version;
+            const currentVersion = packageJson.version || '0.0.0';
 
             files.push({
                 name: 'package.json',
@@ -92,8 +117,14 @@ export class VersionManager {
                         version: 'missing',
                         status: 'missing'
                     });
-                    issues.push('CHANGELOG.md missing current version entry');
+                    const issue = 'CHANGELOG.md missing current version entry';
+                    issues.push(issue);
                     recommendations.push('Add version entry to CHANGELOG.md');
+                    await this.logVersionWarning(issue, { 
+                        file: 'CHANGELOG.md', 
+                        expectedVersion: currentVersion,
+                        action: 'add_version_entry' 
+                    });
                 }
             } else {
                 files.push({
@@ -101,8 +132,13 @@ export class VersionManager {
                     version: 'missing',
                     status: 'missing'
                 });
-                issues.push('CHANGELOG.md not found');
+                const issue = 'CHANGELOG.md not found';
+                issues.push(issue);
                 recommendations.push('Create CHANGELOG.md file');
+                await this.logVersionWarning(issue, { 
+                    file: 'CHANGELOG.md', 
+                    action: 'create_file' 
+                });
             }
 
             // Check README.md badge
@@ -121,8 +157,14 @@ export class VersionManager {
                         version: 'mismatch',
                         status: 'mismatch'
                     });
-                    issues.push('README.md badge version mismatch');
+                    const issue = 'README.md badge version mismatch';
+                    issues.push(issue);
                     recommendations.push('Update README.md version badge');
+                    await this.logVersionWarning(issue, { 
+                        file: 'README.md', 
+                        expectedVersion: currentVersion,
+                        action: 'update_badge' 
+                    });
                 }
             } else {
                 files.push({
@@ -130,8 +172,13 @@ export class VersionManager {
                     version: 'missing',
                     status: 'missing'
                 });
-                issues.push('README.md not found');
+                const issue = 'README.md not found';
+                issues.push(issue);
                 recommendations.push('Create README.md file');
+                await this.logVersionWarning(issue, { 
+                    file: 'README.md', 
+                    action: 'create_file' 
+                });
             }
 
             // Check package.json badge
@@ -149,12 +196,28 @@ export class VersionManager {
                         version: 'mismatch',
                         status: 'mismatch'
                     });
-                    issues.push('package.json badge version mismatch');
+                    const issue = 'package.json badge version mismatch';
+                    issues.push(issue);
                     recommendations.push('Update package.json badge URL');
+                    await this.logVersionWarning(issue, { 
+                        file: 'package.json', 
+                        expectedVersion: currentVersion,
+                        action: 'update_badge_url' 
+                    });
                 }
             }
 
             const isConsistent = issues.length === 0;
+
+            // Log the consistency check result
+            if (!isConsistent) {
+                await this.logVersionWarning('Version consistency check failed', {
+                    issues,
+                    recommendations,
+                    files,
+                    currentVersion
+                });
+            }
 
             return {
                 isConsistent,
@@ -164,7 +227,11 @@ export class VersionManager {
             };
 
         } catch (error) {
-            issues.push(`Error checking version consistency: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            const issue = `Error checking version consistency: ${errorMessage}`;
+            issues.push(issue);
+            await this.logVersionWarning(issue, { error: errorMessage });
+            this.logger.error('Error in checkVersionConsistency:', error);
             return { isConsistent: false, issues, recommendations, files };
         }
     }
@@ -173,6 +240,13 @@ export class VersionManager {
         const consistency = await this.checkVersionConsistency();
         
         if (!consistency.isConsistent) {
+            // Log the warning to persistent log
+            await this.logVersionWarning('Version consistency issues detected', {
+                issues: consistency.issues,
+                recommendations: consistency.recommendations,
+                files: consistency.files
+            });
+            
             this.logger.warn('Version consistency issues detected', {
                 issues: consistency.issues,
                 recommendations: consistency.recommendations
@@ -202,28 +276,83 @@ export class VersionManager {
 
         try {
             const consistency = await this.checkVersionConsistency();
-            const currentVersion = await this.getPackageJsonVersion();
+            
+            if (consistency.isConsistent) {
+                await this.logVersionWarning('No version issues to fix - all versions are consistent');
+                return { fixed: 0, errors: [] };
+            }
 
+            // Get current version from package.json
+            const packageJsonPath = path.join(this.workspaceRoot, 'package.json');
+            if (!fs.existsSync(packageJsonPath)) {
+                const error = 'Cannot auto-fix: package.json not found';
+                errors.push(error);
+                await this.logVersionWarning(error, { action: 'auto_fix_failed' });
+                return { fixed: 0, errors };
+            }
+
+            const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+            const currentVersion = packageJson.version;
+
+            // Try to fix each issue
             for (const issue of consistency.issues) {
                 try {
-                    if (issue.includes('CHANGELOG.md')) {
+                    if (issue.includes('CHANGELOG.md missing current version entry')) {
                         await this.updateChangelogVersion(currentVersion);
                         fixed++;
-                    } else if (issue.includes('README.md')) {
+                        await this.logVersionWarning('Auto-fixed: Added version entry to CHANGELOG.md', {
+                            action: 'auto_fix',
+                            file: 'CHANGELOG.md',
+                            version: currentVersion
+                        });
+                    } else if (issue.includes('README.md badge version mismatch')) {
                         await this.updateReadmeVersion(currentVersion);
                         fixed++;
-                    } else if (issue.includes('package.json badge')) {
+                        await this.logVersionWarning('Auto-fixed: Updated README.md version badge', {
+                            action: 'auto_fix',
+                            file: 'README.md',
+                            version: currentVersion
+                        });
+                    } else if (issue.includes('package.json badge version mismatch')) {
                         await this.updateBadgeVersion(currentVersion);
                         fixed++;
+                        await this.logVersionWarning('Auto-fixed: Updated package.json badge URL', {
+                            action: 'auto_fix',
+                            file: 'package.json',
+                            version: currentVersion
+                        });
+                    } else {
+                        // Skip issues that can't be auto-fixed
+                        errors.push(`Cannot auto-fix: ${issue}`);
                     }
                 } catch (error) {
-                    errors.push(`Failed to fix ${issue}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                    errors.push(`Failed to fix "${issue}": ${errorMessage}`);
+                    await this.logVersionWarning(`Auto-fix failed for: ${issue}`, {
+                        action: 'auto_fix_failed',
+                        error: errorMessage,
+                        issue
+                    });
                 }
             }
 
+            if (fixed > 0) {
+                await this.logVersionWarning(`Auto-fixed ${fixed} version inconsistency issue(s)`, {
+                    action: 'auto_fix_summary',
+                    fixed,
+                    errors: errors.length
+                });
+            }
+
             return { fixed, errors };
+
         } catch (error) {
-            errors.push(`Auto-fix failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            errors.push(`Auto-fix failed: ${errorMessage}`);
+            await this.logVersionWarning(`Auto-fix operation failed`, {
+                action: 'auto_fix_failed',
+                error: errorMessage
+            });
             return { fixed: 0, errors };
         }
     }
@@ -294,35 +423,51 @@ export class VersionManager {
 
     private async getPackageJsonVersion(): Promise<string> {
         try {
+            if (!fs.existsSync(this.packageJsonPath)) {
+                this.logger.warn('package.json not found');
+                return '0.0.0';
+            }
             const packageJson = JSON.parse(fs.readFileSync(this.packageJsonPath, 'utf8'));
-            return packageJson.version;
+            return packageJson.version || '0.0.0';
         } catch (error) {
-            throw new Error('Failed to read package.json version');
+            this.logger.error('Failed to read package.json version:', error);
+            return '0.0.0';
         }
     }
 
     private async getChangelogVersion(): Promise<string> {
         try {
+            if (!fs.existsSync(this.changelogPath)) {
+                return '';
+            }
             const content = fs.readFileSync(this.changelogPath, 'utf8');
             const match = content.match(/## \[([\d.]+)\]/);
             return match ? match[1] : '';
         } catch (error) {
-            throw new Error('Failed to read CHANGELOG.md version');
+            this.logger.error('Failed to read CHANGELOG.md version:', error);
+            return '';
         }
     }
 
     private async getReadmeVersion(): Promise<string> {
         try {
+            if (!fs.existsSync(this.readmePath)) {
+                return '';
+            }
             const content = fs.readFileSync(this.readmePath, 'utf8');
             const match = content.match(/version-([\d.]+)/);
             return match ? match[1] : '';
         } catch (error) {
-            throw new Error('Failed to read README.md version');
+            this.logger.error('Failed to read README.md version:', error);
+            return '';
         }
     }
 
     private async getBadgeVersion(): Promise<string> {
         try {
+            if (!fs.existsSync(this.packageJsonPath)) {
+                return '';
+            }
             const packageJson = JSON.parse(fs.readFileSync(this.packageJsonPath, 'utf8'));
             if (packageJson.badges && Array.isArray(packageJson.badges)) {
                 const badge = packageJson.badges.find((b: any) => b.description === 'Version');
@@ -333,7 +478,8 @@ export class VersionManager {
             }
             return '';
         } catch (error) {
-            throw new Error('Failed to read badge version');
+            this.logger.error('Failed to read badge version:', error);
+            return '';
         }
     }
 
@@ -422,5 +568,166 @@ export class VersionManager {
             files: consistency.files,
             consistency
         };
+    }
+
+    /**
+     * Automatically bump version based on change type
+     */
+    public async autoBumpVersion(changeType: 'major' | 'minor' | 'patch' = 'patch'): Promise<{ success: boolean; oldVersion: string; newVersion: string; errors: string[] }> {
+        const errors: string[] = [];
+        
+        try {
+            // Get current version from package.json
+            const packageJsonPath = path.join(this.workspaceRoot, 'package.json');
+            if (!fs.existsSync(packageJsonPath)) {
+                errors.push('package.json not found');
+                return { success: false, oldVersion: '', newVersion: '', errors };
+            }
+
+            const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+            const oldVersion = packageJson.version;
+            
+            // Parse current version
+            const versionParts = oldVersion.split('.').map(Number);
+            if (versionParts.length !== 3) {
+                errors.push('Invalid version format in package.json');
+                return { success: false, oldVersion, newVersion: '', errors };
+            }
+
+            let [major, minor, patch] = versionParts;
+            
+            // Bump version based on change type
+            switch (changeType) {
+                case 'major':
+                    major++;
+                    minor = 0;
+                    patch = 0;
+                    break;
+                case 'minor':
+                    minor++;
+                    patch = 0;
+                    break;
+                case 'patch':
+                    patch++;
+                    break;
+            }
+
+            const newVersion = `${major}.${minor}.${patch}`;
+            
+            // Update package.json
+            packageJson.version = newVersion;
+            fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+            this.logger.info(`Updated package.json version from ${oldVersion} to ${newVersion}`);
+
+            // Update CHANGELOG.md
+            await this.updateChangelogVersion(newVersion);
+            
+            // Update README.md
+            await this.updateReadmeVersion(newVersion);
+            
+            // Update badge URLs
+            await this.updateBadgeVersion(newVersion);
+
+            // Update version info
+            const versionInfo = await this.loadVersionInfo();
+            versionInfo.current = newVersion;
+            versionInfo.lastChecked = new Date();
+            await this.saveVersionInfo(versionInfo);
+
+            this.logger.info(`Successfully bumped version from ${oldVersion} to ${newVersion} (${changeType} change)`);
+            
+            return { success: true, oldVersion, newVersion, errors };
+            
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            errors.push(`Failed to bump version: ${errorMessage}`);
+            this.logger.error('Failed to bump version', error);
+            return { success: false, oldVersion: '', newVersion: '', errors };
+        }
+    }
+
+    /**
+     * Detect change type based on recent changes
+     */
+    public async detectChangeType(): Promise<'major' | 'minor' | 'patch'> {
+        try {
+            // This is a simplified detection - in a real implementation,
+            // you might analyze git commits, file changes, or other indicators
+            
+            // For now, default to patch for safety
+            return 'patch';
+        } catch (error) {
+            this.logger.error('Failed to detect change type', error);
+            return 'patch';
+        }
+    }
+
+    /**
+     * Smart version bump - automatically detects change type and bumps version
+     */
+    public async smartBumpVersion(): Promise<{ success: boolean; oldVersion: string; newVersion: string; changeType: string; errors: string[] }> {
+        const changeType = await this.detectChangeType();
+        const result = await this.autoBumpVersion(changeType);
+        
+        return {
+            ...result,
+            changeType
+        };
+    }
+
+    /**
+     * Log version warnings to a persistent log file
+     */
+    private async logVersionWarning(message: string, details?: any): Promise<void> {
+        try {
+            const logDir = path.join(this.workspaceRoot, '.failsafe');
+            const logFile = path.join(logDir, 'version-warnings.log');
+            
+            // Ensure log directory exists
+            if (!fs.existsSync(logDir)) {
+                fs.mkdirSync(logDir, { recursive: true });
+            }
+            
+            const timestamp = new Date().toISOString();
+            const logEntry = {
+                timestamp,
+                message,
+                details: details || {}
+            };
+            
+            // Append to log file
+            fs.appendFileSync(logFile, JSON.stringify(logEntry) + '\n');
+            
+            this.logger.info(`Version warning logged: ${message}`);
+        } catch (error) {
+            this.logger.error('Failed to log version warning', error);
+        }
+    }
+
+    /**
+     * Get version warning log entries
+     */
+    public async getVersionWarningLog(): Promise<any[]> {
+        try {
+            const logFile = path.join(this.workspaceRoot, '.failsafe', 'version-warnings.log');
+            
+            if (!fs.existsSync(logFile)) {
+                return [];
+            }
+            
+            const logContent = fs.readFileSync(logFile, 'utf8');
+            const lines = logContent.trim().split('\n').filter(line => line.trim());
+            
+            return lines.map(line => {
+                try {
+                    return JSON.parse(line);
+                } catch {
+                    return { timestamp: new Date().toISOString(), message: 'Invalid log entry', details: {} };
+                }
+            });
+        } catch (error) {
+            this.logger.error('Failed to read version warning log', error);
+            return [];
+        }
     }
 } 

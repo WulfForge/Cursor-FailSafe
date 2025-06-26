@@ -4,8 +4,8 @@ import * as path from 'path';
 import { SessionLog } from './types';
 
 export class Logger {
-    private logDir: string;
-    private currentSessionId: string;
+    private readonly logDir: string;
+    private readonly currentSessionId: string;
 
     constructor() {
         this.logDir = path.join(vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '', '.failsafe');

@@ -3,12 +3,19 @@ import * as child_process from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { TestResult } from './types';
+import { ChatValidator } from './chatValidator';
+import { Logger } from './logger';
 
 export class TestRunner {
-    private config: vscode.WorkspaceConfiguration;
+    private readonly config: vscode.WorkspaceConfiguration;
+    private readonly chatValidator: ChatValidator;
 
     constructor() {
         this.config = vscode.workspace.getConfiguration('failsafe');
+        this.chatValidator = new ChatValidator(
+            new Logger(), 
+            vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || ''
+        );
     }
 
     public async runTests(): Promise<TestResult> {
@@ -67,11 +74,11 @@ export class TestRunner {
             let output = '';
             const errors: string[] = [];
 
-            process.stdout?.on('data', (data) => {
+            process.stdout.on('data', (data) => {
                 output += data.toString();
             });
 
-            process.stderr?.on('data', (data) => {
+            process.stderr.on('data', (data) => {
                 const errorText = data.toString();
                 errors.push(errorText);
                 output += errorText; // Include stderr in output for parsing
@@ -80,6 +87,9 @@ export class TestRunner {
             process.on('close', (code) => {
                 const exitCode = code || 0;
                 const parsedResult = this.parseTestOutput(output);
+                
+                // Track command execution for evidence validation
+                this.chatValidator.trackCommandExecution(command, output, exitCode);
                 
                 resolve({
                     exitCode,
@@ -90,11 +100,15 @@ export class TestRunner {
             });
 
             process.on('error', (error) => {
+                // Track failed command execution
+                this.chatValidator.trackCommandExecution(command, '', -1);
                 reject(error);
             });
 
             process.on('timeout', () => {
                 process.kill();
+                // Track timed out command execution
+                this.chatValidator.trackCommandExecution(command, 'TIMEOUT', -1);
                 reject(new Error('Test execution timed out'));
             });
         });

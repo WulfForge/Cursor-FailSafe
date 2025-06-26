@@ -23,7 +23,8 @@
     "prefer-const": "warn",
     "no-undef": "off",
     "curly": "off",
-    "no-console": "off"
+    "no-console": "off",
+    "no-warning-comments": 2
   },
   "ignorePatterns": [
     "out",

@@ -48,8 +48,9 @@ describe('FailSafe Extension', () => {
             assert.ok(commands.length > 0, 'Should have at least one command');
             
             const commandIds = commands.map(cmd => cmd.command);
-            assert.ok(commandIds.includes('failsafe.askAI'), 'Should have askAI command');
-            assert.ok(commandIds.includes('failsafe.showPlan'), 'Should have showPlan command');
+            assert.ok(commandIds.includes('failsafe.openDashboard'), 'Should have openDashboard command');
+            assert.ok(commandIds.includes('failsafe.showDashboard'), 'Should have showDashboard command');
+            assert.ok(commandIds.includes('failsafe.validate'), 'Should have validate command');
         });
 
         it('should have proper configuration schema', () => {
@@ -58,8 +59,8 @@ describe('FailSafe Extension', () => {
             
             assert.ok(config, 'Should have configuration schema');
             assert.ok(config.properties, 'Should have configuration properties');
-            assert.ok(config.properties['failsafe.timeout'], 'Should have timeout setting');
-            assert.ok(config.properties['failsafe.validationEnabled'], 'Should have validation setting');
+            assert.ok(config.properties['failsafe.enabled'], 'Should have enabled setting');
+            assert.ok(config.properties['failsafe.passiveValidation.enabled'], 'Should have passive validation setting');
         });
     });
 }); 

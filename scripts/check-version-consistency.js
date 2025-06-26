@@ -18,7 +18,10 @@ const path = require('path');
 const FILES_TO_CHECK = [
     'package.json',
     'CHANGELOG.md',
-    'README.md'
+    'README.md',
+    'src/ui.ts',
+    'FEATURE_TESTING_CHECKLIST.md',
+    'ALPHA_LAUNCH_SPRINT_PLAN.md'
 ];
 
 // Version patterns to match
@@ -32,8 +35,22 @@ const VERSION_PATTERNS = {
         description: 'CHANGELOG.md latest version'
     },
     'README.md': {
-        pattern: /### v(\d+\.\d+\.\d+)/,
-        description: 'README.md version history'
+        pattern: /version-(\d+\.\d+\.\d+)/,
+        description: 'README.md version badge'
+    },
+    'src/ui.ts': {
+        pattern: /(\d+\.\d+\.\d+)/,
+        description: 'src/ui.ts version references',
+        multiple: true
+    },
+    'FEATURE_TESTING_CHECKLIST.md': {
+        pattern: /\*\*Version:\*\*\s*(\d+\.\d+\.\d+)/,
+        description: 'FEATURE_TESTING_CHECKLIST.md version'
+    },
+    'ALPHA_LAUNCH_SPRINT_PLAN.md': {
+        pattern: /(\d+\.\d+\.\d+)/,
+        description: 'ALPHA_LAUNCH_SPRINT_PLAN.md version references',
+        multiple: true
     }
 };
 
@@ -45,6 +62,7 @@ class VersionChecker {
         this.issues = [];
         this.recommendations = [];
         this.versions = new Map();
+        this.versionLocations = new Map();
     }
 
     async checkConsistency() {
@@ -82,12 +100,29 @@ class VersionChecker {
                 return;
             }
 
-            const match = content.match(pattern.pattern);
-            if (match) {
-                this.versions.set(filePath, match[1]);
-                console.log(`✅ ${pattern.description}: ${match[1]}`);
+            if (pattern.multiple) {
+                // Handle files with multiple version references
+                const matches = content.matchAll(new RegExp(pattern.pattern, 'g'));
+                const versions = [];
+                for (const match of matches) {
+                    versions.push(match[1]);
+                }
+                if (versions.length > 0) {
+                    this.versions.set(filePath, versions);
+                    this.versionLocations.set(filePath, versions);
+                    console.log(`✅ ${pattern.description}: ${versions.join(', ')}`);
+                } else {
+                    this.issues.push(`No version found in ${filePath}`);
+                }
             } else {
-                this.issues.push(`No version found in ${filePath}`);
+                const match = content.match(pattern.pattern);
+                if (match) {
+                    this.versions.set(filePath, match[1]);
+                    this.versionLocations.set(filePath, [match[1]]);
+                    console.log(`✅ ${pattern.description}: ${match[1]}`);
+                } else {
+                    this.issues.push(`No version found in ${filePath}`);
+                }
             }
         } catch (error) {
             this.issues.push(`Error reading ${filePath}: ${error.message}`);
@@ -98,14 +133,18 @@ class VersionChecker {
         try {
             const content = fs.readFileSync('package.json', 'utf8');
             const packageJson = JSON.parse(content);
-            const badgeUrl = packageJson.badges?.[0]?.url || '';
             
-            const match = badgeUrl.match(BADGE_PATTERN);
-            if (match) {
-                this.versions.set('badge', match[1]);
-                console.log(`✅ Badge URL version: ${match[1]}`);
-            } else {
-                this.issues.push('No version found in badge URL');
+            // Check badges array if it exists
+            if (packageJson.badges && packageJson.badges.length > 0) {
+                const badgeUrl = packageJson.badges[0].url || '';
+                const match = badgeUrl.match(BADGE_PATTERN);
+                if (match) {
+                    this.versions.set('badge', match[1]);
+                    this.versionLocations.set('badge', [match[1]]);
+                    console.log(`✅ Badge URL version: ${match[1]}`);
+                } else {
+                    this.issues.push('No version found in badge URL');
+                }
             }
         } catch (error) {
             this.issues.push(`Error checking badge version: ${error.message}`);
@@ -113,28 +152,37 @@ class VersionChecker {
     }
 
     validateConsistency() {
-        const versions = Array.from(this.versions.values());
-        const uniqueVersions = [...new Set(versions)];
+        const allVersions = [];
+        
+        // Collect all versions
+        for (const [file, versions] of this.versions) {
+            if (Array.isArray(versions)) {
+                allVersions.push(...versions);
+            } else {
+                allVersions.push(versions);
+            }
+        }
+        
+        const uniqueVersions = [...new Set(allVersions)];
 
         if (uniqueVersions.length > 1) {
             this.issues.push(`Version mismatch detected: ${uniqueVersions.join(', ')}`);
             this.recommendations.push('All version references must match');
         }
 
-        // Check if package.json version is the latest
+        // Check specific file consistency
         const packageVersion = this.versions.get('package.json');
-        const changelogVersion = this.versions.get('CHANGELOG.md');
         
-        if (packageVersion && changelogVersion && packageVersion !== changelogVersion) {
-            this.recommendations.push('Update CHANGELOG.md to match package.json version');
-        }
-
-        if (packageVersion && this.versions.get('README.md') && packageVersion !== this.versions.get('README.md')) {
-            this.recommendations.push('Update README.md version history to match package.json version');
-        }
-
-        if (packageVersion && this.versions.get('badge') && packageVersion !== this.versions.get('badge')) {
-            this.recommendations.push('Update badge URL in package.json to match current version');
+        for (const [file, versions] of this.versions) {
+            if (file === 'package.json') continue;
+            
+            if (Array.isArray(versions)) {
+                if (!versions.every(v => v === packageVersion)) {
+                    this.recommendations.push(`Update ${file} to match package.json version ${packageVersion}`);
+                }
+            } else if (versions !== packageVersion) {
+                this.recommendations.push(`Update ${file} to match package.json version ${packageVersion}`);
+            }
         }
     }
 
@@ -166,18 +214,29 @@ class VersionChecker {
     async autoFix() {
         console.log('🔧 Auto-fixing version consistency issues...\n');
 
-        const packageVersion = this.versions.get('package.json');
+        // Get package.json version directly
+        let packageVersion;
+        try {
+            const packageContent = fs.readFileSync('package.json', 'utf8');
+            const packageJson = JSON.parse(packageContent);
+            packageVersion = packageJson.version;
+        } catch (error) {
+            console.log('❌ Cannot auto-fix: Error reading package.json version');
+            return false;
+        }
+
         if (!packageVersion) {
             console.log('❌ Cannot auto-fix: No package.json version found');
             return false;
         }
 
+        console.log(`📦 Using package.json version: ${packageVersion}\n`);
+
         try {
-            // Fix CHANGELOG.md
-            await this.fixChangelogVersion(packageVersion);
-            
-            // Fix README.md
-            await this.fixReadmeVersion(packageVersion);
+            // Fix all files
+            for (const file of FILES_TO_CHECK) {
+                await this.fixFileVersion(file, packageVersion);
+            }
             
             // Fix badge URL
             await this.fixBadgeVersion(packageVersion);
@@ -190,25 +249,91 @@ class VersionChecker {
         }
     }
 
-    async fixChangelogVersion(version) {
+    async fixFileVersion(filePath, version) {
         try {
-            let content = fs.readFileSync('CHANGELOG.md', 'utf8');
-            content = content.replace(/## \[(\d+\.\d+\.\d+)\]/g, `## [${version}]`);
-            fs.writeFileSync('CHANGELOG.md', content);
-            console.log(`✅ Updated CHANGELOG.md to version ${version}`);
-        } catch (error) {
-            throw new Error(`Failed to update CHANGELOG.md: ${error.message}`);
-        }
-    }
+            if (!fs.existsSync(filePath)) {
+                console.log(`⚠️  File not found: ${filePath}`);
+                return;
+            }
 
-    async fixReadmeVersion(version) {
-        try {
-            let content = fs.readFileSync('README.md', 'utf8');
-            content = content.replace(/### v(\d+\.\d+\.\d+)/g, `### v${version}`);
-            fs.writeFileSync('README.md', content);
-            console.log(`✅ Updated README.md to version ${version}`);
+            let content = fs.readFileSync(filePath, 'utf8');
+            const pattern = VERSION_PATTERNS[filePath];
+            
+            if (!pattern) {
+                console.log(`⚠️  No pattern defined for: ${filePath}`);
+                return;
+            }
+
+            let updated = false;
+
+            if (filePath === 'CHANGELOG.md') {
+                // Fix changelog version headers
+                const newContent = content.replace(/## \[(\d+\.\d+\.\d+)\]/g, (match, oldVersion) => {
+                    if (oldVersion !== version) {
+                        updated = true;
+                        return `## [${version}]`;
+                    }
+                    return match;
+                });
+                if (updated) {
+                    fs.writeFileSync(filePath, newContent);
+                    console.log(`✅ Updated ${filePath} to version ${version}`);
+                }
+            } else if (filePath === 'README.md') {
+                // Fix README badge
+                const newContent = content.replace(/version-(\d+\.\d+\.\d+)/g, (match, oldVersion) => {
+                    if (oldVersion !== version) {
+                        updated = true;
+                        return `version-${version}`;
+                    }
+                    return match;
+                });
+                if (updated) {
+                    fs.writeFileSync(filePath, newContent);
+                    console.log(`✅ Updated ${filePath} to version ${version}`);
+                }
+            } else if (filePath === 'src/ui.ts') {
+                // Fix UI version references
+                const newContent = content.replace(/(\d+\.\d+\.\d+)/g, (match, oldVersion) => {
+                    if (oldVersion !== version) {
+                        updated = true;
+                        return version;
+                    }
+                    return match;
+                });
+                if (updated) {
+                    fs.writeFileSync(filePath, newContent);
+                    console.log(`✅ Updated ${filePath} to version ${version}`);
+                }
+            } else if (filePath === 'FEATURE_TESTING_CHECKLIST.md') {
+                // Fix feature testing checklist version
+                const newContent = content.replace(/\*\*Version:\*\*\s*(\d+\.\d+\.\d+)/g, (match, oldVersion) => {
+                    if (oldVersion !== version) {
+                        updated = true;
+                        return `**Version:** ${version}`;
+                    }
+                    return match;
+                });
+                if (updated) {
+                    fs.writeFileSync(filePath, newContent);
+                    console.log(`✅ Updated ${filePath} to version ${version}`);
+                }
+            } else if (filePath === 'ALPHA_LAUNCH_SPRINT_PLAN.md') {
+                // Fix sprint plan version references
+                const newContent = content.replace(/(\d+\.\d+\.\d+)/g, (match, oldVersion) => {
+                    if (oldVersion !== version) {
+                        updated = true;
+                        return version;
+                    }
+                    return match;
+                });
+                if (updated) {
+                    fs.writeFileSync(filePath, newContent);
+                    console.log(`✅ Updated ${filePath} to version ${version}`);
+                }
+            }
         } catch (error) {
-            throw new Error(`Failed to update README.md: ${error.message}`);
+            console.log(`❌ Failed to update ${filePath}: ${error.message}`);
         }
     }
 
@@ -218,37 +343,36 @@ class VersionChecker {
             const packageJson = JSON.parse(content);
             
             if (packageJson.badges && packageJson.badges.length > 0) {
-                packageJson.badges[0].url = `https://img.shields.io/badge/version-${version}-blue.svg`;
-                fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2));
-                console.log(`✅ Updated badge URL to version ${version}`);
+                const currentUrl = packageJson.badges[0].url;
+                const newUrl = `https://img.shields.io/badge/version-${version}-blue.svg`;
+                
+                if (currentUrl !== newUrl) {
+                    packageJson.badges[0].url = newUrl;
+                    fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2));
+                    console.log(`✅ Updated badge URL to version ${version}`);
+                }
             }
         } catch (error) {
-            throw new Error(`Failed to update badge URL: ${error.message}`);
+            console.log(`❌ Failed to update badge URL: ${error.message}`);
         }
     }
 }
 
-// Main execution
 async function main() {
     const checker = new VersionChecker();
-    const shouldFix = process.argv.includes('--fix');
-
-    const isConsistent = await checker.checkConsistency();
-
-    if (!isConsistent && shouldFix) {
-        await checker.autoFix();
-        // Re-check after fixing
-        await checker.checkConsistency();
+    
+    if (process.argv.includes('--fix')) {
+        const success = await checker.autoFix();
+        process.exit(success ? 0 : 1);
+    } else {
+        const isConsistent = await checker.checkConsistency();
+        process.exit(isConsistent ? 0 : 1);
     }
-
-    // Exit with error code if issues remain
-    process.exit(isConsistent ? 0 : 1);
 }
 
-// Run if called directly
 if (require.main === module) {
     main().catch(error => {
-        console.error('❌ Version check failed:', error.message);
+        console.error('❌ Script failed:', error);
         process.exit(1);
     });
 }

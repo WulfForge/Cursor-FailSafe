@@ -18,6 +18,19 @@ const mockVscode = {
         showWarningMessage: async () => 'Dismiss',
         showErrorMessage: async () => 'OK',
         showInformationMessage: async () => 'OK',
+        createWebviewPanel: (viewType, title, column, options) => ({
+            webview: {
+                html: '',
+                onDidReceiveMessage: (callback) => ({
+                    dispose: () => {}
+                }),
+                postMessage: () => {}
+            },
+            onDidDispose: (callback) => ({
+                dispose: () => {}
+            }),
+            dispose: () => {}
+        }),
         createStatusBarItem: () => ({
             text: '',
             tooltip: '',
@@ -26,25 +39,37 @@ const mockVscode = {
             hide: () => {}
         })
     },
+    ViewColumn: {
+        One: 1,
+        Two: 2
+    },
     StatusBarAlignment: {
         Left: 1,
         Right: 2
     },
     commands: {
-        registerCommand: () => ({ dispose: () => {} })
+        registerCommand: () => ({ dispose: () => {} }),
+        executeCommand: async () => {}
+    },
+    ExtensionContext: class {
+        constructor() {
+            this.subscriptions = [];
+        }
     }
 };
 
 const { Logger } = proxyquire('../out/logger', { vscode: mockVscode });
-const { ProjectPlan } = proxyquire('../out/projectPlan', { vscode: mockVscode, '../out/logger': { Logger } });
-const { TaskEngine } = proxyquire('../out/taskEngine', { vscode: mockVscode, '../out/logger': { Logger }, '../out/projectPlan': { ProjectPlan } });
-const { UI } = proxyquire('../out/ui', { vscode: mockVscode, '../out/logger': { Logger }, '../out/projectPlan': { ProjectPlan }, '../out/taskEngine': { TaskEngine } });
+const { SprintPlanner } = proxyquire('../out/sprintPlanner', { vscode: mockVscode, '../out/logger': { Logger } });
+const { Commands } = proxyquire('../out/commands', { 
+    vscode: mockVscode, 
+    '../out/logger': { Logger },
+    '../out/sprintPlanner': { SprintPlanner }
+});
 
-describe('FailSafe UI', () => {
-    let ui;
-    let taskEngine;
-    let projectPlan;
+describe('FailSafe Dashboard UI', () => {
+    let commands;
     let logger;
+    let context;
 
     beforeEach(() => {
         // Clean up any persisted project state
@@ -54,200 +79,238 @@ describe('FailSafe UI', () => {
         if (fs.existsSync(failsafeDir)) fs.rmdirSync(failsafeDir, { recursive: true });
 
         logger = new Logger();
-        projectPlan = new ProjectPlan(logger);
-        taskEngine = new TaskEngine(projectPlan, logger);
-        ui = new UI(projectPlan, taskEngine, logger);
+        context = new mockVscode.ExtensionContext();
+        commands = new Commands(
+            logger,
+            __dirname + '/../test-workspace',
+            context
+        );
     });
 
-    describe('UI Initialization', () => {
-        it('should initialize UI components', async () => {
-            await ui.initialize();
+    describe('Dashboard Initialization', () => {
+        it('should initialize Commands with required dependencies', () => {
+            assert.ok(commands, 'Commands should be initialized');
+            assert.ok(commands.logger, 'Logger should be available');
+            assert.ok(commands.sprintPlanner, 'SprintPlanner should be available');
+        });
+
+        it('should register commands successfully', async () => {
             // Should not throw error
-            assert.ok(true);
-        });
-
-        it('should set up status bar items', async () => {
-            await ui.initialize();
-            // Should not throw error
-            assert.ok(true);
-        });
-    });
-
-    describe('Dashboard', () => {
-        it('should generate dashboard data', async () => {
-            await ui.initialize();
-            
-            // Access private method for testing
-            const dashboardData = ui.getDashboardData();
-            
-            assert.ok(dashboardData.currentTask !== undefined);
-            assert.ok(dashboardData.nextTask !== undefined);
-            assert.ok(dashboardData.linearProgress !== undefined);
-            assert.ok(dashboardData.accountability !== undefined);
-            assert.ok(Array.isArray(dashboardData.recommendations));
-            assert.ok(dashboardData.feasibility !== undefined);
-            assert.ok(Array.isArray(dashboardData.deviations));
-            assert.ok(typeof dashboardData.isOnTrack === 'boolean');
-        });
-
-        it('should generate dashboard content', async () => {
-            await ui.initialize();
-            
-            const dashboardData = ui.getDashboardData();
-            const content = ui.generateDashboardContent(dashboardData);
-            
-            assert.ok(typeof content === 'string');
-            assert.ok(content.includes('🛡️ FailSafe Dashboard'));
-            assert.ok(content.includes('Current Task'));
-            assert.ok(content.includes('Next Task'));
-            assert.ok(content.includes('Progress Overview'));
-        });
-
-        it('should show dashboard', async () => {
-            await ui.initialize();
-            
-            // Should not throw error
-            await ui.showDashboard();
-            assert.ok(true);
+            await commands.registerCommands(context);
+            assert.ok(true, 'Commands should register without error');
         });
     });
 
-    describe('Progress Tracking', () => {
-        it('should show progress details', async () => {
-            await ui.initialize();
+    describe('Dashboard Generation', () => {
+        it('should generate dashboard HTML', async () => {
+            const currentSprint = null;
+            const sprintHistory = [];
+            const templates = [];
+            const sprintMetrics = null;
+
+            const html = commands.generateDashboardHTML(currentSprint, sprintHistory, templates, sprintMetrics);
             
-            // Should not throw error
-            await ui.showProgressDetails();
-            assert.ok(true);
+            assert.ok(typeof html === 'string', 'Should generate HTML string');
+            assert.ok(html.includes('<!DOCTYPE html>'), 'Should include DOCTYPE');
+            assert.ok(html.includes('<title>FailSafe Dashboard</title>'), 'Should include title');
+            assert.ok(html.includes('FailSafe Dashboard'), 'Should include dashboard title');
         });
 
-        it('should create progress bar', async () => {
-            await ui.initialize();
-            
-            // Test progress bar creation
-            const progressBar = ui.createProgressBar(50);
-            assert.ok(typeof progressBar === 'string');
-            assert.ok(progressBar.includes('█'));
-            assert.ok(progressBar.includes('░'));
-        });
-    });
+        it('should include all required dashboard sections', async () => {
+            const currentSprint = null;
+            const sprintHistory = [];
+            const templates = [];
+            const sprintMetrics = null;
 
-    describe('Accountability', () => {
-        it('should show accountability report', async () => {
-            await ui.initialize();
+            const html = commands.generateDashboardHTML(currentSprint, sprintHistory, templates, sprintMetrics);
             
-            // Should not throw error
-            await ui.showAccountabilityReport();
-            assert.ok(true);
-        });
-    });
-
-    describe('Feasibility Analysis', () => {
-        it('should show feasibility analysis', async () => {
-            await ui.initialize();
-            
-            // Should not throw error
-            await ui.showFeasibilityAnalysis();
-            assert.ok(true);
-        });
-    });
-
-    describe('Workflow Actions', () => {
-        it('should force linear progression', async () => {
-            await ui.initialize();
-            
-            // Should not throw error
-            await ui.forceLinearProgression();
-            assert.ok(true);
-        });
-
-        it('should auto-advance to next task', async () => {
-            await ui.initialize();
-            
-            // Should not throw error
-            await ui.autoAdvanceToNextTask();
-            assert.ok(true);
-        });
-    });
-
-    describe('Status Bar Updates', () => {
-        it('should update main status', async () => {
-            await ui.initialize();
-            
-            const currentTask = projectPlan.getCurrentTask();
-            const linearState = projectPlan.getLinearProgressState();
-            
-            // Should not throw error
-            ui.updateMainStatus(currentTask, linearState);
-            assert.ok(true);
-        });
-
-        it('should update progress bar', async () => {
-            await ui.initialize();
-            
-            const progress = projectPlan.getProjectProgress();
-            const linearState = projectPlan.getLinearProgressState();
-            
-            // Should not throw error
-            ui.updateProgressBar(progress, linearState);
-            assert.ok(true);
-        });
-
-        it('should update accountability item', async () => {
-            await ui.initialize();
-            
-            const accountability = projectPlan.getAccountabilityReport();
-            const linearState = projectPlan.getLinearProgressState();
-            
-            // Should not throw error
-            ui.updateAccountabilityItem(accountability, linearState);
-            assert.ok(true);
-        });
-    });
-
-    describe('Status Icons', () => {
-        it('should return correct status icons', async () => {
-            await ui.initialize();
-            
-            const TaskStatus = require('../out/types').TaskStatus;
-            
-            assert.strictEqual(ui.getStatusIcon(TaskStatus.NOT_STARTED), '⏳');
-            assert.strictEqual(ui.getStatusIcon(TaskStatus.IN_PROGRESS), '🔄');
-            assert.strictEqual(ui.getStatusIcon(TaskStatus.COMPLETED), '✅');
-            assert.strictEqual(ui.getStatusIcon(TaskStatus.BLOCKED), '❌');
-            assert.strictEqual(ui.getStatusIcon(TaskStatus.DELAYED), '⚠️');
-        });
-    });
-
-    describe('UI Cleanup', () => {
-        it('should dispose UI components', async () => {
-            await ui.initialize();
-            
-            // Should not throw error
-            ui.dispose();
-            assert.ok(true);
-        });
-    });
-
-    describe('Failsafe: Dashboard Regression Protection', () => {
-        it('should include all key dashboard sections', async () => {
-            await ui.initialize();
-            const dashboardData = ui.getDashboardData();
-            const content = ui.generateDashboardContent(dashboardData);
-            // Check for all key sections
             const requiredSections = [
-                'Current Task',
-                'Next Task',
-                'Progress Overview',
-                'Deviations & Issues',
-                'Recommendations',
-                'Feasibility Analysis',
-                'Accountability Report',
-                'Quick Actions'
+                'Current Sprint',
+                'Cursor Rules',
+                'Quick Actions',
+                'Sprint History',
+                'Sprint Templates',
+                'Project Health'
             ];
+
             for (const section of requiredSections) {
-                assert.ok(content.includes(section), `Dashboard missing section: ${section}`);
+                assert.ok(html.includes(section), `Dashboard missing section: ${section}`);
             }
+        });
+
+        it('should include interactive buttons', async () => {
+            const currentSprint = null;
+            const sprintHistory = [];
+            const templates = [];
+            const sprintMetrics = null;
+
+            const html = commands.generateDashboardHTML(currentSprint, sprintHistory, templates, sprintMetrics);
+            
+            // Check for interactive elements that actually exist
+            assert.ok(html.includes('onclick='), 'Should include onclick handlers');
+            assert.ok(html.includes('Create Sprint'), 'Should include Create Sprint button');
+            assert.ok(html.includes('Validate Chat'), 'Should include Validate Chat button');
+            assert.ok(html.includes('Create Rule'), 'Should include Create Rule button');
+        });
+
+        it('should include proper CSS styling', async () => {
+            const currentSprint = null;
+            const sprintHistory = [];
+            const templates = [];
+            const sprintMetrics = null;
+
+            const html = commands.generateDashboardHTML(currentSprint, sprintHistory, templates, sprintMetrics);
+            
+            // Check for CSS variables and styling
+            assert.ok(html.includes('--primary:'), 'Should include CSS variables');
+            assert.ok(html.includes('background: var(--background)'), 'Should include background styling');
+            assert.ok(html.includes('border-radius: var(--radius)'), 'Should include border radius');
+            assert.ok(html.includes('.btn'), 'Should include button styling');
+            assert.ok(html.includes('.card'), 'Should include card styling');
+        });
+    });
+
+    describe('Dashboard Functionality', () => {
+        it('should show dashboard without error', async () => {
+            // Should not throw error
+            await commands.showDashboard();
+            assert.ok(true, 'Dashboard should show without error');
+        });
+
+        it('should handle dashboard refresh', async () => {
+            // Should not throw error
+            await commands.showDashboard();
+            assert.ok(true, 'Dashboard refresh should work without error');
+        });
+    });
+
+    describe('Sprint Management', () => {
+        it('should create sprint without error', async () => {
+            // Should not throw error
+            await commands.createSprint();
+            assert.ok(true, 'Sprint creation should work without error');
+        });
+
+        it('should export sprint data without error', async () => {
+            // Should not throw error
+            await commands.exportSprintData();
+            assert.ok(true, 'Sprint export should work without error');
+        });
+
+        it('should show sprint metrics without error', async () => {
+            // Should not throw error
+            await commands.showSprintMetrics();
+            assert.ok(true, 'Sprint metrics should show without error');
+        });
+    });
+
+    describe('Validation Tools', () => {
+        it('should validate chat without error', async () => {
+            // Should not throw error
+            await commands.validateChat();
+            assert.ok(true, 'Chat validation should work without error');
+        });
+
+        it('should create cursorrule without error', async () => {
+            // Should not throw error
+            await commands.createCursorrule();
+            assert.ok(true, 'Cursorrule creation should work without error');
+        });
+
+        it('should validate plan with AI without error', async () => {
+            // Should not throw error
+            await commands.validatePlanWithAI();
+            assert.ok(true, 'Plan validation should work without error');
+        });
+    });
+
+    describe('Project Management', () => {
+        it('should mark task complete without error', async () => {
+            // Should not throw error
+            await commands.markTaskComplete();
+            assert.ok(true, 'Task completion should work without error');
+        });
+
+        it('should view session log without error', async () => {
+            // Should not throw error
+            await commands.viewSessionLog();
+            assert.ok(true, 'Session log should show without error');
+        });
+
+        it('should evaluate tech debt without error', async () => {
+            // Should not throw error
+            await commands.evaluateTechDebt();
+            assert.ok(true, 'Tech debt evaluation should work without error');
+        });
+
+        it('should show version details without error', async () => {
+            // Should not throw error
+            await commands.showVersionDetails();
+            assert.ok(true, 'Version details should show without error');
+        });
+
+        it('should show restore points without error', async () => {
+            // Should not throw error
+            await commands.showRestorePoints();
+            assert.ok(true, 'Restore points should show without error');
+        });
+
+        it('should show action log without error', async () => {
+            // Should not throw error
+            await commands.showActionLog();
+            assert.ok(true, 'Action log should show without error');
+        });
+    });
+
+    describe('Dashboard Regression Protection', () => {
+        it('should include all key dashboard sections', () => {
+            const currentSprint = null;
+            const sprintHistory = [];
+            const templates = [];
+            const sprintMetrics = null;
+
+            const html = commands.generateDashboardHTML(currentSprint, sprintHistory, templates, sprintMetrics);
+            
+            const requiredSections = [
+                'Current Sprint',
+                'Cursor Rules',
+                'Quick Actions',
+                'Sprint History',
+                'Sprint Templates',
+                'Project Health'
+            ];
+
+            for (const section of requiredSections) {
+                assert.ok(html.includes(section), `Dashboard missing critical section: ${section}`);
+            }
+        });
+
+        it('should maintain responsive design', async () => {
+            const currentSprint = null;
+            const sprintHistory = [];
+            const templates = [];
+            const sprintMetrics = null;
+
+            const html = commands.generateDashboardHTML(currentSprint, sprintHistory, templates, sprintMetrics);
+            
+            // Check for responsive design elements that actually exist
+            assert.ok(html.includes('grid-template-columns: repeat(auto-fit'), 'Should include responsive grid');
+            assert.ok(html.includes('minmax(300px, 1fr)'), 'Should include responsive minmax');
+            assert.ok(html.includes('minmax(120px, 1fr)'), 'Should include metric grid responsive design');
+        });
+
+        it('should maintain accessibility features', async () => {
+            const currentSprint = null;
+            const sprintHistory = [];
+            const templates = [];
+            const sprintMetrics = null;
+
+            const html = commands.generateDashboardHTML(currentSprint, sprintHistory, templates, sprintMetrics);
+            
+            // Check for accessibility features that actually exist
+            assert.ok(html.includes('lang="en"'), 'Should include language attribute');
+            assert.ok(html.includes('focus-visible'), 'Should include focus styles');
+            assert.ok(html.includes('user-select: none'), 'Should include user interaction styles');
         });
     });
 }); 

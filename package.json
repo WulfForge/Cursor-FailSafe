@@ -1,8 +1,8 @@
 {
   "name": "failsafe-cursor",
-  "displayName": "FailSafe - Chat Content Validator",
-  "description": "Validate AI chat responses for hallucinations and false claims. Provides post-processing validation of code blocks, file references, and implementation claims in chat content.",
-  "version": "1.5.1",
+  "displayName": "FailSafe",
+  "description": "🚀 ALL-NEW FailSafe v2.5.2 - Complete AI Safety & Validation System for Cursor. Features modern dashboard, real-time analytics, design document management, and comprehensive security. This is a complete transformation from previous versions with enhanced UI, Chart.js integration, and advanced task management.",
+  "version": "2.5.2",
   "publisher": "MythologIQ",
   "engines": {
     "vscode": "^1.74.0"
@@ -23,7 +23,9 @@
     "content-validation",
     "safety",
     "quality",
-    "post-processing"
+    "post-processing",
+    "custom-rules",
+    "cursorrules"
   ],
   "icon": "images/icon.png",
   "galleryBanner": {
@@ -45,29 +47,102 @@
   },
   "main": "./out/extension.js",
   "activationEvents": [
+    "onStartupFinished",
+    "onView:failsafe-dashboard",
     "onCommand:failsafe.validateChat",
     "onCommand:failsafe.validate",
-    "onCommand:failsafe.showPlan"
+    "onCommand:failsafe.showDashboard",
+    "onCommand:failsafe.openDashboard",
+    "onCommand:failsafe.createCursorrule",
+    "onCommand:failsafe.manageCursorrules",
+    "onCommand:failsafe.validateWithCursorrules"
   ],
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "failsafe-sidebar",
+          "title": "FailSafe",
+          "icon": "images/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "failsafe-sidebar": [
+        {
+          "id": "failsafe-dashboard",
+          "name": "Dashboard",
+          "type": "tree"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "failsafe.openDashboard",
+          "when": "view == failsafe-dashboard",
+          "group": "navigation"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "failsafe.validateChat",
         "title": "Validate Chat Content",
         "category": "FailSafe",
-        "description": "Validate AI chat responses for hallucinations and false claims"
+        "icon": {
+          "light": "images/icon.png",
+          "dark": "images/icon.png"
+        }
+      },
+      {
+        "command": "failsafe.validateChatMinimal",
+        "title": "Validate Chat (Minimal)",
+        "category": "FailSafe",
+        "icon": {
+          "light": "images/icon.png",
+          "dark": "images/icon.png"
+        }
+      },
+      {
+        "command": "failsafe.evaluateTechDebt",
+        "title": "Evaluate Tech Debt",
+        "category": "FailSafe",
+        "description": "Analyze code for technical debt, complexity, and maintainability issues",
+        "icon": {
+          "light": "images/icon.png",
+          "dark": "images/icon.png"
+        }
       },
       {
         "command": "failsafe.validate",
-        "title": "FailSafe: Validate Code",
+        "title": "FailSafe: Validate Code File",
         "category": "FailSafe",
-        "description": "Validate code for safety and quality issues"
+        "description": "Validate code files for safety and quality issues"
       },
       {
-        "command": "failsafe.showPlan",
+        "command": "failsafe.showDashboard",
         "title": "FailSafe: Show Dashboard",
         "category": "FailSafe",
         "description": "Show project dashboard and plan"
+      },
+      {
+        "command": "failsafe.createCursorrule",
+        "title": "FailSafe: Create Cursorrule",
+        "category": "FailSafe",
+        "description": "Create a new custom validation rule for AI responses"
+      },
+      {
+        "command": "failsafe.manageCursorrules",
+        "title": "FailSafe: Manage Cursorrules",
+        "category": "FailSafe",
+        "description": "View, edit, and manage your custom validation rules"
+      },
+      {
+        "command": "failsafe.validateWithCursorrules",
+        "title": "FailSafe: Validate with Cursorrules",
+        "category": "FailSafe",
+        "description": "Validate current file using your custom rules"
       },
       {
         "command": "failsafe.reportProblem",
@@ -86,31 +161,232 @@
         "title": "FailSafe: Check Version Consistency",
         "category": "FailSafe",
         "description": "Check version consistency across files"
+      },
+      {
+        "command": "failsafe.autoBumpVersion",
+        "title": "FailSafe: Auto Bump Version",
+        "category": "FailSafe",
+        "description": "Automatically bump version based on detected changes"
+      },
+      {
+        "command": "failsafe.openDashboard",
+        "title": "Open Dashboard",
+        "category": "FailSafe",
+        "description": "Open the FailSafe dashboard"
+      },
+      {
+        "command": "failsafe.viewVersionLog",
+        "title": "FailSafe: View Version Log",
+        "category": "FailSafe",
+        "description": "View version consistency warning logs"
+      },
+      {
+        "command": "failsafe.toggleCursorrule",
+        "title": "Toggle Cursorrule",
+        "category": "FailSafe"
+      },
+      {
+        "command": "failsafe.setUserRole",
+        "title": "Set User Role",
+        "category": "FailSafe"
+      },
+      {
+        "command": "failsafe.showVibeCoderRules",
+        "title": "Show Vibe Coder Rules",
+        "category": "FailSafe"
+      },
+      {
+        "command": "failsafe.showRestorePoints",
+        "title": "Show Restore Points",
+        "category": "FailSafe"
+      },
+      {
+        "command": "failsafe.showTroubleshootingStats",
+        "title": "Show Troubleshooting Statistics",
+        "category": "FailSafe"
+      },
+      {
+        "command": "failsafe.createSprint",
+        "title": "FailSafe: Create Sprint",
+        "category": "FailSafe",
+        "description": "Create a new sprint with templates and planning"
+      },
+      {
+        "command": "failsafe.startSprint",
+        "title": "FailSafe: Start Sprint",
+        "category": "FailSafe",
+        "description": "Start the current sprint and begin tracking"
+      },
+      {
+        "command": "failsafe.completeSprint",
+        "title": "FailSafe: Complete Sprint",
+        "category": "FailSafe",
+        "description": "Complete the current sprint and archive it"
+      },
+      {
+        "command": "failsafe.showSprintMetrics",
+        "title": "FailSafe: Show Sprint Metrics",
+        "category": "FailSafe",
+        "description": "Display sprint progress, velocity, and risk assessment"
+      },
+      {
+        "command": "failsafe.addTaskToSprint",
+        "title": "FailSafe: Add Task to Sprint",
+        "category": "FailSafe",
+        "description": "Add a new task to the current sprint"
+      },
+      {
+        "command": "failsafe.createSprintTemplate",
+        "title": "FailSafe: Create Sprint Template",
+        "category": "FailSafe",
+        "description": "Create a reusable sprint template"
+      },
+      {
+        "command": "failsafe.exportSprintData",
+        "title": "FailSafe: Export Sprint Data",
+        "category": "FailSafe",
+        "description": "Export sprint data in JSON, CSV, or Markdown format"
+      },
+      {
+        "command": "failsafe.testPassiveValidation",
+        "title": "FailSafe: Test Passive Validation",
+        "category": "FailSafe",
+        "description": "Test the passive validation system with sample AI responses"
+      },
+      {
+        "command": "failsafe.processAIResponse",
+        "title": "FailSafe: Process AI Response",
+        "category": "FailSafe",
+        "description": "Manually process an AI response through the validation pipeline"
+      },
+      {
+        "command": "failsafe.showPassiveValidationStats",
+        "title": "FailSafe: Show Passive Validation Statistics",
+        "category": "FailSafe",
+        "description": "Display statistics and metrics for the passive validation system"
+      },
+      {
+        "command": "failsafe.resetPassiveValidationStats",
+        "title": "FailSafe: Reset Passive Validation Statistics",
+        "category": "FailSafe",
+        "description": "Reset all passive validation statistics and metrics"
+      },
+      {
+        "command": "failsafe.enablePassiveValidation",
+        "title": "FailSafe: Enable Passive Validation",
+        "category": "FailSafe",
+        "description": "Enable passive validation of AI responses"
+      },
+      {
+        "command": "failsafe.disablePassiveValidation",
+        "title": "FailSafe: Disable Passive Validation",
+        "category": "FailSafe",
+        "description": "Disable passive validation of AI responses"
+      },
+      {
+        "command": "failsafe.setPassiveValidationMode",
+        "title": "FailSafe: Set Passive Validation Mode",
+        "category": "FailSafe",
+        "description": "Set the passive validation mode (full, minimal, critical)"
+      },
+      {
+        "command": "failsafe.getPendingAlerts",
+        "title": "FailSafe: Get Pending Alerts",
+        "category": "FailSafe",
+        "description": "View all pending alerts that are waiting to be displayed"
+      },
+      {
+        "command": "failsafe.clearPendingAlert",
+        "title": "FailSafe: Clear Pending Alert",
+        "category": "FailSafe",
+        "description": "Clear a specific pending alert for a rule"
+      },
+      {
+        "command": "failsafe.clearSuppression",
+        "title": "FailSafe: Clear Suppression",
+        "category": "FailSafe",
+        "description": "Clear suppression for a rule to allow alerts again"
+      },
+      {
+        "command": "failsafe.triggerManualAlert",
+        "title": "FailSafe: Trigger Manual Alert",
+        "category": "FailSafe",
+        "description": "Manually trigger an alert for a specific rule"
+      },
+      {
+        "command": "failsafe.showActionLog",
+        "title": "FailSafe: Show Action Log",
+        "category": "FailSafe",
+        "description": "View detailed action log with filtering and search"
+      },
+      {
+        "command": "failsafe.markTaskComplete",
+        "title": "FailSafe: Mark Task Complete",
+        "category": "FailSafe",
+        "description": "Mark a sprint task as complete and update progress"
+      },
+      {
+        "command": "failsafe.viewSessionLog",
+        "title": "FailSafe: View Session Log",
+        "category": "FailSafe",
+        "description": "View current session activity and events"
+      },
+      {
+        "command": "failsafe.validateAIResponse",
+        "title": "FailSafe: Validate AI Response",
+        "category": "FailSafe",
+        "description": "Manually validate an AI response through the validation pipeline"
+      },
+      {
+        "command": "failsafe.testAIValidation",
+        "title": "FailSafe: Test AI Validation",
+        "category": "FailSafe",
+        "description": "Test the AI validation system with sample responses"
+      },
+      {
+        "command": "failsafe.editTask",
+        "title": "FailSafe: Edit Task",
+        "category": "FailSafe",
+        "description": "Edit an existing sprint task"
+      },
+      {
+        "command": "failsafe.duplicateTask",
+        "title": "FailSafe: Duplicate Task",
+        "category": "FailSafe",
+        "description": "Duplicate an existing sprint task"
+      },
+      {
+        "command": "failsafe.deleteTask",
+        "title": "FailSafe: Delete Task",
+        "category": "FailSafe",
+        "description": "Delete a sprint task"
+      },
+      {
+        "command": "failsafe.addTask",
+        "title": "FailSafe: Add Task",
+        "category": "FailSafe",
+        "description": "Add a new task to the current sprint"
+      },
+      {
+        "command": "failsafe.editSprint",
+        "title": "FailSafe: Edit Sprint",
+        "category": "FailSafe",
+        "description": "Edit the current sprint details"
+      },
+      {
+        "command": "failsafe.reorderTasks",
+        "title": "FailSafe: Reorder Tasks",
+        "category": "FailSafe",
+        "description": "Reorder tasks within the current sprint"
       }
     ],
-    "viewsContainers": {
-      "activitybar": [
+    "chat": {
+      "providers": [
         {
-          "id": "failsafe-sidebar",
-          "title": "FailSafe",
+          "id": "failsafe-chat-validator",
+          "name": "FailSafe Chat Validator",
+          "description": "Validates chat responses for AI hallucinations and safety issues",
           "icon": "images/icon.png"
-        }
-      ]
-    },
-    "views": {
-      "failsafe-sidebar": [
-        {
-          "id": "failsafe-tree",
-          "name": "FailSafe Status"
-        }
-      ]
-    },
-    "menus": {
-      "view/title": [
-        {
-          "command": "failsafe.showDashboard",
-          "when": "view == failsafe-tree",
-          "group": "navigation"
         }
       ]
     },
@@ -132,8 +408,236 @@
           "items": {
             "type": "string"
           },
-          "default": ["security", "quality", "performance"],
+          "default": [
+            "security",
+            "quality",
+            "performance"
+          ],
           "description": "Focus areas for validation"
+        },
+        "failsafe.passiveValidation.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable passive validation of AI responses"
+        },
+        "failsafe.passiveValidation.mode": {
+          "type": "string",
+          "enum": [
+            "full",
+            "minimal",
+            "critical"
+          ],
+          "default": "full",
+          "description": "Validation mode: full (all rules), minimal (critical rules only), critical (essential rules only)"
+        },
+        "failsafe.passiveValidation.timeout": {
+          "type": "number",
+          "default": 3000,
+          "minimum": 1000,
+          "maximum": 10000,
+          "description": "Maximum time (in milliseconds) to wait for validation before timing out"
+        },
+        "failsafe.passiveValidation.showFeedback": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show passive feedback when validation changes are applied"
+        },
+        "failsafe.passiveValidation.showFailureNotices": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notices when validation fails and manual verification is advised"
+        },
+        "failsafe.passiveValidation.enableRealTimeValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable real-time validation for immediate response processing"
+        },
+        "failsafe.passiveValidation.enableStatistics": {
+          "type": "boolean",
+          "default": true,
+          "description": "Collect and display validation statistics"
+        },
+        "failsafe.passiveValidation.enableLogging": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable detailed logging of validation activities"
+        },
+        "failsafe.passiveValidation.enableNotifications": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show notifications for validation events (use sparingly to avoid spam)"
+        },
+        "failsafe.passiveValidation.enableAutoRetry": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically retry validation on timeout or error"
+        },
+        "failsafe.passiveValidation.maxRetries": {
+          "type": "number",
+          "default": 2,
+          "minimum": 0,
+          "maximum": 5,
+          "description": "Maximum number of retry attempts for failed validations"
+        },
+        "failsafe.passiveValidation.enablePerformanceMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable performance mode for faster validation (may reduce accuracy)"
+        },
+        "failsafe.passiveValidation.enableCustomRules": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable custom CursorRules in passive validation"
+        },
+        "failsafe.passiveValidation.enableBuiltInRules": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable built-in validation rules"
+        },
+        "failsafe.passiveValidation.enableChatValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable chat-specific validation for hallucination detection"
+        },
+        "failsafe.passiveValidation.enableFileValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable file existence and content validation"
+        },
+        "failsafe.passiveValidation.enableCodeValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable code-specific validation for implementation claims"
+        },
+        "failsafe.passiveValidation.enableVersionValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable version consistency validation"
+        },
+        "failsafe.passiveValidation.enableSecurityValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable security-focused validation rules"
+        },
+        "failsafe.passiveValidation.enableQualityValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable code quality validation rules"
+        },
+        "failsafe.passiveValidation.enablePerformanceValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable performance claim validation"
+        },
+        "failsafe.passiveValidation.enableTestingValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable test result claim validation"
+        },
+        "failsafe.passiveValidation.enableDocumentationValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable documentation claim validation"
+        },
+        "failsafe.passiveValidation.enableWorkflowValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable workflow and process claim validation"
+        },
+        "failsafe.passiveValidation.enableBeginnerGuidance": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable beginner guidance validation and acknowledgment"
+        },
+        "failsafe.passiveValidation.enableErrorRecovery": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable error recovery assistance validation"
+        },
+        "failsafe.passiveValidation.enableBestPractices": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable best practice suggestion validation"
+        },
+        "failsafe.passiveValidation.enableDependencyValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable dependency management validation"
+        },
+        "failsafe.passiveValidation.enableTransparencyValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable transparency and honesty validation"
+        },
+        "failsafe.passiveValidation.enableStallingDetection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable detection and removal of stalling language"
+        },
+        "failsafe.passiveValidation.enableVagueOfferDetection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable detection and improvement of vague offers"
+        },
+        "failsafe.passiveValidation.enableAbsoluteStatementDetection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable detection of absolute statements needing qualifiers"
+        },
+        "failsafe.passiveValidation.enableImplementationClaimDetection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable detection of unverified implementation claims"
+        },
+        "failsafe.passiveValidation.enableTaskCompletionDetection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable detection of unverified task completion claims"
+        },
+        "failsafe.passiveValidation.enableFileExistenceDetection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable detection of unverified file existence claims"
+        },
+        "failsafe.passiveValidation.enablePerformanceClaimDetection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable detection of unverified performance claims"
+        },
+        "failsafe.passiveValidation.enableTestResultDetection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable detection of unverified test result claims"
+        },
+        "failsafe.passiveValidation.enableCompilationDetection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable detection of unverified compilation status claims"
+        },
+        "failsafe.passiveValidation.enableAuditResultDetection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable detection of unverified audit result claims"
+        },
+        "failsafe.passiveValidation.enableVersionManagementDetection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable detection of version management activities"
+        },
+        "failsafe.passiveValidation.enableAITaskExecutionDetection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable detection of AI task execution claims"
+        },
+        "failsafe.passiveValidation.enableGitHubWorkflowDetection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable detection of GitHub workflow management"
+        },
+        "failsafe.passiveValidation.enableProductDiscoveryDetection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable detection of product discovery activities"
         }
       }
     }
@@ -144,27 +648,39 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js",
+    "test": "node ./test/runTest.js",
     "prepackage": "node scripts/check-icon.js",
     "package": "vsce package",
-    "publish": "vsce publish"
+    "publish": "vsce publish",
+    "spec-gate": "node scripts/spec-gate.js"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^16.18.126",
     "@types/vscode": "^1.74.0",
-    "@types/node": "16.x",
-    "@typescript-eslint/eslint-plugin": "^5.42.0",
-    "@typescript-eslint/parser": "^5.42.0",
-    "eslint": "^8.26.0",
-    "typescript": "^4.8.4",
+    "@typescript-eslint/eslint-plugin": "^5.59.11",
+    "@typescript-eslint/parser": "^5.59.11",
+    "eslint": "^8.50.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-config-typescript": "^3.0.0",
+    "fastify": "^5.4.0",
+    "jest": "^30.0.1",
+    "proxyquire": "^2.1.3",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.8.3",
     "vsce": "^2.7.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "node-fetch": "^2.6.7",
+    "pino-pretty": "^10.3.1"
+  },
   "extensionDependencies": [],
   "extensionPack": [],
   "badges": [
     {
       "description": "Version",
-      "url": "https://img.shields.io/badge/version-1.5.1-blue.svg",
+      "url": "https://img.shields.io/badge/version-2.5.2-blue.svg",
       "href": "https://github.com/WulfForge/Cursor-FailSafe/releases"
     },
     {

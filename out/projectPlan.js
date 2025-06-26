@@ -15,13 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProjectPlan = void 0;
 const vscode = __importStar(require("vscode"));
@@ -47,7 +57,27 @@ class ProjectPlan {
             if (projectManagerExt) {
                 // Initialize integration with Project Management Extension
                 this.logger.info('Project Management Extension found, initializing integration');
-                // TODO: Implement extension-to-extension communication
+                // Basic extension-to-extension communication
+                try {
+                    // Try to activate the extension and get its API
+                    if (!projectManagerExt.isActive) {
+                        await projectManagerExt.activate();
+                    }
+                    // Attempt to communicate via commands
+                    const commands = await vscode.commands.getCommands(true);
+                    const hasProjectCommands = commands.some(cmd => cmd.includes('project') || cmd.includes('task') || cmd.includes('mythologiq'));
+                    if (hasProjectCommands) {
+                        this.logger.info('Project Management Extension commands detected, integration available');
+                        // Set up basic integration
+                        this.setupExtensionIntegration(projectManagerExt);
+                    }
+                    else {
+                        this.logger.info('Project Management Extension found but no integration commands available');
+                    }
+                }
+                catch (error) {
+                    this.logger.warn('Failed to initialize extension integration, using basic mode', error);
+                }
             }
             else {
                 this.logger.info('No Project Management Extension found, using basic project tracking');
@@ -56,6 +86,21 @@ class ProjectPlan {
         catch (error) {
             this.logger.error('Failed to initialize project manager integration', error);
         }
+    }
+    setupExtensionIntegration(extension) {
+        // Set up basic integration with the project management extension
+        this.logger.info('Setting up extension integration');
+        // Register commands that can be called by the other extension
+        vscode.commands.registerCommand('failsafe.getProjectStatus', () => {
+            return this.getProjectStatus();
+        });
+        vscode.commands.registerCommand('failsafe.getCurrentTask', () => {
+            return this.getCurrentTask();
+        });
+        vscode.commands.registerCommand('failsafe.recordActivity', (activity) => {
+            this.recordActivity(activity);
+        });
+        this.logger.info('Extension integration commands registered');
     }
     async initialize() {
         try {
@@ -106,42 +151,49 @@ class ProjectPlan {
                 id: 'setup',
                 name: 'Project Setup',
                 description: 'Initialize development environment and project structure',
-                status: types_1.TaskStatus.IN_PROGRESS,
+                status: types_1.TaskStatus.inProgress,
                 startTime: new Date(),
+                endTime: undefined,
                 estimatedDuration: 60,
                 dependencies: [],
                 blockers: [],
-                priority: types_1.TaskPriority.HIGH
+                priority: types_1.TaskPriority.high
             },
             {
                 id: 'development',
                 name: 'Development',
                 description: 'Main development work',
-                status: types_1.TaskStatus.NOT_STARTED,
+                status: types_1.TaskStatus.notStarted,
+                startTime: new Date(),
+                endTime: undefined,
                 estimatedDuration: 240,
                 dependencies: ['setup'],
                 blockers: [],
-                priority: types_1.TaskPriority.CRITICAL
+                priority: types_1.TaskPriority.critical
             },
             {
                 id: 'testing',
                 name: 'Testing & QA',
                 description: 'Testing and quality assurance',
-                status: types_1.TaskStatus.NOT_STARTED,
+                status: types_1.TaskStatus.notStarted,
+                startTime: new Date(),
+                endTime: undefined,
                 estimatedDuration: 120,
                 dependencies: ['development'],
                 blockers: [],
-                priority: types_1.TaskPriority.MEDIUM
+                priority: types_1.TaskPriority.medium
             },
             {
                 id: 'deployment',
                 name: 'Deployment',
                 description: 'Deploy and launch',
-                status: types_1.TaskStatus.NOT_STARTED,
+                status: types_1.TaskStatus.notStarted,
+                startTime: new Date(),
+                endTime: undefined,
                 estimatedDuration: 60,
                 dependencies: ['testing'],
                 blockers: [],
-                priority: types_1.TaskPriority.MEDIUM
+                priority: types_1.TaskPriority.medium
             }
         ];
     }
@@ -223,13 +275,13 @@ class ProjectPlan {
     getReadyTasks() {
         const tasks = this.getAllTasks();
         return tasks.filter(task => {
-            if (task.status !== types_1.TaskStatus.NOT_STARTED) {
+            if (task.status !== types_1.TaskStatus.notStarted) {
                 return false;
             }
             // Check if all dependencies are completed
             return task.dependencies.every(depId => {
                 const depTask = tasks.find(t => t.id === depId);
-                return depTask && depTask.status === types_1.TaskStatus.COMPLETED;
+                return depTask && depTask.status === types_1.TaskStatus.completed;
             });
         });
     }
@@ -240,8 +292,8 @@ class ProjectPlan {
             return;
         }
         const task = this.currentPlan?.tasks.find(t => t.id === taskId);
-        if (task) {
-            task.status = types_1.TaskStatus.IN_PROGRESS;
+        if (task && this.currentPlan) {
+            task.status = types_1.TaskStatus.inProgress;
             task.startTime = new Date();
             this.currentPlan.currentTask = task;
             await this.saveProject();
@@ -255,8 +307,8 @@ class ProjectPlan {
             return;
         }
         const task = this.currentPlan?.tasks.find(t => t.id === taskId);
-        if (task) {
-            task.status = types_1.TaskStatus.COMPLETED;
+        if (task && this.currentPlan) {
+            task.status = types_1.TaskStatus.completed;
             task.endTime = new Date();
             if (this.currentPlan.currentTask?.id === taskId) {
                 this.currentPlan.currentTask = null;
@@ -273,7 +325,7 @@ class ProjectPlan {
         }
         const task = this.currentPlan?.tasks.find(t => t.id === taskId);
         if (task) {
-            task.status = types_1.TaskStatus.BLOCKED;
+            task.status = types_1.TaskStatus.blocked;
             task.blockers.push(reason);
             await this.saveProject();
             this.logger.info(`Blocked task: ${task.name} - ${reason}`);
@@ -286,8 +338,8 @@ class ProjectPlan {
             return;
         }
         const task = this.currentPlan?.tasks.find(t => t.id === taskId);
-        if (task && task.status === types_1.TaskStatus.BLOCKED) {
-            task.status = types_1.TaskStatus.NOT_STARTED;
+        if (task && task.status === types_1.TaskStatus.blocked) {
+            task.status = types_1.TaskStatus.notStarted;
             task.blockers = [];
             await this.saveProject();
             this.logger.info(`Unblocked task: ${task.name}`);
@@ -296,12 +348,12 @@ class ProjectPlan {
     getProjectProgress() {
         const tasks = this.getAllTasks();
         const totalTasks = tasks.length;
-        const completedTasks = tasks.filter(t => t.status === types_1.TaskStatus.COMPLETED).length;
-        const inProgressTasks = tasks.filter(t => t.status === types_1.TaskStatus.IN_PROGRESS).length;
-        const blockedTasks = tasks.filter(t => t.status === types_1.TaskStatus.BLOCKED).length;
+        const inProgressTasks = tasks.filter(t => t.status === types_1.TaskStatus.inProgress).length;
+        const blockedTasks = tasks.filter(t => t.status === types_1.TaskStatus.blocked).length;
+        const completedTasks = tasks.filter(t => t.status === types_1.TaskStatus.completed).length;
         const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
         // Calculate estimated remaining time
-        const remainingTasks = tasks.filter(t => t.status !== types_1.TaskStatus.COMPLETED);
+        const remainingTasks = tasks.filter(t => t.status !== types_1.TaskStatus.completed);
         const estimatedRemainingTime = remainingTasks.reduce((total, task) => total + (task.estimatedDuration || 0), 0);
         return {
             totalTasks,
@@ -315,9 +367,8 @@ class ProjectPlan {
     getCriticalPath() {
         // Simplified critical path for basic project tracking
         const tasks = this.getAllTasks();
-        const completedTasks = tasks.filter(t => t.status === types_1.TaskStatus.COMPLETED);
-        const inProgressTasks = tasks.filter(t => t.status === types_1.TaskStatus.IN_PROGRESS);
-        const blockedTasks = tasks.filter(t => t.status === types_1.TaskStatus.BLOCKED);
+        const inProgressTasks = tasks.filter(t => t.status === types_1.TaskStatus.inProgress);
+        const blockedTasks = tasks.filter(t => t.status === types_1.TaskStatus.blocked);
         return [...inProgressTasks, ...blockedTasks];
     }
     addTask(task) {
@@ -343,18 +394,50 @@ class ProjectPlan {
         }
     }
     updateTask(taskId, updates) {
-        if (this.projectManagerExtension) {
-            // Delegate to Project Management Extension
-            this.logger.info('Delegating task update to Project Management Extension');
+        if (!this.currentPlan)
             return;
+        const taskIndex = this.currentPlan.tasks.findIndex(t => t.id === taskId);
+        if (taskIndex !== -1) {
+            this.currentPlan.tasks[taskIndex] = { ...this.currentPlan.tasks[taskIndex], ...updates };
+            this.currentPlan.lastUpdated = new Date();
+            this.saveProject();
+            this.logger.info('Task updated', { taskId, updates });
         }
-        if (this.currentPlan) {
-            const taskIndex = this.currentPlan.tasks.findIndex(task => task.id === taskId);
-            if (taskIndex !== -1) {
-                this.currentPlan.tasks[taskIndex] = { ...this.currentPlan.tasks[taskIndex], ...updates };
-                this.saveProject();
-            }
+    }
+    async addSubtasks(parentTaskId, subtasks) {
+        if (!this.currentPlan) {
+            throw new Error('No project plan loaded');
         }
+        const parentTask = this.currentPlan.tasks.find(t => t.id === parentTaskId);
+        if (!parentTask) {
+            throw new Error(`Parent task ${parentTaskId} not found`);
+        }
+        const addedSubtasks = [];
+        for (const subtaskData of subtasks) {
+            const subtask = {
+                id: `${parentTaskId}-subtask-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+                name: subtaskData.name || 'Unnamed Subtask',
+                description: subtaskData.description || '',
+                status: subtaskData.status || types_1.TaskStatus.notStarted,
+                startTime: new Date(),
+                endTime: undefined,
+                estimatedDuration: (subtaskData.estimatedHours || 1) * 60, // Convert hours to minutes
+                dependencies: subtaskData.dependencies || [],
+                blockers: [],
+                priority: subtaskData.priority || types_1.TaskPriority.medium,
+                parentTaskId: parentTaskId
+            };
+            this.currentPlan.tasks.push(subtask);
+            addedSubtasks.push(subtask);
+        }
+        this.currentPlan.lastUpdated = new Date();
+        await this.saveProject();
+        this.logger.info('Subtasks added', {
+            parentTaskId,
+            subtaskCount: addedSubtasks.length,
+            subtaskIds: addedSubtasks.map(t => t.id)
+        });
+        return addedSubtasks;
     }
     enforceLinearProgression() {
         if (this.projectManagerExtension) {
@@ -364,17 +447,16 @@ class ProjectPlan {
         }
         // Basic linear progression enforcement
         const tasks = this.getAllTasks();
-        const inProgressTasks = tasks.filter(t => t.status === types_1.TaskStatus.IN_PROGRESS);
+        const inProgressTasks = tasks.filter(t => t.status === types_1.TaskStatus.inProgress);
         if (inProgressTasks.length > 1) {
             // Multiple tasks in progress - enforce linear progression
-            const firstInProgress = inProgressTasks[0];
             inProgressTasks.slice(1).forEach(task => {
-                task.status = types_1.TaskStatus.NOT_STARTED;
+                task.status = types_1.TaskStatus.notStarted;
             });
             this.logger.info('Enforced linear progression - only one task in progress');
         }
     }
-    analyzeFeasibility(request, context) {
+    analyzeFeasibility() {
         if (this.projectManagerExtension) {
             // Delegate to Project Management Extension
             this.logger.info('Delegating feasibility analysis to Project Management Extension');
@@ -389,7 +471,7 @@ class ProjectPlan {
         // Basic feasibility analysis
         const currentTask = this.getCurrentTask();
         const blockers = [];
-        if (currentTask && currentTask.status === types_1.TaskStatus.BLOCKED) {
+        if (currentTask && currentTask.status === types_1.TaskStatus.blocked) {
             blockers.push(...currentTask.blockers);
         }
         const feasibility = blockers.length === 0 ? 'feasible' :
@@ -404,10 +486,10 @@ class ProjectPlan {
     }
     getLinearProgressState() {
         const tasks = this.getAllTasks();
-        const currentTask = tasks.find(t => t.status === types_1.TaskStatus.IN_PROGRESS) || null;
-        const completedTasks = tasks.filter(t => t.status === types_1.TaskStatus.COMPLETED);
-        const blockedTasks = tasks.filter(t => t.status === types_1.TaskStatus.BLOCKED);
-        const nextTask = tasks.find(t => t.status === types_1.TaskStatus.NOT_STARTED) || null;
+        const currentTask = tasks.find(t => t.status === types_1.TaskStatus.inProgress) || null;
+        const completedTasks = tasks.filter(t => t.status === types_1.TaskStatus.completed);
+        const blockedTasks = tasks.filter(t => t.status === types_1.TaskStatus.blocked);
+        const nextTask = tasks.find(t => t.status === types_1.TaskStatus.notStarted) || null;
         const totalProgress = tasks.length > 0 ? (completedTasks.length / tasks.length) * 100 : 0;
         return {
             currentTask,
@@ -415,9 +497,9 @@ class ProjectPlan {
             blockedTasks,
             completedTasks,
             totalProgress,
-            estimatedCompletion: null,
+            estimatedCompletion: null, // Basic version doesn't track end dates
             lastActivity: this.lastActivity,
-            isOnTrack: true,
+            isOnTrack: true, // Basic version assumes on track
             deviations: []
         };
     }
@@ -477,7 +559,7 @@ class ProjectPlan {
             ruleResults.push('No tasks defined');
             recommendations.push('Add tasks to the project plan');
         }
-        const completedTasks = this.currentPlan.tasks.filter(t => t.status === types_1.TaskStatus.COMPLETED).length;
+        const completedTasks = this.currentPlan.tasks.filter(t => t.status === types_1.TaskStatus.completed).length;
         const totalTasks = this.currentPlan.tasks.length;
         const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
         let status;
@@ -504,14 +586,14 @@ class ProjectPlan {
         if (!task) {
             return { canStart: false, reason: 'Task not found' };
         }
-        if (task.status !== types_1.TaskStatus.NOT_STARTED) {
+        if (task.status !== types_1.TaskStatus.notStarted) {
             return { canStart: false, reason: 'Task is not in NOT_STARTED status' };
         }
         // Check dependencies
         const tasks = this.getAllTasks();
         const unmetDependencies = task.dependencies.filter(depId => {
             const depTask = tasks.find(t => t.id === depId);
-            return !depTask || depTask.status !== types_1.TaskStatus.COMPLETED;
+            return !depTask || depTask.status !== types_1.TaskStatus.completed;
         });
         if (unmetDependencies.length > 0) {
             return { canStart: false, reason: `Dependencies not met: ${unmetDependencies.join(', ')}` };
@@ -521,8 +603,8 @@ class ProjectPlan {
     // Helper methods for integration
     getProjectStatus() {
         const tasks = this.getAllTasks();
-        const blockedTasks = tasks.filter(t => t.status === types_1.TaskStatus.BLOCKED);
-        const completedTasks = tasks.filter(t => t.status === types_1.TaskStatus.COMPLETED);
+        const blockedTasks = tasks.filter(t => t.status === types_1.TaskStatus.blocked);
+        const completedTasks = tasks.filter(t => t.status === types_1.TaskStatus.completed);
         if (blockedTasks.length > 0)
             return 'blocked';
         if (completedTasks.length === tasks.length)
@@ -531,7 +613,7 @@ class ProjectPlan {
     }
     validateTaskCompletion() {
         const currentTask = this.getCurrentTask();
-        return currentTask?.status === types_1.TaskStatus.COMPLETED;
+        return currentTask?.status === types_1.TaskStatus.completed;
     }
     getProjectConstraints() {
         // Basic constraints - could be enhanced
@@ -540,12 +622,12 @@ class ProjectPlan {
     checkProjectRisks() {
         // Basic risk checking - could be enhanced
         const tasks = this.getAllTasks();
-        const blockedTasks = tasks.filter(t => t.status === types_1.TaskStatus.BLOCKED);
+        const blockedTasks = tasks.filter(t => t.status === types_1.TaskStatus.blocked);
         const risks = [];
         if (blockedTasks.length > 0) {
             risks.push('Blocked tasks may delay project completion');
         }
-        const inProgressTasks = tasks.filter(t => t.status === types_1.TaskStatus.IN_PROGRESS);
+        const inProgressTasks = tasks.filter(t => t.status === types_1.TaskStatus.inProgress);
         if (inProgressTasks.length > 1) {
             risks.push('Multiple tasks in progress may indicate scope creep');
         }
