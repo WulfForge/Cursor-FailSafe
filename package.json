@@ -72,6 +72,11 @@
         {
           "id": "failsafe-dashboard",
           "name": "Dashboard",
+          "type": "webview"
+        },
+        {
+          "id": "failsafe-commands",
+          "name": "Commands",
           "type": "tree"
         }
       ]

@@ -2116,22 +2116,11 @@ function simulatedFunction() {
     }
     async showDashboard() {
         try {
-            if (Commands.dashboardPanel) {
-                Commands.dashboardPanel.reveal();
-                return;
-            }
-            Commands.dashboardPanel = vscode.window.createWebviewPanel('failsafeDashboard', 'FailSafe Dashboard', vscode.ViewColumn.One, {
-                enableScripts: true,
-                retainContextWhenHidden: true
-            });
-            const html = await this.ui.generateDashboard();
-            Commands.dashboardPanel.webview.html = html;
-            Commands.dashboardPanel.webview.onDidReceiveMessage(async (message) => {
-                await this.handleDashboardMessage(message);
-            });
-            Commands.dashboardPanel.onDidDispose(() => {
-                Commands.dashboardPanel = undefined;
-            });
+            // Reveal the FailSafe sidebar
+            await vscode.commands.executeCommand('workbench.view.extension.failsafe-sidebar');
+            // Focus on the dashboard view
+            await vscode.commands.executeCommand('workbench.view.extension.failsafe-dashboard');
+            this.logger.info('Dashboard opened successfully');
         }
         catch (error) {
             this.logger.error('Failed to show dashboard', error);

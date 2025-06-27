@@ -77,6 +77,7 @@ class FailSafeExtension {
         this.troubleshootingStateManager = new troubleshootingStateManager_1.TroubleshootingStateManager(context, this.logger);
         this.sprintPlanner = new sprintPlanner_1.SprintPlanner(this.logger);
         this.sidebarProvider = new sidebarProvider_1.FailSafeSidebarProvider(this.context);
+        this.dashboardProvider = new sidebarProvider_1.FailSafeDashboardProvider(vscode.Uri.file(this.context.extensionPath), this.context);
         this.commands = new commands_1.Commands(this.context);
         // Initialize AI response pipeline for passive validation
         this.aiResponsePipeline = (0, aiResponsePipeline_1.initializeAIResponsePipeline)(context, this.logger);
@@ -104,15 +105,19 @@ class FailSafeExtension {
             this.logger.info('Registering commands...');
             await this.commands.registerCommands(this.context);
             this.logger.info('Commands registered successfully');
-            // Register tree data provider for sidebar with proper error handling
+            // Register view providers for sidebar with proper error handling
             try {
-                this.logger.info('Registering sidebar provider...');
-                vscode.window.registerTreeDataProvider('failsafe-dashboard', this.sidebarProvider);
-                this.logger.info('Sidebar provider registered successfully');
+                this.logger.info('Registering view providers...');
+                // Register dashboard webview provider
+                vscode.window.registerWebviewViewProvider('failsafe-dashboard', this.dashboardProvider);
+                this.logger.info('Dashboard provider registered successfully');
+                // Register commands tree provider
+                vscode.window.registerTreeDataProvider('failsafe-commands', this.sidebarProvider);
+                this.logger.info('Commands provider registered successfully');
             }
             catch (error) {
-                this.logger.error('Failed to register sidebar provider:', error);
-                vscode.window.showErrorMessage('Failed to register sidebar provider');
+                this.logger.error('Failed to register view providers:', error);
+                vscode.window.showErrorMessage('Failed to register view providers');
             }
             // Set up chat response interceptor
             try {
