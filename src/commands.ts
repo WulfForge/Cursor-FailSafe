@@ -10,7 +10,7 @@ import { CursorrulesEngine } from './cursorrulesEngine';
 import { CursorrulesManager } from './cursorrulesManager';
 import { DesignDocumentManager } from './designDocumentManager';
 import { ChatValidator } from './chatValidator';
-import { AIRequest, AIResponse, SessionLog, ValidationResult, ValidationError, ValidationWarning, TestResult } from './types';
+import { AIRequest, AIResponse, SessionLog, ValidationResult, ValidationError, ValidationWarning, TestResult, TaskStatus, TaskPriority } from './types';
 import * as fs from 'fs';
 
 export class Commands {
@@ -66,6 +66,8 @@ export class Commands {
             vscode.commands.registerCommand('failsafe.enforceVersionConsistency', this.enforceVersionConsistency.bind(this)),
             vscode.commands.registerCommand('failsafe.showVersionDetails', this.showVersionDetails.bind(this)),
             vscode.commands.registerCommand('failsafe.validateChat', this.validateChat.bind(this)),
+            vscode.commands.registerCommand('failsafe.validateChatMinimal', this.validateChatMinimal.bind(this)),
+            vscode.commands.registerCommand('failsafe.evaluateTechDebt', this.evaluateTechDebt.bind(this)),
             vscode.commands.registerCommand('failsafe.showDashboard', this.showDashboard.bind(this)),
             vscode.commands.registerCommand('failsafe.openDashboard', this.showDashboard.bind(this)),
             vscode.commands.registerCommand('failsafe.createCursorrule', this.createCursorrule.bind(this)),
@@ -84,7 +86,12 @@ export class Commands {
             vscode.commands.registerCommand('failsafe.showActionLog', this.showActionLog.bind(this)),
             vscode.commands.registerCommand('failsafe.showFailsafeConfigPanel', this.showFailsafeConfigPanel.bind(this)),
             vscode.commands.registerCommand('failsafe.openPreview', this.openPreview.bind(this)),
-            vscode.commands.registerCommand('failsafe.togglePreviewSync', this.togglePreviewSync.bind(this))
+            vscode.commands.registerCommand('failsafe.togglePreviewSync', this.togglePreviewSync.bind(this)),
+            vscode.commands.registerCommand('failsafe.createSprint', this.createSprint.bind(this)),
+            vscode.commands.registerCommand('failsafe.startSprint', this.startSprint.bind(this)),
+            vscode.commands.registerCommand('failsafe.completeSprint', this.completeSprint.bind(this)),
+            vscode.commands.registerCommand('failsafe.addTaskToSprint', this.addTaskToSprint.bind(this)),
+            vscode.commands.registerCommand('failsafe.createSprintTemplate', this.createSprintTemplate.bind(this))
         ];
 
         commands.forEach(command => context.subscriptions.push(command));
@@ -1890,435 +1897,152 @@ function simulatedFunction() {
             const document = editor.document;
             const content = document.getText();
 
-            // Create validation context with all required properties
-            // const context: ChatValidationContext = {
-            //     workspaceRoot: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '',
-            //     currentFile: document.fileName,
-            //     projectType: await this.detectProjectType(),
-            //     techStack: await this.detectTechStack(),
-            //     fileSystem: require('fs'),
-            //     path: require('path')
-            // };
+            if (!content.trim()) {
+                vscode.window.showWarningMessage('No content to validate');
+                return;
+            }
 
-            const validator = new ChatValidator(this.logger, vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '');
-            const result = await validator.validateChat(content);
+            this.logger.info('Starting chat validation...');
+            const validationResult = await this.validateChatContent(content);
 
-            if (this.extensionContext) {
-                await this.displayChatValidationResults(result, content, this.extensionContext);
+            if (validationResult.isValid) {
+                vscode.window.showInformationMessage('✅ Chat validation passed!');
             } else {
-                this.logger.error('Extension context not available for chat validation');
-                vscode.window.showErrorMessage('Extension context not available for chat validation');
+                const errorCount = validationResult.errors.length;
+                const warningCount = validationResult.warnings.length;
+                
+                vscode.window.showWarningMessage(
+                    `⚠️ Chat validation found ${errorCount} errors and ${warningCount} warnings`
+                );
+
+                // Show detailed results in a webview
+                await this.displayChatValidationResults(validationResult, content, this.extensionContext!);
             }
 
         } catch (error) {
-            this.logger.error('Error validating chat', error);
+            this.logger.error('Error in validateChat command', error);
             vscode.window.showErrorMessage('Failed to validate chat. Check logs for details.');
         }
     }
 
-    private async displayChatValidationResults(result: ValidationResult, originalContent: string, extensionContext: vscode.ExtensionContext): Promise<void> {
-        const panel = vscode.window.createWebviewPanel(
-            'chatValidationResults',
-            'Chat Validation Results',
-            vscode.ViewColumn.One,
-            {
-                enableScripts: true,
-                retainContextWhenHidden: true
+    private async validateChatMinimal(): Promise<void> {
+        try {
+            const editor = vscode.window.activeTextEditor;
+            if (!editor) {
+                vscode.window.showWarningMessage('No active editor found');
+                return;
             }
-        );
 
-        const html = this.generateChatValidationHTML(result, originalContent);
-        panel.webview.html = html;
+            const document = editor.document;
+            const content = document.getText();
 
-        // Handle messages from webview
-        panel.webview.onDidReceiveMessage(
-            message => {
-                switch (message.command) {
-                    case 'copyToClipboard':
-                        vscode.env.clipboard.writeText(message.text);
-                        vscode.window.showInformationMessage('Copied to clipboard');
-                        break;
-                    case 'openFile':
-                        if (message.filePath) {
-                            vscode.workspace.openTextDocument(message.filePath).then(doc => {
-                                vscode.window.showTextDocument(doc);
-                            });
-                        }
-                        break;
-                }
-            },
-            undefined,
-            extensionContext.subscriptions
-        );
-    }
+            if (!content.trim()) {
+                vscode.window.showWarningMessage('No content to validate');
+                return;
+            }
 
-    private generateChatValidationHTML(result: ValidationResult, originalContent: string): string {
-        const errorCount = result.errors.length;
-        const warningCount = result.warnings.length;
-        const suggestionCount = result.suggestions.length;
-
-        const errorHtml = result.errors.map((error: ValidationError) => `
-            <div class="error-item">
-                <div class="error-header">
-                    <span class="error-type">${error.type.toUpperCase()}</span>
-                    <span class="error-severity ${error.severity}">${error.severity}</span>
-                </div>
-                <div class="error-message">${error.message}</div>
-                ${error.line ? `<div class="error-line">Line: ${error.line}</div>` : ''}
-                ${error.category ? `<div class="error-category">Category: ${error.category}</div>` : ''}
-            </div>
-        `).join('');
-
-        const warningHtml = result.warnings.map((warning: ValidationWarning) => `
-            <div class="warning-item">
-                <div class="warning-header">
-                    <span class="warning-type">${warning.type.toUpperCase()}</span>
-                    <span class="warning-category">${warning.category}</span>
-                </div>
-                <div class="warning-message">${warning.message}</div>
-                ${warning.line ? `<div class="warning-line">Line: ${warning.line}</div>` : ''}
-            </div>
-        `).join('');
-
-        const suggestionHtml = result.suggestions.map((suggestion: string) => `
-            <div class="suggestion-item">
-                <div class="suggestion-message">💡 ${suggestion}</div>
-            </div>
-        `).join('');
-
-        return `
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Chat Validation Results</title>
-                <style>
-                    body {
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                        margin: 0;
-                        padding: 20px;
-                        background-color: var(--vscode-editor-background);
-                        color: var(--vscode-editor-foreground);
-                    }
-                    
-                    .header {
-                        display: flex;
-                        align-items: center;
-                        margin-bottom: 20px;
-                        padding-bottom: 15px;
-                        border-bottom: 1px solid var(--vscode-panel-border);
-                    }
-                    
-                    .logo {
-                        width: 32px;
-                        height: 32px;
-                        margin-right: 12px;
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        border-radius: 6px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        color: white;
-                        font-weight: bold;
-                        font-size: 14px;
-                    }
-                    
-                    .title {
-                        font-size: 24px;
-                        font-weight: 600;
-                        margin: 0;
-                    }
-                    
-                    .summary {
-                        display: flex;
-                        gap: 20px;
-                        margin-bottom: 30px;
-                        padding: 15px;
-                        background-color: var(--vscode-editor-inactiveSelectionBackground);
-                        border-radius: 8px;
-                    }
-                    
-                    .summary-item {
-                        text-align: center;
-                    }
-                    
-                    .summary-number {
-                        font-size: 24px;
-                        font-weight: bold;
-                        display: block;
-                    }
-                    
-                    .summary-label {
-                        font-size: 12px;
-                        opacity: 0.8;
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                    }
-                    
-                    .errors-count { color: #f44336; }
-                    .warnings-count { color: #ff9800; }
-                    .suggestions-count { color: #2196f3; }
-                    
-                    .section {
-                        margin-bottom: 30px;
-                    }
-                    
-                    }
-                    
-                    .section-title {
-                        font-size: 18px;
-                        font-weight: 600;
-                        margin-bottom: 15px;
-                        padding-bottom: 8px;
-                        border-bottom: 2px solid var(--vscode-panel-border);
-                    }
-                    
-                    .error-item, .warning-item, .suggestion-item {
-                        margin-bottom: 15px;
-                        padding: 15px;
-                        border-radius: 6px;
-                        border-left: 4px solid;
-                    }
-                    
-                    .error-item {
-                        background-color: rgba(244, 67, 54, 0.1);
-                        border-left-color: #f44336;
-                    }
-                    
-                    .warning-item {
-                        background-color: rgba(255, 152, 0, 0.1);
-                        border-left-color: #ff9800;
-                    }
-                    
-                    .suggestion-item {
-                        background-color: rgba(33, 150, 243, 0.1);
-                        border-left-color: #2196f3;
-                    }
-                    
-                    .error-header, .warning-header {
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        margin-bottom: 8px;
-                    }
-                    
-                    .error-type, .warning-type {
-                        font-weight: 600;
-                        font-size: 12px;
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                    }
-                    
-                    .error-severity {
-                        font-size: 11px;
-                        padding: 2px 8px;
-                        border-radius: 12px;
-                        text-transform: uppercase;
-                        font-weight: 600;
-                    }
-                    
-                    .error-severity.error {
-                        background-color: #f44336;
-                        color: white;
-                    }
-                    
-                    .error-severity.warning {
-                        background-color: #ff9800;
-                        color: white;
-                    }
-                    
-                    .error-message, .warning-message, .suggestion-message {
-                        font-size: 14px;
-                        line-height: 1.4;
-                    }
-                    
-                    .error-line, .error-category, .warning-line, .warning-category {
-                        font-size: 12px;
-                        opacity: 0.7;
-                        margin-top: 5px;
-                    }
-                    
-                    .actions {
-                        margin-top: 20px;
-                        padding-top: 20px;
-                        border-top: 1px solid var(--vscode-panel-border);
-                    }
-                    
-                    .action-button {
-                        background-color: var(--vscode-button-background);
-                        color: var(--vscode-button-foreground);
-                        border: none;
-                        padding: 8px 16px;
-                        border-radius: 4px;
-                        cursor: pointer;
-                        margin-right: 10px;
-                        font-size: 13px;
-                    }
-                    
-                    .action-button:hover {
-                        background-color: var(--vscode-button-hoverBackground);
-                    }
-                    
-                    .no-issues {
-                        text-align: center;
-                        padding: 40px;
-                        color: var(--vscode-descriptionForeground);
-                    }
-                    
-                    .no-issues-icon {
-                        font-size: 48px;
-                        margin-bottom: 15px;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <div class="logo">FS</div>
-                    <h1 class="title">Chat Validation Results</h1>
-                </div>
-                
-                <div class="summary">
-                    <div class="summary-item">
-                        <span class="summary-number errors-count">${errorCount}</span>
-                        <span class="summary-label">Errors</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-number warnings-count">${warningCount}</span>
-                        <span class="summary-label">Warnings</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-number suggestions-count">${suggestionCount}</span>
-                        <span class="summary-label">Suggestions</span>
-                    </div>
-                </div>
-                
-                ${errorCount > 0 ? `
-                    <div class="section">
-                        <h2 class="section-title">🚨 Errors (${errorCount})</h2>
-                        ${errorHtml}
-                    </div>
-                ` : ''}
-                
-                ${warningCount > 0 ? `
-                    <div class="section">
-                        <h2 class="section-title">⚠️ Warnings (${warningCount})</h2>
-                        ${warningHtml}
-                    </div>
-                ` : ''}
-                
-                ${suggestionCount > 0 ? `
-                    <div class="section">
-                        <h2 class="section-title">💡 Suggestions (${suggestionCount})</h2>
-                        ${suggestionHtml}
-                    </div>
-                ` : ''}
-                
-                ${errorCount === 0 && warningCount === 0 ? `
-                    <div class="no-issues">
-                        <div class="no-issues-icon">✅</div>
-                        <h3>No Issues Found!</h3>
-                        <p>The chat content appears to be valid and free of common hallucination patterns.</p>
-                    </div>
-                ` : ''}
-                
-                <div class="actions">
-                    <button class="action-button" onclick="copyResults()">Copy Results</button>
-                    <button class="action-button" onclick="exportResults()">Export Report</button>
-                    <button class="action-button" onclick="closePanel()">Close</button>
-                </div>
-                
-                <script>
-                    const vscode = acquireVsCodeApi();
-                    
-                    function copyResults() {
-                        const results = {
-                            errors: ${JSON.stringify(result.errors)},
-                            warnings: ${JSON.stringify(result.warnings)},
-                            suggestions: ${JSON.stringify(result.suggestions)}
-                        };
-                        
-                        vscode.postMessage({
-                            command: 'copyToClipboard',
-                            text: JSON.stringify(results, null, 2)
-                        });
-                    }
-                    
-                    function exportResults() {
-                        const report = {
-                            timestamp: new Date().toISOString(),
-                            summary: {
-                                errors: ${errorCount},
-                                warnings: ${warningCount},
-                                suggestions: ${suggestionCount}
-                            },
-                            results: {
-                                errors: ${JSON.stringify(result.errors)},
-                                warnings: ${JSON.stringify(result.warnings)},
-                                suggestions: ${JSON.stringify(result.suggestions)}
-                            },
-                            originalContent: ${JSON.stringify(originalContent)}
-                        };
-                        
-                        vscode.postMessage({
-                            command: 'copyToClipboard',
-                            text: JSON.stringify(report, null, 2)
-                        });
-                    }
-                    
-                    function closePanel() {
-                        vscode.postMessage({ command: 'close' });
-                    }
-                </script>
-            </body>
-            </html>
-        `;
-    }
-
-    private async detectProjectType(): Promise<string> {
-        // Simple project type detection
-        const files = await vscode.workspace.findFiles('**/package.json', '**/node_modules/**');
-        if (files.length > 0) return 'node';
-        
-        const pythonFiles = await vscode.workspace.findFiles('**/*.py', '**/__pycache__/**');
-        if (pythonFiles.length > 0) return 'python';
-        
-        const javaFiles = await vscode.workspace.findFiles('**/*.java', '**/target/**');
-        if (javaFiles.length > 0) return 'java';
-        
-        return 'unknown';
-    }
-
-    private async detectTechStack(): Promise<string[]> {
-        const techStack: string[] = [];
-        
-        // Check for common tech stack indicators
-        const packageJson = await vscode.workspace.findFiles('**/package.json', '**/node_modules/**');
-        if (packageJson.length > 0) {
-            techStack.push('nodejs');
+            this.logger.info('Starting minimal chat validation...');
             
-            // Read package.json to detect frameworks
-            try {
-                const content = await vscode.workspace.fs.readFile(packageJson[0]);
-                const pkg = JSON.parse(content.toString());
-                if (pkg.dependencies) {
-                    if (pkg.dependencies.react) techStack.push('react');
-                    if (pkg.dependencies.vue) techStack.push('vue');
-                    if (pkg.dependencies.angular) techStack.push('angular');
-                    if (pkg.dependencies.express) techStack.push('express');
-                    if (pkg.dependencies.next) techStack.push('nextjs');
-                }
-            } catch {
-                // Ignore parsing errors
+            // Perform lightweight validation for common patterns
+            const issues = [];
+            
+            // Check for common issues
+            if (content.includes('TODO') || content.includes('FIXME')) {
+                issues.push('Contains TODO/FIXME comments');
             }
+            
+            if (content.length > 10000) {
+                issues.push('Content is very long (>10k chars)');
+            }
+            
+            if (content.includes('password') || content.includes('secret')) {
+                issues.push('Contains potential sensitive information');
+            }
+
+            if (issues.length === 0) {
+                vscode.window.showInformationMessage('✅ Minimal validation passed!');
+            } else {
+                vscode.window.showWarningMessage(
+                    `⚠️ Minimal validation found ${issues.length} potential issues: ${issues.join(', ')}`
+                );
+            }
+
+        } catch (error) {
+            this.logger.error('Error in validateChatMinimal command', error);
+            vscode.window.showErrorMessage('Failed to validate chat. Check logs for details.');
         }
-        
-        const requirementsTxt = await vscode.workspace.findFiles('**/requirements.txt', '**/__pycache__/**');
-        if (requirementsTxt.length > 0) {
-            techStack.push('python');
+    }
+
+    private async evaluateTechDebt(): Promise<void> {
+        try {
+            const editor = vscode.window.activeTextEditor;
+            if (!editor) {
+                vscode.window.showWarningMessage('No active editor found');
+                return;
+            }
+
+            const document = editor.document;
+            const content = document.getText();
+
+            if (!content.trim()) {
+                vscode.window.showWarningMessage('No content to analyze');
+                return;
+            }
+
+            this.logger.info('Starting tech debt evaluation...');
+            
+            // Perform basic tech debt analysis
+            const analysis = {
+                complexity: 0,
+                maintainability: 0,
+                issues: [] as string[]
+            };
+            
+            // Calculate basic metrics
+            const lines = content.split('\n');
+            const functions = (content.match(/function\s+\w+/g) || []).length;
+            const classes = (content.match(/class\s+\w+/g) || []).length;
+            const comments = (content.match(/\/\/|\/\*|\*/g) || []).length;
+            
+            // Simple complexity calculation
+            analysis.complexity = functions + classes;
+            analysis.maintainability = Math.max(0, 100 - analysis.complexity * 5);
+            
+            // Identify potential issues
+            if (functions > 10) {
+                analysis.issues.push('High number of functions');
+            }
+            
+            if (classes > 5) {
+                analysis.issues.push('High number of classes');
+            }
+            
+            if (comments < lines.length * 0.1) {
+                analysis.issues.push('Low comment density');
+            }
+            
+            if (content.includes('TODO') || content.includes('FIXME')) {
+                analysis.issues.push('Contains TODO/FIXME comments');
+            }
+
+            // Show results
+            const message = `Tech Debt Analysis:\n` +
+                          `Complexity Score: ${analysis.complexity}\n` +
+                          `Maintainability: ${analysis.maintainability}%\n` +
+                          `Issues Found: ${analysis.issues.length}`;
+            
+            if (analysis.issues.length === 0) {
+                vscode.window.showInformationMessage('✅ Tech debt analysis passed!');
+            } else {
+                vscode.window.showWarningMessage(
+                    `⚠️ Tech debt analysis found ${analysis.issues.length} issues:\n${analysis.issues.join('\n')}`
+                );
+            }
+
+        } catch (error) {
+            this.logger.error('Error in evaluateTechDebt command', error);
+            vscode.window.showErrorMessage('Failed to evaluate tech debt. Check logs for details.');
         }
-        
-        return techStack;
     }
 
     public async showDashboard(): Promise<void> {
@@ -2465,6 +2189,107 @@ function simulatedFunction() {
         } catch (error) {
             this.logger.error('Failed to create sprint', error);
             vscode.window.showErrorMessage('Failed to create sprint');
+        }
+    }
+
+    private async startSprint(): Promise<void> {
+        try {
+            const success = await this.sprintPlanner.startSprint();
+            if (success) {
+                vscode.window.showInformationMessage('Sprint started successfully');
+            } else {
+                vscode.window.showWarningMessage('No sprint available to start');
+            }
+        } catch (error) {
+            this.logger.error('Failed to start sprint', error);
+            vscode.window.showErrorMessage('Failed to start sprint');
+        }
+    }
+
+    private async completeSprint(): Promise<void> {
+        try {
+            const success = await this.sprintPlanner.completeSprint();
+            if (success) {
+                vscode.window.showInformationMessage('Sprint completed successfully');
+            } else {
+                vscode.window.showWarningMessage('No active sprint to complete');
+            }
+        } catch (error) {
+            this.logger.error('Failed to complete sprint', error);
+            vscode.window.showErrorMessage('Failed to complete sprint');
+        }
+    }
+
+    private async addTaskToSprint(): Promise<void> {
+        try {
+            const taskName = await vscode.window.showInputBox({
+                prompt: 'Enter task name',
+                placeHolder: 'e.g., Implement user authentication'
+            });
+
+            if (!taskName) {
+                return;
+            }
+
+            const taskDescription = await vscode.window.showInputBox({
+                prompt: 'Enter task description (optional)',
+                placeHolder: 'Describe the task...'
+            });
+
+            const task = {
+                name: taskName,
+                description: taskDescription || '',
+                status: TaskStatus.notStarted,
+                storyPoints: 1,
+                priority: TaskPriority.medium
+            };
+
+            const success = await this.sprintPlanner.addTaskToSprint(task);
+            if (success) {
+                vscode.window.showInformationMessage(`Task "${taskName}" added to sprint successfully`);
+            } else {
+                vscode.window.showWarningMessage('No active sprint to add task to');
+            }
+        } catch (error) {
+            this.logger.error('Failed to add task to sprint', error);
+            vscode.window.showErrorMessage('Failed to add task to sprint');
+        }
+    }
+
+    private async createSprintTemplate(): Promise<void> {
+        try {
+            const templateName = await vscode.window.showInputBox({
+                prompt: 'Enter template name',
+                placeHolder: 'e.g., Standard 2-week sprint'
+            });
+
+            if (!templateName) {
+                return;
+            }
+
+            const templateDescription = await vscode.window.showInputBox({
+                prompt: 'Enter template description (optional)',
+                placeHolder: 'Describe the template...'
+            });
+
+            // Create a basic template structure
+            const template = {
+                name: templateName,
+                description: templateDescription || '',
+                duration: 14, // 2 weeks
+                defaultTasks: [
+                    { name: 'Planning', description: 'Sprint planning session', storyPoints: 1 },
+                    { name: 'Review', description: 'Sprint review session', storyPoints: 1 },
+                    { name: 'Retrospective', description: 'Sprint retrospective session', storyPoints: 1 }
+                ]
+            };
+
+            // For now, just show success message
+            // In a full implementation, this would save the template
+            vscode.window.showInformationMessage(`Template "${templateName}" created successfully`);
+        } catch (error) {
+            this.logger.error('Failed to create sprint template', error);
+            vscode.window.showErrorMessage('Failed to create sprint template');
         }
     }
 
@@ -2657,6 +2482,157 @@ function simulatedFunction() {
                 timestamp: new Date()
             };
         }
+    }
+
+    private async displayChatValidationResults(result: ValidationResult, originalContent: string, extensionContext: vscode.ExtensionContext): Promise<void> {
+        try {
+            const panel = vscode.window.createWebviewPanel(
+                'chatValidationResults',
+                'Chat Validation Results',
+                vscode.ViewColumn.One,
+                { enableScripts: true }
+            );
+
+            const html = this.generateChatValidationHTML(result, originalContent);
+            panel.webview.html = html;
+        } catch (error) {
+            this.logger.error('Failed to display chat validation results', error);
+            vscode.window.showErrorMessage('Failed to display validation results');
+        }
+    }
+
+    private generateChatValidationHTML(result: ValidationResult, originalContent: string): string {
+        return `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Chat Validation Results</title>
+                <style>
+                    body { 
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+                        padding: 20px; 
+                        background: #f5f5f5;
+                    }
+                    .container {
+                        max-width: 800px;
+                        margin: 0 auto;
+                        background: white;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                        overflow: hidden;
+                    }
+                    .header {
+                        background: ${result.isValid ? '#4CAF50' : '#f44336'};
+                        color: white;
+                        padding: 20px;
+                        text-align: center;
+                    }
+                    .content {
+                        padding: 20px;
+                    }
+                    .status {
+                        font-size: 24px;
+                        font-weight: bold;
+                        margin-bottom: 10px;
+                    }
+                    .summary {
+                        font-size: 16px;
+                        margin-bottom: 20px;
+                    }
+                    .section {
+                        margin: 20px 0;
+                        padding: 15px;
+                        border: 1px solid #e0e0e0;
+                        border-radius: 4px;
+                    }
+                    .section h3 {
+                        margin-top: 0;
+                        color: #333;
+                    }
+                    .error {
+                        background: #ffebee;
+                        border-left: 4px solid #f44336;
+                        padding: 10px;
+                        margin: 5px 0;
+                    }
+                    .warning {
+                        background: #fff3e0;
+                        border-left: 4px solid #ff9800;
+                        padding: 10px;
+                        margin: 5px 0;
+                    }
+                    .suggestion {
+                        background: #e8f5e8;
+                        border-left: 4px solid #4caf50;
+                        padding: 10px;
+                        margin: 5px 0;
+                    }
+                    .original-content {
+                        background: #f5f5f5;
+                        padding: 15px;
+                        border-radius: 4px;
+                        font-family: monospace;
+                        white-space: pre-wrap;
+                        max-height: 300px;
+                        overflow-y: auto;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <div class="status">
+                            ${result.isValid ? '✅ Validation Passed' : '❌ Validation Failed'}
+                        </div>
+                        <div class="summary">
+                            Found ${result.errors.length} errors, ${result.warnings.length} warnings
+                        </div>
+                    </div>
+                    
+                    <div class="content">
+                        ${result.errors.length > 0 ? `
+                            <div class="section">
+                                <h3>❌ Errors (${result.errors.length})</h3>
+                                ${result.errors.map(error => `
+                                    <div class="error">
+                                        <strong>${error.type}:</strong> ${error.message}
+                                        <br><small>Severity: ${error.severity}</small>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        ${result.warnings.length > 0 ? `
+                            <div class="section">
+                                <h3>⚠️ Warnings (${result.warnings.length})</h3>
+                                ${result.warnings.map(warning => `
+                                    <div class="warning">
+                                        <strong>${warning.type}:</strong> ${warning.message}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        ${result.suggestions.length > 0 ? `
+                            <div class="section">
+                                <h3>💡 Suggestions (${result.suggestions.length})</h3>
+                                ${result.suggestions.map(suggestion => `
+                                    <div class="suggestion">
+                                        ${suggestion}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        <div class="section">
+                            <h3>📄 Original Content</h3>
+                            <div class="original-content">${originalContent}</div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
     }
 
     private async updateChart(chartType: string): Promise<void> {

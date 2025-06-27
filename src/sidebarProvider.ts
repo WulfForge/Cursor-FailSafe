@@ -169,11 +169,23 @@ export class FailSafeDashboardProvider implements vscode.WebviewViewProvider {
             <button class="action-button" onclick="executeCommand('failsafe.validateChat')">
                 🔍 Validate Chat
             </button>
+            <button class="action-button" onclick="executeCommand('failsafe.validateChatMinimal')">
+                🔍 Quick Validate
+            </button>
             <button class="action-button" onclick="executeCommand('failsafe.createCursorrule')">
                 📝 Create Rule
             </button>
             <button class="action-button" onclick="executeCommand('failsafe.createSprint')">
                 📅 Create Sprint
+            </button>
+            <button class="action-button" onclick="executeCommand('failsafe.startSprint')">
+                ▶️ Start Sprint
+            </button>
+            <button class="action-button" onclick="executeCommand('failsafe.addTaskToSprint')">
+                ➕ Add Task
+            </button>
+            <button class="action-button" onclick="executeCommand('failsafe.evaluateTechDebt')">
+                🔧 Tech Debt
             </button>
             <button class="action-button" onclick="executeCommand('failsafe.checkVersionConsistency')">
                 🔍 Check Version
@@ -294,6 +306,33 @@ export class FailSafeSidebarProvider implements vscode.TreeDataProvider<FailSafe
                         {
                             command: 'failsafe.createSprint',
                             title: 'Create Sprint',
+                            arguments: []
+                        }
+                    ),
+                    new FailSafeTreeItem(
+                        '▶️ Start Sprint',
+                        vscode.TreeItemCollapsibleState.None,
+                        {
+                            command: 'failsafe.startSprint',
+                            title: 'Start Sprint',
+                            arguments: []
+                        }
+                    ),
+                    new FailSafeTreeItem(
+                        '✅ Complete Sprint',
+                        vscode.TreeItemCollapsibleState.None,
+                        {
+                            command: 'failsafe.completeSprint',
+                            title: 'Complete Sprint',
+                            arguments: []
+                        }
+                    ),
+                    new FailSafeTreeItem(
+                        '➕ Add Task to Sprint',
+                        vscode.TreeItemCollapsibleState.None,
+                        {
+                            command: 'failsafe.addTaskToSprint',
+                            title: 'Add Task to Sprint',
                             arguments: []
                         }
                     ),
