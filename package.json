@@ -1,8 +1,8 @@
 {
   "name": "failsafe-cursor",
   "displayName": "FailSafe",
-  "description": "🚀 ALL-NEW FailSafe v2.5.2 - Complete AI Safety & Validation System for Cursor. Features modern dashboard, real-time analytics, design document management, and comprehensive security. This is a complete transformation from previous versions with enhanced UI, Chart.js integration, and advanced task management.",
-  "version": "2.5.2",
+  "description": "🚀 FailSafe v2.0.0 - Complete AI Safety & Validation System for Cursor. Major release featuring modern dashboard, real-time analytics, design document management, comprehensive security, Fastify integration, and preventive innovations. Complete transformation with enhanced UI, Chart.js integration, advanced task management, and full o3-accountable compliance.",
+  "version": "2.0.0",
   "publisher": "MythologIQ",
   "engines": {
     "vscode": "^1.74.0"
@@ -695,7 +695,7 @@
   "badges": [
     {
       "description": "Version",
-      "url": "https://img.shields.io/badge/version-2.5.2-blue.svg",
+      "url": "https://img.shields.io/badge/version-2.0.0-blue.svg",
       "href": "https://github.com/WulfForge/Cursor-FailSafe/releases"
     },
     {

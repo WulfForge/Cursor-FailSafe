@@ -1,5 +1,4 @@
 "use strict";
-// Version Manager for FailSafe
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -35,6 +34,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VersionManager = void 0;
+// Version Manager for FailSafe
 const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
@@ -499,18 +499,18 @@ class VersionManager {
             <body>
                 <h1>Version Consistency Report</h1>
                 <h2>Status: ${consistency.isConsistent ? '✅ Consistent' : '❌ Issues Found'}</h2>
-                
+
                 <h3>Files:</h3>
                 ${consistency.files.map(file => `
                     <div class="file">
-                        <strong>${file.name}:</strong> 
+                        <strong>${file.name}:</strong>
                         <span class="${file.status}">${file.version} (${file.status})</span>
                     </div>
                 `).join('')}
-                
+
                 <h3>Issues:</h3>
                 ${consistency.issues.map(issue => `<div class="issue">• ${issue}</div>`).join('')}
-                
+
                 <h3>Recommendations:</h3>
                 ${consistency.recommendations.map(rec => `<div class="recommendation">• ${rec}</div>`).join('')}
             </body>
@@ -599,12 +599,11 @@ class VersionManager {
             // This is a simplified detection - in a real implementation,
             // you might analyze git commits, file changes, or other indicators
             // For now, default to patch for safety
-            return 'patch';
         }
         catch (error) {
             this.logger.error('Failed to detect change type', error);
-            return 'patch';
         }
+        return 'patch';
     }
     /**
      * Smart version bump - automatically detects change type and bumps version

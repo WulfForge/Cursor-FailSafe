@@ -11,16 +11,17 @@ import * as path from 'path';
 import { Logger } from './logger';
 import { Task, TaskStatus, TaskPriority } from './types';
 
-// Add Node.js types reference
-/// <reference types="node" />
-
-// Use built-in fetch or node-fetch as fallback
+/* global globalThis */
 let fetch: any;
+
 try {
-    // Try to use global fetch first (available in newer Node.js versions)
-    fetch = (globalThis as any).fetch;
+    if (typeof globalThis !== 'undefined' && (globalThis as any).fetch) {
+        fetch = (globalThis as any).fetch;
+    } else {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        fetch = require('node-fetch');
+    }
 } catch {
-    // Fallback to node-fetch
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     fetch = require('node-fetch');
 }

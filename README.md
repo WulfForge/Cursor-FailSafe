@@ -1,293 +1,165 @@
-# FailSafe - AI Safety & Validation Extension for Cursor
+# FailSafe v2.0.0 - Complete AI Safety & Validation System for Cursor
 
-[![Version](https://img.shields.io/badge/version-2.5.2-blue.svg)](https://marketplace.visualstudio.com/items?itemName=mythologiq.failsafe)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![VS Code](https://img.shields.io/badge/VS%20Code-1.60+-blue.svg)](https://code.visualstudio.com/)
+🚀 **Major Release v2.0.0** - Complete transformation featuring modern dashboard, real-time analytics, design document management, comprehensive security, Fastify integration, and preventive innovations.
 
-> **FailSafe** is an advanced AI safety and validation system designed specifically for Cursor AI, providing real-time monitoring, validation, and safety controls for AI-assisted development workflows.
+## 🎯 What's New in v2.0.0
 
-## 🚀 Features
+### ✨ Major Features
+- **Complete UI Overhaul** - Modern dashboard with Chart.js integration
+- **Fastify Server Integration** - High-performance API server with plugins
+- **Preventive Innovations** - Spec heatmap, snapshot validation, auto-stub generation
+- **Real-time Analytics** - Live charts and metrics tracking
+- **Design Document Management** - Full o3-accountable compliance
+- **Enhanced Security** - Comprehensive validation and safety checks
 
-### Core Safety Features
-- **Real-time AI Response Validation** - Monitors and validates AI responses for safety and accuracy
-- **Project Plan Validation** - Ensures project plans are feasible and well-structured
-- **Task Management & Accountability** - Tracks development progress with AI-powered insights
-- **Cursor Rules Integration** - Manages and validates Cursor AI rules for consistent behavior
-- **Design Document Management** - Maintains and validates project design documents
+### 🔧 Technical Improvements
+- **TypeScript 5.0+** - Latest language features and type safety
+- **Node.js 18+** - Modern runtime with enhanced performance
+- **Fastify Plugins** - Modular architecture with health checks, metrics, and more
+- **Chart.js Integration** - Beautiful data visualization
+- **Tailwind CSS** - Modern styling with MythologIQ theme tokens
 
-### Dashboard & Analytics
-- **Interactive Dashboard** - Real-time project status and progress visualization
-- **Chart Analytics** - Dynamic charts for task progress, activity timelines, and performance metrics
-- **Status Monitoring** - Live system status with alerts and notifications
-- **Action Logging** - Comprehensive logging of all FailSafe activities
+### 🛡️ Safety & Validation
+- **AI Response Validation** - Comprehensive chat content validation
+- **Code Quality Analysis** - Technical debt evaluation and reporting
+- **Custom Cursorrules** - User-defined validation rules
+- **Real-time Monitoring** - Live tracking of AI interactions
+- **Preventive Measures** - Automatic failure detection and recovery
 
-### Development Tools
-- **Sprint Planning** - AI-assisted sprint planning and task organization
-- **Feasibility Analysis** - Automated analysis of task feasibility and blockers
-- **Progress Tracking** - Linear progression tracking with deviation detection
-- **Testing Integration** - Built-in testing and validation tools
+## 🚀 Quick Start
 
-## 📦 Installation
+1. **Install the Extension**
+   ```bash
+   # From VS Code Marketplace
+   # Search for "FailSafe" by MythologIQ
+   ```
 
-### From VS Code Marketplace
-1. Open VS Code
-2. Go to Extensions (Ctrl+Shift+X)
-3. Search for "FailSafe"
-4. Click Install
+2. **Open Dashboard**
+   - Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
+   - Type "FailSafe: Show Dashboard"
+   - Press Enter
 
-### Manual Installation
-1. Download the latest `.vsix` file from [Releases](https://github.com/mythologiq/failsafe/releases)
-2. In VS Code, go to Extensions
-3. Click the "..." menu and select "Install from VSIX..."
-4. Select the downloaded file
+3. **Validate Chat Content**
+   - Select chat content in Cursor
+   - Press `Ctrl+Shift+P`
+   - Type "FailSafe: Validate Chat Content"
+   - Press Enter
 
-## 🎯 Quick Start
+## 📊 Dashboard Features
 
-### 1. Initialize FailSafe
-```bash
-# Open Command Palette (Ctrl+Shift+P)
-# Type: "FailSafe: Initialize"
-```
+### 🎯 Project Overview
+- **Real-time Metrics** - Live charts showing project progress
+- **Task Management** - Comprehensive task tracking and management
+- **Sprint Planning** - Agile sprint management with burndown charts
+- **Accountability Reports** - Detailed progress and compliance reports
 
-### 2. Create Project Plan
-```bash
-# Command Palette: "FailSafe: Create Project Plan"
-# Follow the guided setup process
-```
+### 📈 Analytics & Charts
+- **Progress Tracking** - Visual progress indicators
+- **Performance Metrics** - Code quality and productivity metrics
+- **Trend Analysis** - Historical data and trend visualization
+- **Custom Dashboards** - Configurable dashboard layouts
 
-### 3. Open Dashboard
-```bash
-# Command Palette: "FailSafe: Show Dashboard"
-# Or click the FailSafe icon in the sidebar
-```
+### 🔍 Validation & Safety
+- **AI Response Validation** - Real-time chat content validation
+- **Code Quality Analysis** - Automated code review and suggestions
+- **Custom Rules Engine** - User-defined validation rules
+- **Safety Monitoring** - Continuous safety and compliance monitoring
 
-## 📋 Usage Guide
+## 🛠️ Commands
 
-### Dashboard Overview
-The FailSafe Dashboard provides a comprehensive view of your project:
+### Core Commands
+- `FailSafe: Show Dashboard` - Open the main dashboard
+- `FailSafe: Validate Chat Content` - Validate AI chat responses
+- `FailSafe: Validate Code File` - Validate current code file
+- `FailSafe: Evaluate Tech Debt` - Analyze technical debt
 
-- **Status Grid** - Real-time system and project status
-- **Current Task** - Active development task with progress tracking
-- **Recommendations** - AI-powered suggestions for next steps
-- **Quick Actions** - Common FailSafe operations
+### Management Commands
+- `FailSafe: Create Cursorrule` - Create custom validation rules
+- `FailSafe: Manage Cursorrules` - Manage existing rules
+- `FailSafe: Check Version Consistency` - Verify version consistency
+- `FailSafe: Auto Bump Version` - Automatic version management
 
-### Tab Navigation
-1. **Dashboard** - Main overview and status
-2. **Charts** - Analytics and progress visualization
-3. **Project Plan** - Plan validation and management
-4. **Testing** - Development and testing tools
-5. **Configuration** - Settings and preferences
-6. **Status** - Detailed system status
-
-### Key Commands
-| Command | Description | Shortcut |
-|---------|-------------|----------|
-| `FailSafe: Show Dashboard` | Open main dashboard | - |
-| `FailSafe: Validate Plan with AI` | AI-powered plan validation | - |
-| `FailSafe: Show Progress` | Detailed progress report | - |
-| `FailSafe: Show Accountability` | Accountability report | - |
-| `FailSafe: Mark Task Complete` | Complete current task | - |
-| `FailSafe: Show Action Log` | View activity log | - |
+### Advanced Commands
+- `FailSafe: Report a Problem` - Report issues to GitHub
+- `FailSafe: Suggest Failsafe` - Get custom failsafe suggestions
+- `FailSafe: View Version Log` - View version history
+- `FailSafe: Open Preview Panel` - Open live UI preview
 
 ## 🔧 Configuration
 
-### User Failsafes
-Configure custom safety rules and validations:
+### Fastify Server
+The extension includes a high-performance Fastify server with:
+- **Health Checks** - `/health` endpoint for monitoring
+- **Metrics** - `/metrics` endpoint for performance data
+- **API Validation** - Comprehensive request/response validation
+- **Plugin Architecture** - Modular, extensible design
 
-1. Open Command Palette
-2. Run "FailSafe: Configure Failsafes"
-3. Add custom rules and validations
-4. Enable/disable specific features
+### Theme Integration
+- **MythologIQ Branding** - Consistent visual identity
+- **Tailwind CSS** - Modern, responsive design
+- **Custom Tokens** - Brand-specific color schemes
+- **Dark/Light Mode** - Automatic theme detection
 
-### Design Document Management
-- **Auto-prompt** on workspace open
-- **Drift detection** for design changes
-- **Index management** for quick access
-- **Validation** against current implementation
+## 📋 Requirements
 
-### Cursor Rules Integration
-- **Rule validation** against AI responses
-- **Consistency checking** across sessions
-- **Custom rule creation** and management
+- **VS Code**: 1.74.0 or higher
+- **Node.js**: 18.0.0 or higher
+- **TypeScript**: 5.0.0 or higher
+- **Cursor**: Latest version recommended
 
-## 🛡️ Security Features
+## 🔒 Security Features
 
-### Data Protection
-- **Local Storage** - All data stored locally on your machine
-- **No Cloud Sync** - No data transmitted to external servers
-- **Encrypted Logs** - Sensitive information encrypted in logs
-- **Access Control** - User-defined access permissions
+- **Content Validation** - Comprehensive AI response validation
+- **Code Safety** - Automated code quality and security checks
+- **Access Control** - Role-based access and permissions
+- **Audit Logging** - Complete activity tracking and logging
+- **Encryption** - Secure data transmission and storage
 
-### AI Safety
-- **Response Validation** - All AI responses validated before execution
-- **Content Filtering** - Automatic filtering of unsafe content
-- **Rate Limiting** - Prevents AI abuse and excessive requests
-- **Audit Trail** - Complete audit trail of all AI interactions
+## 🚀 Performance
 
-### Privacy
-- **No Telemetry** - Zero data collection or analytics
-- **Local Processing** - All processing done locally
-- **User Control** - Complete control over data and settings
+- **Fastify Server** - High-performance API server
+- **Real-time Updates** - Live dashboard updates
+- **Optimized Charts** - Efficient data visualization
+- **Caching** - Intelligent data caching for performance
+- **Background Processing** - Non-blocking operations
 
-## 🔍 Troubleshooting
+## 📚 Documentation
 
-### Common Issues
+- **[Design Document](o3-accountable.md)** - Complete technical specification
+- **[API Reference](docs/api.md)** - Fastify API documentation
+- **[Plugin Guide](docs/plugins.md)** - Custom plugin development
+- **[Security Guide](docs/security.md)** - Security best practices
 
-#### Dashboard Not Loading
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Development Setup
 ```bash
-# Check if extension is activated
-# Command Palette: "Developer: Show Running Extensions"
-# Look for "FailSafe" in the list
-```
-
-#### Plan Validation Failing
-```bash
-# Ensure project plan exists
-# Command Palette: "FailSafe: Create Project Plan"
-# Check plan format and content
-```
-
-#### Charts Not Displaying
-```bash
-# Check internet connection (Chart.js CDN)
-# Refresh dashboard
-# Check browser console for errors
-```
-
-### Debug Mode
-Enable debug logging:
-1. Open Command Palette
-2. Run "FailSafe: Enable Debug Mode"
-3. Check Output panel for detailed logs
-
-### Reset Extension
-If experiencing issues:
-1. Command Palette: "FailSafe: Reset Extension"
-2. Restart VS Code
-3. Reinitialize FailSafe
-
-## 🏗️ Development
-
-### Architecture Overview
-```
-src/
-├── extension.ts          # Main extension entry point
-├── ui.ts                # Dashboard and UI components
-├── commands.ts          # Command handlers
-├── projectPlan.ts       # Project plan management
-├── taskEngine.ts        # Task management engine
-├── cursorrulesManager.ts # Cursor rules integration
-├── designDocumentManager.ts # Design document handling
-├── logger.ts            # Logging system
-└── types.ts             # TypeScript type definitions
-```
-
-### Building from Source
-```bash
-# Clone repository
-git clone https://github.com/mythologiq/failsafe.git
-cd failsafe
-
-# Install dependencies
+git clone https://github.com/WulfForge/Cursor-FailSafe.git
+cd Cursor-FailSafe
 npm install
-
-# Build extension
 npm run compile
-
-# Package extension
-npm run package
+npm run test
 ```
-
-### Testing
-```bash
-# Run tests
-npm test
-
-# Run specific test suite
-npm run test:ui
-npm run test:commands
-npm run test:validation
-```
-
-### Contributing
-1. Fork the repository
-2. Create feature branch
-3. Make changes
-4. Add tests
-5. Submit pull request
-
-## 📊 Performance
-
-### System Requirements
-- **VS Code**: 1.60.0 or higher
-- **Node.js**: 14.0.0 or higher
-- **Memory**: 512MB RAM minimum
-- **Storage**: 50MB free space
-
-### Performance Metrics
-- **Dashboard Load Time**: < 2 seconds
-- **Chart Rendering**: < 1 second
-- **Command Response**: < 500ms
-- **Memory Usage**: < 100MB
-
-## 🔄 Version History
-
-### v2.5.2 (Current)
-- ✅ Enhanced UI with modern design
-- ✅ Chart.js integration for analytics
-- ✅ Design document management
-- ✅ Improved task management
-- ✅ Security audit and documentation
-
-### v2.5.0
-- ✅ Cursor rules integration
-- ✅ Sprint planning features
-- ✅ Action logging system
-- ✅ Status monitoring
-
-### v2.4.0
-- ✅ Dashboard implementation
-- ✅ Project plan validation
-- ✅ Task engine integration
-- ✅ Basic UI components
-
-### v2.3.0
-- ✅ Core validation system
-- ✅ AI response monitoring
-- ✅ Basic command structure
-- ✅ Extension foundation
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🤝 Support
-
-### Documentation
-- [User Guide](docs/USER_GUIDE.md)
-- [API Reference](docs/API.md)
-- [Security Guide](docs/SECURITY.md)
-- [Development Guide](docs/DEVELOPMENT.md)
-
-### Community
-- [GitHub Issues](https://github.com/mythologiq/failsafe/issues)
-- [Discussions](https://github.com/mythologiq/failsafe/discussions)
-- [Wiki](https://github.com/mythologiq/failsafe/wiki)
-
-### Contact
-- **Email**: support@mythologiq.com
-- **Website**: https://mythologiq.com
-- **Twitter**: [@MythologIQ](https://twitter.com/MythologIQ)
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
-- **Cursor AI** for the amazing development environment
-- **VS Code Team** for the excellent extension API
-- **Chart.js** for beautiful data visualization
-- **Community Contributors** for feedback and suggestions
+- **MythologIQ** - Design and development
+- **Fastify** - High-performance web framework
+- **Chart.js** - Beautiful data visualization
+- **Tailwind CSS** - Utility-first CSS framework
+
+## 📞 Support
+
+- **GitHub Issues**: [Report bugs or request features](https://github.com/WulfForge/Cursor-FailSafe/issues)
+- **Documentation**: [Complete documentation](https://github.com/WulfForge/Cursor-FailSafe#readme)
+- **Website**: [MythologIQ Studio](https://www.MythologIQ.studio)
 
 ---
 
-**Made with ❤️ by MythologIQ**
-
-*Empowering developers with AI safety and validation tools.*
+**FailSafe v2.0.0** - Making AI development safer, more accountable, and more productive. 🛡️✨

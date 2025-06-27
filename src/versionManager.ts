@@ -1,5 +1,4 @@
 // Version Manager for FailSafe
-
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -120,10 +119,10 @@ export class VersionManager {
                     const issue = 'CHANGELOG.md missing current version entry';
                     issues.push(issue);
                     recommendations.push('Add version entry to CHANGELOG.md');
-                    await this.logVersionWarning(issue, { 
-                        file: 'CHANGELOG.md', 
+                    await this.logVersionWarning(issue, {
+                        file: 'CHANGELOG.md',
                         expectedVersion: currentVersion,
-                        action: 'add_version_entry' 
+                        action: 'add_version_entry'
                     });
                 }
             } else {
@@ -135,9 +134,9 @@ export class VersionManager {
                 const issue = 'CHANGELOG.md not found';
                 issues.push(issue);
                 recommendations.push('Create CHANGELOG.md file');
-                await this.logVersionWarning(issue, { 
-                    file: 'CHANGELOG.md', 
-                    action: 'create_file' 
+                await this.logVersionWarning(issue, {
+                    file: 'CHANGELOG.md',
+                    action: 'create_file'
                 });
             }
 
@@ -160,10 +159,10 @@ export class VersionManager {
                     const issue = 'README.md badge version mismatch';
                     issues.push(issue);
                     recommendations.push('Update README.md version badge');
-                    await this.logVersionWarning(issue, { 
-                        file: 'README.md', 
+                    await this.logVersionWarning(issue, {
+                        file: 'README.md',
                         expectedVersion: currentVersion,
-                        action: 'update_badge' 
+                        action: 'update_badge'
                     });
                 }
             } else {
@@ -175,9 +174,9 @@ export class VersionManager {
                 const issue = 'README.md not found';
                 issues.push(issue);
                 recommendations.push('Create README.md file');
-                await this.logVersionWarning(issue, { 
-                    file: 'README.md', 
-                    action: 'create_file' 
+                await this.logVersionWarning(issue, {
+                    file: 'README.md',
+                    action: 'create_file'
                 });
             }
 
@@ -199,10 +198,10 @@ export class VersionManager {
                     const issue = 'package.json badge version mismatch';
                     issues.push(issue);
                     recommendations.push('Update package.json badge URL');
-                    await this.logVersionWarning(issue, { 
-                        file: 'package.json', 
+                    await this.logVersionWarning(issue, {
+                        file: 'package.json',
                         expectedVersion: currentVersion,
-                        action: 'update_badge_url' 
+                        action: 'update_badge_url'
                     });
                 }
             }
@@ -225,7 +224,6 @@ export class VersionManager {
                 recommendations,
                 files
             };
-
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             const issue = `Error checking version consistency: ${errorMessage}`;
@@ -238,7 +236,6 @@ export class VersionManager {
 
     public async enforceVersionConsistency(): Promise<void> {
         const consistency = await this.checkVersionConsistency();
-        
         if (!consistency.isConsistent) {
             // Log the warning to persistent log
             await this.logVersionWarning('Version consistency issues detected', {
@@ -246,7 +243,7 @@ export class VersionManager {
                 recommendations: consistency.recommendations,
                 files: consistency.files
             });
-            
+
             this.logger.warn('Version consistency issues detected', {
                 issues: consistency.issues,
                 recommendations: consistency.recommendations
@@ -254,7 +251,6 @@ export class VersionManager {
 
             // Show warning to user
             const message = `Version consistency issues detected:\n${consistency.issues.join('\n')}\n\nRecommendations:\n${consistency.recommendations.join('\n')}`;
-            
             const action = await vscode.window.showWarningMessage(
                 message,
                 'Fix Automatically',
@@ -276,7 +272,6 @@ export class VersionManager {
 
         try {
             const consistency = await this.checkVersionConsistency();
-            
             if (consistency.isConsistent) {
                 await this.logVersionWarning('No version issues to fix - all versions are consistent');
                 return { fixed: 0, errors: [] };
@@ -345,7 +340,6 @@ export class VersionManager {
             }
 
             return { fixed, errors };
-
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             errors.push(`Auto-fix failed: ${errorMessage}`);
@@ -362,11 +356,10 @@ export class VersionManager {
             const versionInfo = await this.loadVersionInfo();
             const lastChecked = new Date(versionInfo.lastChecked);
             const now = new Date();
-            
+
             // Check if significant time has passed (e.g., 1 hour)
             const timeDiff = now.getTime() - lastChecked.getTime();
             const oneHour = 60 * 60 * 1000;
-            
             return timeDiff > oneHour;
         } catch (error) {
             this.logger.error('Error detecting significant changes', error);
@@ -378,7 +371,6 @@ export class VersionManager {
         try {
             const versionInfo = await this.loadVersionInfo();
             const currentVersion = await this.getPackageJsonVersion();
-            
             return versionInfo.current !== currentVersion;
         } catch (error) {
             this.logger.error('Error checking version bump', error);
@@ -531,18 +523,18 @@ export class VersionManager {
             <body>
                 <h1>Version Consistency Report</h1>
                 <h2>Status: ${consistency.isConsistent ? '✅ Consistent' : '❌ Issues Found'}</h2>
-                
+
                 <h3>Files:</h3>
                 ${consistency.files.map(file => `
                     <div class="file">
-                        <strong>${file.name}:</strong> 
+                        <strong>${file.name}:</strong>
                         <span class="${file.status}">${file.version} (${file.status})</span>
                     </div>
                 `).join('')}
-                
+
                 <h3>Issues:</h3>
                 ${consistency.issues.map(issue => `<div class="issue">• ${issue}</div>`).join('')}
-                
+
                 <h3>Recommendations:</h3>
                 ${consistency.recommendations.map(rec => `<div class="recommendation">• ${rec}</div>`).join('')}
             </body>
@@ -575,7 +567,7 @@ export class VersionManager {
      */
     public async autoBumpVersion(changeType: 'major' | 'minor' | 'patch' = 'patch'): Promise<{ success: boolean; oldVersion: string; newVersion: string; errors: string[] }> {
         const errors: string[] = [];
-        
+
         try {
             // Get current version from package.json
             const packageJsonPath = path.join(this.workspaceRoot, 'package.json');
@@ -586,7 +578,7 @@ export class VersionManager {
 
             const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
             const oldVersion = packageJson.version;
-            
+
             // Parse current version
             const versionParts = oldVersion.split('.').map(Number);
             if (versionParts.length !== 3) {
@@ -595,7 +587,7 @@ export class VersionManager {
             }
 
             let [major, minor, patch] = versionParts;
-            
+
             // Bump version based on change type
             switch (changeType) {
                 case 'major':
@@ -613,7 +605,7 @@ export class VersionManager {
             }
 
             const newVersion = `${major}.${minor}.${patch}`;
-            
+
             // Update package.json
             packageJson.version = newVersion;
             fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
@@ -621,10 +613,10 @@ export class VersionManager {
 
             // Update CHANGELOG.md
             await this.updateChangelogVersion(newVersion);
-            
+
             // Update README.md
             await this.updateReadmeVersion(newVersion);
-            
+
             // Update badge URLs
             await this.updateBadgeVersion(newVersion);
 
@@ -635,9 +627,9 @@ export class VersionManager {
             await this.saveVersionInfo(versionInfo);
 
             this.logger.info(`Successfully bumped version from ${oldVersion} to ${newVersion} (${changeType} change)`);
-            
+
             return { success: true, oldVersion, newVersion, errors };
-            
+
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             errors.push(`Failed to bump version: ${errorMessage}`);
@@ -653,13 +645,13 @@ export class VersionManager {
         try {
             // This is a simplified detection - in a real implementation,
             // you might analyze git commits, file changes, or other indicators
-            
+
             // For now, default to patch for safety
-            return 'patch';
         } catch (error) {
             this.logger.error('Failed to detect change type', error);
-            return 'patch';
         }
+        
+        return 'patch';
     }
 
     /**
@@ -668,7 +660,7 @@ export class VersionManager {
     public async smartBumpVersion(): Promise<{ success: boolean; oldVersion: string; newVersion: string; changeType: string; errors: string[] }> {
         const changeType = await this.detectChangeType();
         const result = await this.autoBumpVersion(changeType);
-        
+
         return {
             ...result,
             changeType
@@ -682,22 +674,22 @@ export class VersionManager {
         try {
             const logDir = path.join(this.workspaceRoot, '.failsafe');
             const logFile = path.join(logDir, 'version-warnings.log');
-            
+
             // Ensure log directory exists
             if (!fs.existsSync(logDir)) {
                 fs.mkdirSync(logDir, { recursive: true });
             }
-            
+
             const timestamp = new Date().toISOString();
             const logEntry = {
                 timestamp,
                 message,
                 details: details || {}
             };
-            
+
             // Append to log file
             fs.appendFileSync(logFile, JSON.stringify(logEntry) + '\n');
-            
+
             this.logger.info(`Version warning logged: ${message}`);
         } catch (error) {
             this.logger.error('Failed to log version warning', error);
@@ -710,14 +702,14 @@ export class VersionManager {
     public async getVersionWarningLog(): Promise<any[]> {
         try {
             const logFile = path.join(this.workspaceRoot, '.failsafe', 'version-warnings.log');
-            
+
             if (!fs.existsSync(logFile)) {
                 return [];
             }
-            
+
             const logContent = fs.readFileSync(logFile, 'utf8');
             const lines = logContent.trim().split('\n').filter(line => line.trim());
-            
+
             return lines.map(line => {
                 try {
                     return JSON.parse(line);

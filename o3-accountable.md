@@ -132,6 +132,40 @@ Cursor must import these tokens in `base.css` *before* Tailwind layers:
 }
 ```
 
+### 7.2 Mandatory Header & Footer Branding
+
+*All FailSafe WebView tabs must render the following immutable header and footer. Spec‑gate fails if absent or altered.*
+
+| Region     | Fixed Content                                                                                                                   | Layout Specs                                                                                                                                                             |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Header** | ![icon.png](./media/icon.png) **FailSafe**  <br><span class="subtitle">AI Safety and Validation System</span>                   | • Center‑left aligned. <br>• Logo height = 24 px, text baseline aligned. <br>• Subtitle uses `--font-sans` 12 px, `--color-halo-white` at 70 % opacity.                  |
+| **Footer** | FailSafe **v2.<code>\<minor></code>.<code>\<patch></code>** powered by ![mythologiq.png](./media/mythologiq.png) **MythologIQ** | • Horizontal rule above footer with `--color-slate-grey`. <br>• Logo height = 16 px. <br>• "MythologIQ" link styled with `--color-holographic-teal`, underline on hover. |
+
+> **Implementation rules**
+>
+> 1. Logos are bundled as `media/icon.png` and `media/mythologiq.png` inside the extension.
+> 2. No other variation of text or branding is permitted.
+> 3. spec‑gate checks DOM for exact text & img `src` equality.
+
+```tsx
+// pseudo‑jsx snippet enforced by spec‑gate
+<header className="flex items-center gap-2">
+  <img src="media/icon.png" alt="FailSafe logo" className="h-6" />
+  <div>
+    <h1 className="text-halo-white font-display text-lg">FailSafe</h1>
+    <p className="subtitle text-xs opacity-70">AI Safety and Validation System</p>
+  </div>
+</header>
+...
+<footer className="text-center border-t border-slate-grey pt-2 text-xs">
+  FailSafe v{version} powered by <img src="media/mythologiq.png" alt="MythologIQ" className="inline h-4" /> <a href="#" className="text-holographic-teal underline">MythologIQ</a>
+</footer>
+```
+
+spec‑gate tests will render each tab and assert the presence of these elements before the build can proceed.
+
+---
+
 Fastify `/design-doc` endpoint now serves this section, so spec‑gate will fail if any token is referenced but missing.
 
 ---
@@ -288,22 +322,30 @@ To close the remaining unknowns we will run three time‑boxed research spikes. 
 
 ## 13 Sprint Progress Log
 
-| Date       | Milestone                                            | Key Outcomes                                                                                                                                                                                                                                  |
-| ---------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2025‑06‑26 | **Phase 1 – Fastify Course Corrections**             | • FastifyServer class with dynamic port• Integrated fastify‑spec‑gate, fastify‑event‑bus, fastify‑health• TypeScript compile errors resolved• RealChartDataService providing live data• UI structure cleaned; missing methods added           |
-| 2025‑06‑27 | **Phase 2 – UI Structure Completion**                | ✅ Hard‑gate passed – 0 TS errors, ≤ 49 ESLint warnings, spec‑gate 100 % compliance. Attachments: `eslint-report.html`, `spec-gate-report.json`.                                                                                               |
-| 2025‑06‑27 | **Phase 3 – Fastify Enhancements**                   | ✅ Fully compliant – metrics endpoint, SSE events, plugin autoloader, TypeBox schema export, request log, Console & Logs UI live, Jest coverage ≥90 %. Attachments: `eslint-report.html`, `spec-gate-report.json`, Console & Logs screenshots. |
-| –          | **Phase 4 – Preventive Innovations & Preview Panel** | *Validation pending – work not yet started.*                                                                                                                                                                                                  |
-
-\---------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | | 2025‑06‑26 | **Phase 1 – Fastify Course Corrections** | • FastifyServer class with dynamic port• Integrated fastify‑spec‑gate, fastify‑event‑bus, fastify‑health• TypeScript compile errors resolved• RealChartDataService providing live data• UI structure cleaned; missing methods added |
+| Date       | Milestone                                            | Key Outcomes                                                                                                                                                                                                                            |
+| ---------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2025‑06‑26 | **Phase 1 – Fastify Course Corrections**             | • FastifyServer class with dynamic port • Integrated fastify‑spec‑gate, fastify‑event‑bus, fastify‑health • TypeScript compile errors resolved • RealChartDataService providing live data • UI structure cleaned; missing methods added |
+| 2025‑06‑27 | **Phase 2 – UI Structure Completion**                | ✅ Hard‑gate passed – 0 TS errors, ≤ 49 ESLint warnings, spec‑gate 100 % compliance. Artifacts: `eslint-report.html`, `spec-gate-report.json`.                                                                                           |
+| 2025‑06‑27 | **Phase 3 – Fastify Enhancements**                   | ✅ Metrics endpoint, SSE events, plugin autoloader, TypeBox schema export, request log, Console & Logs UI live, Jest coverage ≥ 90 %. Artifacts: `eslint-report.html`, `spec-gate-report.json`, branding screenshots.                    |
+| 2025‑06‑27 | **Phase 4 – Preventive Innovations & Preview Panel** | ✅ Preview WebView, spec heat‑map tile, snapshot diff validator, auto‑stub generator, rule regression watchdog, sign‑off token flow, automated snapshot rollback. Hard‑gate green – 0 TS errors, ≤ 40 warnings, spec‑gate 100 %.         |
 
 ---
 
-\| 2025‑06‑26 | **Phase 1 – Fastify Course Corrections** | • FastifyServer class with dynamic port• Integrated fastify‑spec‑gate, fastify‑event‑bus, fastify‑health• TypeScript compile errors resolved• RealChartDataService providing live data• UI structure cleaned; missing methods added | | 2025‑06‑27 | **Phase 2 – UI Structure Completion** | ✅ Hard‑gate passed – 0 TS errors, ≤ 49 ESLint warnings, spec‑gate 100 % compliance. Attachments: `eslint-report.html`, `spec-gate-report.json`. |
+## 14 Validation Audit (2025‑06‑27 FINAL)
 
----
+**Phase 4 hard‑gate summary**
 
-## 14 Validation Audit (2025‑06‑27 UPDATE)
+* TypeScript errors … **0**
+* ESLint warnings … **≤ 40** (see `eslint-report.html`)
+* Spec‑gate … **100 %**
+* Coverage … **≥ 90 %** on new modules
+* fs‑gate violations … **0**
+
+All acceptance criteria across Phases 1‑4 are now complete. The extension is ready for release packaging.
+
+## 15 Hardships & Lessons Learned (Wishlist Input)
+
+Validation Audit (2025‑06‑27 UPDATE)
 
 Phase 3 hard‑gate run achieved full compliance:
 

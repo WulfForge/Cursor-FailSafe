@@ -45,16 +45,18 @@ const vscode = __importStar(require("vscode"));
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const types_1 = require("./types");
-// Add Node.js types reference
-/// <reference types="node" />
-// Use built-in fetch or node-fetch as fallback
+/* global globalThis */
 let fetch;
 try {
-    // Try to use global fetch first (available in newer Node.js versions)
-    fetch = globalThis.fetch;
+    if (typeof globalThis !== 'undefined' && globalThis.fetch) {
+        fetch = globalThis.fetch;
+    }
+    else {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        fetch = require('node-fetch');
+    }
 }
 catch {
-    // Fallback to node-fetch
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     fetch = require('node-fetch');
 }
