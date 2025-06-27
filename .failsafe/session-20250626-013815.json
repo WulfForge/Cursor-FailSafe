@@ -1349,5 +1349,14 @@
       "README.md badge version mismatch"
     ],
     "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:41:20.461Z",
+    "level": "error",
+    "message": "Failed to check version consistency:",
+    "data": {
+      "name": "Canceled"
+    },
+    "sessionId": "session-20250626-013815"
   }
 ]
