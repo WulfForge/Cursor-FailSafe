@@ -1,0 +1,39 @@
+---
+description: |
+  Validates claims about file size to prevent hallucinations.
+globs: ["*"]
+alwaysApply: false
+severity: error
+pattern: "\b(?:file|document)\s+(?:size|length|bytes)\b"
+response: warn
+---
+# File Size Claim
+
+**Rule Type:** Regex Pattern  
+**Severity:** Error  
+**Pattern:** `\b(?:file|document)\s+(?:size|length|bytes)\b`
+
+## Description
+Validates claims about file size to prevent hallucinations.
+
+## Purpose
+hallucination_detection
+
+## Pattern Matches
+- "file size"
+- "document length"
+- "file bytes"
+
+## Validation Required
+When this pattern is detected, verify:
+1. The file actually exists
+2. The size claim is accurate
+3. File system metadata has been checked
+
+## Response
+- **Error Level:** Flag as potential hallucination
+- **Action:** Require file size verification
+- **Fallback:** Check actual file size
+
+## Implementation Notes
+This rule prevents AI from making false claims about file sizes without verification.

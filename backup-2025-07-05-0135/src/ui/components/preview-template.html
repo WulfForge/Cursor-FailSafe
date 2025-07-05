@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FailSafe Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1e1e1e;
+            color: #ffffff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Background Animation */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.15) 0%, transparent 50%);
+            animation: backgroundShift 25s ease-in-out infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+            25% { transform: translate(-15px, -15px) scale(1.1); opacity: 1; }
+            50% { transform: translate(15px, -10px) scale(0.9); opacity: 0.6; }
+            75% { transform: translate(-10px, 15px) scale(1.05); opacity: 0.9; }
+        }
+
+        .preview-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .preview-header {
+            background: rgba(45, 45, 45, 0.95);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .brand-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .brand-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007acc;
+            text-shadow: 0 0 10px rgba(0, 122, 204, 0.3);
+        }
+
+        .brand-subtitle {
+            font-size: 12px;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #007acc;
+            box-shadow: 0 0 5px rgba(0, 122, 204, 0.5);
+        }
+
+        .status-dot.warning {
+            background: #FF9800;
+            box-shadow: 0 0 5px rgba(255, 152, 0, 0.5);
+        }
+
+        .status-dot.error {
+            background: #F44336;
+            box-shadow: 0 0 5px rgba(244, 67, 54, 0.5);
+        }
+
+        .preview-nav {
+            background: rgba(45, 45, 45, 0.95);
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 5px;
+        }
+
+        .nav-tab {
+            background: rgba(61, 61, 61, 0.8);
+            border: none;
+            border-radius: 4px 4px 0 0;
+            padding: 12px 20px;
+            color: #ccc;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-tab.active {
+            background: #007acc;
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(0, 122, 204, 0.3);
+        }
+
+        .nav-tab:hover {
+            background: rgba(85, 85, 85, 0.9);
+            transform: translateY(-1px);
+        }
+
+        .preview-content {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .tab-content {
+            display: none;
+            height: 100%;
+            overflow: auto;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-content iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #1e1e1e;
+        }
+
+        .preview-footer {
+            background: rgba(45, 45, 45, 0.95);
+            padding: 10px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #888;
+            backdrop-filter: blur(10px);
+        }
+
+        .footer-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .footer-brand img {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+        }
+
+        .footer-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-button {
+            background: rgba(85, 85, 85, 0.8);
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+            backdrop-filter: blur(5px);
+        }
+
+        .footer-button:hover {
+            background: rgba(102, 102, 102, 0.9);
+            transform: translateY(-1px);
+        }
+
+        .footer-button.primary {
+            background: #007acc;
+            box-shadow: 0 0 10px rgba(0, 122, 204, 0.3);
+        }
+
+        .footer-button.primary:hover {
+            background: #005a9e;
+            box-shadow: 0 0 15px rgba(0, 122, 204, 0.5);
+        }
+
+        .loading-spinner {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(61, 61, 61, 0.3);
+            border-top: 4px solid #007acc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 10;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .error-message {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(244, 67, 54, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <div class="preview-header">
+            <div class="header-brand">
+                <div class="brand-icon">
+                    <img src="/images/icon.png" alt="FailSafe" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div style="display: none; font-size: 24px; font-weight: bold; color: #007acc;">🛡️</div>
+                </div>
+                <div>
+                    <div class="brand-title">FailSafe</div>
+                    <div class="brand-subtitle">AI Response Validation System</div>
+                </div>
+            </div>
+            <div class="header-status">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>Preview Server</span>
+                </div>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>Port 3001</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-nav">
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="switchTab('dashboard')">Dashboard</button>
+                <button class="nav-tab" onclick="switchTab('console')">Console</button>
+                <button class="nav-tab" onclick="switchTab('sprint')">Sprint</button>
+                <button class="nav-tab" onclick="switchTab('cursor-rules')">Cursor Rules</button>
+                <button class="nav-tab" onclick="switchTab('logs')">Logs</button>
+            </div>
+        </div>
+
+        <div class="preview-content">
+            <div class="tab-content active" id="dashboard-content">
+                <iframe src="/components/dashboard.html" id="dashboard-frame"></iframe>
+            </div>
+            <div class="tab-content" id="console-content">
+                <iframe src="/components/console.html" id="console-frame"></iframe>
+            </div>
+            <div class="tab-content" id="sprint-content">
+                <iframe src="/components/sprint.html" id="sprint-frame"></iframe>
+            </div>
+            <div class="tab-content" id="cursor-rules-content">
+                <iframe src="/components/cursor-rules.html" id="cursor-rules-frame"></iframe>
+            </div>
+            <div class="tab-content" id="logs-content">
+                <iframe src="/components/logs.html" id="logs-frame"></iframe>
+            </div>
+        </div>
+
+        <div class="preview-footer">
+            <div class="footer-info">
+                <div class="footer-brand">
+                    <span>Built by</span>
+                    <img src="/images/MythologIQ.png" alt="MythologIQ" onerror="this.style.display='none';">
+                    <span>MythologIQ</span>
+                </div>
+                <span>•</span>
+                <span>Version 2.5.2</span>
+                <span>•</span>
+                <span>Preview Mode</span>
+            </div>
+            <div class="footer-actions">
+                <button class="footer-button" onclick="refreshCurrentTab()">🔄 Refresh</button>
+                <button class="footer-button primary" onclick="openInBrowser()">🌐 Open in Browser</button>
+            </div>
+        </div>
+
+        <div class="loading-spinner" id="loadingSpinner"></div>
+        <div class="error-message" id="errorMessage"></div>
+    </div>
+
+    <script>
+        let currentTab = 'dashboard';
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + '-content').classList.add('active');
+
+            currentTab = tabName;
+
+            // Add cache-busting parameter to iframe src
+            const iframe = document.getElementById(tabName + '-frame');
+            const timestamp = Date.now();
+            iframe.src = `/components/${tabName}.html?t=${timestamp}`;
+
+            // Show loading spinner
+            showLoading();
+
+            // Hide loading after iframe loads
+            iframe.onload = () => {
+                hideLoading();
+            };
+
+            // Hide loading after timeout (fallback)
+            setTimeout(() => {
+                hideLoading();
+            }, 3000);
+        }
+
+        function showLoading() {
+            document.getElementById('loadingSpinner').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function refreshCurrentTab() {
+            const iframe = document.getElementById(currentTab + '-frame');
+            const timestamp = Date.now();
+            iframe.src = `/components/${currentTab}.html?t=${timestamp}`;
+            showLoading();
+            
+            iframe.onload = () => {
+                hideLoading();
+            };
+        }
+
+        function openInBrowser() {
+            window.open(window.location.href, '_blank');
+        }
+
+        // Initialize with cache-busting
+        document.addEventListener('DOMContentLoaded', () => {
+            const timestamp = Date.now();
+            const dashboardFrame = document.getElementById('dashboard-frame');
+            dashboardFrame.src = `/components/dashboard.html?t=${timestamp}`;
+        });
+
+        // Handle iframe errors
+        window.addEventListener('error', (event) => {
+            if (event.target.tagName === 'IFRAME') {
+                showError('Failed to load content. Please refresh the page.');
+            }
+        });
+    </script>
+</body>
+</html> 

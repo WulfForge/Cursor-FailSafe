@@ -1,0 +1,46 @@
+---
+description: |
+  Enforces full verification requirements for critical operations.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "\b(?:verify|check|confirm|validate)\b"
+response: suggest
+---
+# Full Verification Process Enforcement
+
+**Rule Type:** Regex Pattern  
+**Severity:** Error  
+**Pattern:** `\b(?:compile\s+and\s+package|package\s+for\s+review|build\s+package|generate\s+package|create\s+package|npm\s+run\s+package|package\s+it\s+up|let\s*'s\s+package|package\s+the\s+extension|package\s+up|build\s+and\s+package)\b`
+
+## Description
+Enforces complete verification pipeline before any package generation. No exceptions allowed.
+
+## Purpose
+full_verification_enforcement
+
+## Pattern Matches
+- "compile and package"
+- "package for review"
+- "build package"
+- "generate package"
+- "create package"
+- "npm run package"
+- "package it up"
+- "let's package"
+- "package the extension"
+- "package up"
+- "build and package"
+
+## Response
+- **Error Level:** 🚨 CRITICAL: Package generation detected without full verification process!
+- **Action:** Block execution
+- **Message:** 🚨 CRITICAL: Package generation detected without full verification process!
+
+## Override Settings
+- **Allowed:** false
+- **Requires Justification:** true
+- **Escalation Path:** Use publish.bat or publish.ps1 for full verification pipeline
+
+## Implementation Notes
+This rule ensures the complete verification pipeline (Compilation → Linting → Icon Check → Tests → Spec Gate → Packaging) is followed before any packaging.

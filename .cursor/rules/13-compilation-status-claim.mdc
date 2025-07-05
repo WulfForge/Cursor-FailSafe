@@ -1,0 +1,40 @@
+---
+description: |
+  Validates compilation and build status claims to ensure accuracy.
+globs: ["*"]
+alwaysApply: false
+severity: error
+pattern: "\b(?:compiles|builds|runs|executes)\s+(?:successfully|without\s+errors)\b"
+response: warn
+---
+# Compilation Status Claim
+
+**Rule Type:** Regex Pattern  
+**Severity:** Warning  
+**Pattern:** `\b(?:compiles|builds|runs|executes)\s+(?:successfully|without\s+errors)\b`
+
+## Description
+Validates compilation and build status claims to ensure accuracy.
+
+## Purpose
+compilation_status
+
+## Pattern Matches
+- "compiles successfully"
+- "builds without errors"
+- "runs successfully"
+- "executes without errors"
+
+## Validation Required
+When this pattern is detected, verify:
+1. The code actually compiles
+2. The build process completed successfully
+3. No errors were encountered
+
+## Response
+- **Warning Level:** Flag for compilation verification
+- **Action:** Suggest build testing
+- **Fallback:** Encourage running the build process
+
+## Implementation Notes
+This rule prevents false claims about compilation success without actual testing.

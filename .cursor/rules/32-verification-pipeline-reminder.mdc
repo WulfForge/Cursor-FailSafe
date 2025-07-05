@@ -1,0 +1,39 @@
+---
+description: |
+  Reminds about verification pipeline requirements.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "\b(?:pipeline|workflow|process|procedure)\b"
+response: suggest
+---
+# Verification Pipeline Reminder
+
+**Rule Type:** Regex Pattern  
+**Severity:** Info  
+**Pattern:** `\b(?:verification|testing|linting|quality\s+check|compliance)\b`
+
+## Description
+Reminds about complete verification steps when verification is mentioned.
+
+## Purpose
+verification_pipeline_reminder
+
+## Pattern Matches
+- "verification"
+- "testing"
+- "linting"
+- "quality check"
+- "compliance"
+
+## Response
+- **Info Level:** 💡 REMINDER: Ensure full verification pipeline includes: Compilation → Linting → Icon Check → Tests → Spec Gate → Packaging
+- **Action:** Suggest complete verification
+- **Message:** 💡 REMINDER: Ensure full verification pipeline includes: Compilation → Linting → Icon Check → Tests → Spec Gate → Packaging
+
+## Override Settings
+- **Allowed:** true
+- **Requires Justification:** false
+
+## Implementation Notes
+This rule reminds users about the complete verification pipeline when verification activities are mentioned.

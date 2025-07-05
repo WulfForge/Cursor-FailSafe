@@ -1,0 +1,43 @@
+---
+description: |
+  Detects absolute statements that may be overly broad or inaccurate.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "\b(?:always|never|every|all|none|impossible|guaranteed)\b"
+response: suggest
+---
+# Absolute Statement Detection
+
+**Rule Type:** Regex Pattern  
+**Severity:** Warning  
+**Pattern:** `\b(?:always|never|every|all|none|impossible|guaranteed)\b`
+
+## Description
+Detects absolute statements that may be overly broad or inaccurate.
+
+## Purpose
+absolute_statements
+
+## Pattern Matches
+- "always"
+- "never"
+- "every"
+- "all"
+- "none"
+- "impossible"
+- "guaranteed"
+
+## Validation Required
+When this pattern is detected, verify:
+1. The statement is truly absolute
+2. There are no exceptions
+3. The claim is accurate and defensible
+
+## Response
+- **Warning Level:** Flag for absolute statement review
+- **Action:** Suggest qualification if needed
+- **Fallback:** Encourage more nuanced language
+
+## Implementation Notes
+This rule helps prevent overly broad or inaccurate absolute statements that may not be true in all cases.

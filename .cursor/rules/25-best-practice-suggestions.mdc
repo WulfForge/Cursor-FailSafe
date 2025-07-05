@@ -1,0 +1,40 @@
+---
+description: |
+  Monitors best practice discussions to ensure quality recommendations.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "\b(?:best\s+practice|recommendation|suggestion|tip)\b"
+response: suggest
+---
+# Best Practice Suggestions
+
+**Rule Type:** Regex Pattern  
+**Severity:** Info  
+**Pattern:** `\b(?:best\s+practice|recommendation|suggestion|tip)\b`
+
+## Description
+Monitors best practice discussions to ensure quality recommendations.
+
+## Purpose
+best_practice_suggestions
+
+## Pattern Matches
+- "best practice"
+- "recommendation"
+- "suggestion"
+- "tip"
+
+## Validation Required
+When this pattern is detected, verify:
+1. Recommendation is well-founded
+2. Practice is current and relevant
+3. Context is appropriate
+
+## Response
+- **Info Level:** Best practice reminder
+- **Action:** Ensure recommendation quality
+- **Fallback:** Provide well-researched advice
+
+## Implementation Notes
+This rule helps ensure best practice recommendations are high-quality and well-founded.

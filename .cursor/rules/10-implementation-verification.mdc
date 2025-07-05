@@ -1,0 +1,40 @@
+---
+description: |
+  Validates implementation claims to ensure they are based on actual code.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "\b(?:implemented|created|built|developed)\b"
+response: suggest
+---
+# Implementation Verification
+
+**Rule Type:** Regex Pattern  
+**Severity:** Warning  
+**Pattern:** `\b(?:I\s+implemented|I\s+created|I\s+built|I\s+developed)\b`
+
+## Description
+Validates implementation claims to ensure they are accurate.
+
+## Purpose
+implementation_verification
+
+## Pattern Matches
+- "I implemented"
+- "I created"
+- "I built"
+- "I developed"
+
+## Validation Required
+When this pattern is detected, verify:
+1. The implementation actually exists
+2. The code has been written and saved
+3. The feature is functional
+
+## Response
+- **Warning Level:** Flag for implementation verification
+- **Action:** Suggest code review and testing
+- **Fallback:** Encourage testing the implementation
+
+## Implementation Notes
+This rule ensures AI doesn't claim to have implemented features without actual code changes.

@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FailSafe Sprint</title>
+    <style>
+        .sprint-container {
+            padding: 20px;
+            background: #1e1e1e;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sprint-controls {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .sprint-selector {
+            background: #1e1e1e;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 8px 12px;
+            color: #ffffff;
+            min-width: 250px;
+        }
+
+        .sprint-button {
+            background: #4CAF50;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            color: #ffffff;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .sprint-button:hover {
+            background: #45a049;
+        }
+
+        .sprint-button.secondary {
+            background: #666;
+        }
+
+        .sprint-button.secondary:hover {
+            background: #555;
+        }
+
+        .sprint-button.warning {
+            background: #ff9800;
+        }
+
+        .sprint-button.warning:hover {
+            background: #f57c00;
+        }
+
+        .sprint-overview {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .overview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .overview-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .sprint-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-badge {
+            background: #4CAF50;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .status-badge.paused {
+            background: #ff9800;
+        }
+
+        .status-badge.completed {
+            background: #2196F3;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #1e1e1e;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            width: 72%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .sprint-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            background: #3d3d3d;
+            border-radius: 6px;
+            padding: 15px;
+            border-left: 4px solid #4CAF50;
+            transition: transform 0.2s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .metric-title {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .metric-description {
+            font-size: 11px;
+            color: #aaa;
+        }
+
+        .task-management {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .task-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .task-filters {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            background: #1e1e1e;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 5px 8px;
+            color: #ffffff;
+            font-size: 12px;
+        }
+
+        .task-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .task-item {
+            background: #3d3d3d;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #555;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .task-item:hover {
+            background: #444;
+            transform: translateX(2px);
+        }
+
+        .task-item.completed {
+            border-left-color: #4CAF50;
+            opacity: 0.8;
+        }
+
+        .task-item.in-progress {
+            border-left-color: #2196F3;
+        }
+
+        .task-item.blocked {
+            border-left-color: #F44336;
+        }
+
+        .task-item.review {
+            border-left-color: #ff9800;
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+
+        .task-description {
+            font-size: 12px;
+            color: #ccc;
+            margin-bottom: 5px;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 11px;
+            color: #888;
+        }
+
+        .task-priority {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .task-priority.high {
+            background: #F44336;
+            color: white;
+        }
+
+        .task-priority.medium {
+            background: #ff9800;
+            color: white;
+        }
+
+        .task-priority.low {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .task-button {
+            background: #555;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 11px;
+            transition: background 0.2s;
+        }
+
+        .task-button:hover {
+            background: #666;
+        }
+
+        .task-button.primary {
+            background: #4CAF50;
+        }
+
+        .task-button.primary:hover {
+            background: #45a049;
+        }
+
+        .task-button.danger {
+            background: #F44336;
+        }
+
+        .task-button.danger:hover {
+            background: #d32f2f;
+        }
+
+        .task-button.warning {
+            background: #ff9800;
+        }
+
+        .task-button.warning:hover {
+            background: #f57c00;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="sprint-container">
+        <div class="sprint-controls">
+            <select class="sprint-selector" id="sprintSelector">
+                <option value="sprint-1">Sprint 1 - Foundation Setup (Current)</option>
+                <option value="sprint-2">Sprint 2 - Core Features</option>
+                <option value="sprint-3">Sprint 3 - UI Enhancement</option>
+                <option value="sprint-4">Sprint 4 - Testing & Polish</option>
+            </select>
+            <button class="sprint-button" onclick="startSprint()">Start Sprint</button>
+            <button class="sprint-button warning" onclick="pauseSprint()">Pause</button>
+            <button class="sprint-button secondary" onclick="completeSprint()">Complete</button>
+            <button class="sprint-button secondary" onclick="createTask()">Add Task</button>
+            <button class="sprint-button secondary" onclick="importSprints()">Import Sprint(s)</button>
+            <button class="sprint-button secondary" onclick="importTasks()">Import Tasks</button>
+            <button class="sprint-button secondary" onclick="exportData()">Export</button>
+        </div>
+
+        <div class="sprint-overview">
+            <div class="overview-header">
+                <div class="overview-title">Sprint 1 - Foundation Setup</div>
+                <div class="sprint-status">
+                    <span class="status-badge">Active</span>
+                    <span style="color: #4CAF50; font-weight: bold;">72% Complete</span>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <div class="progress-text">
+                <span>18 of 25 tasks completed</span>
+                <span>2 days remaining</span>
+            </div>
+        </div>
+
+        <div class="sprint-metrics">
+            <div class="metric-card">
+                <div class="metric-title">Velocity</div>
+                <div class="metric-value">9.2</div>
+                <div class="metric-description">Story points per day</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-title">Burndown</div>
+                <div class="metric-value">On Track</div>
+                <div class="metric-description">1.5 days ahead of schedule</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-title">Completion</div>
+                <div class="metric-value">72%</div>
+                <div class="metric-description">18/25 tasks done</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-title">Quality Score</div>
+                <div class="metric-value">94%</div>
+                <div class="metric-description">Code review passed</div>
+            </div>
+        </div>
+
+        <div class="task-management">
+            <div class="task-header">
+                <div class="task-title">Task Management</div>
+                <div class="task-filters">
+                    <select class="filter-select" id="statusFilter">
+                        <option value="all">All Status</option>
+                        <option value="not-started">Not Started</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="review">In Review</option>
+                        <option value="completed">Completed</option>
+                        <option value="blocked">Blocked</option>
+                    </select>
+                    <select class="filter-select" id="priorityFilter">
+                        <option value="all">All Priority</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                    <button class="task-button secondary" onclick="bulkEdit()">Bulk Edit</button>
+                    <button class="task-button danger" onclick="bulkDelete()">Bulk Delete</button>
+                </div>
+            </div>
+            
+            <div class="task-list" id="taskList">
+                <div class="task-item completed">
+                    <div class="task-info">
+                        <div class="task-name">Setup Project Structure</div>
+                        <div class="task-description">Initialize basic project layout and configuration files</div>
+                        <div class="task-meta">
+                            <span class="task-priority high">High</span>
+                            <span>Estimate: 2h</span>
+                            <span>Assignee: Dev Team</span>
+                            <span>Completed: 2 days ago</span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-button">View</button>
+                        <button class="task-button" onclick="editTask('task-1')">Edit</button>
+                        <button class="task-button danger" onclick="deleteTask('task-1')">Delete</button>
+                    </div>
+                </div>
+                
+                <div class="task-item in-progress">
+                    <div class="task-info">
+                        <div class="task-name">Implement Core Extension</div>
+                        <div class="task-description">Create main extension entry point and basic functionality</div>
+                        <div class="task-meta">
+                            <span class="task-priority high">High</span>
+                            <span>Estimate: 4h</span>
+                            <span>Assignee: Lead Dev</span>
+                            <span>Started: 1 day ago</span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-button primary">Complete</button>
+                        <button class="task-button warning">Pause</button>
+                        <button class="task-button" onclick="editTask('task-2')">Edit</button>
+                        <button class="task-button danger" onclick="deleteTask('task-2')">Delete</button>
+                    </div>
+                </div>
+                
+                <div class="task-item review">
+                    <div class="task-info">
+                        <div class="task-name">Setup Testing Framework</div>
+                        <div class="task-description">Configure Jest and create initial test suite</div>
+                        <div class="task-meta">
+                            <span class="task-priority medium">Medium</span>
+                            <span>Estimate: 3h</span>
+                            <span>Assignee: QA Team</span>
+                            <span>Ready for review</span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-button primary">Approve</button>
+                        <button class="task-button warning">Request Changes</button>
+                        <button class="task-button" onclick="editTask('task-3')">Edit</button>
+                        <button class="task-button danger" onclick="deleteTask('task-3')">Delete</button>
+                    </div>
+                </div>
+                
+                <div class="task-item">
+                    <div class="task-info">
+                        <div class="task-name">API Integration</div>
+                        <div class="task-description">Integrate with external APIs for validation</div>
+                        <div class="task-meta">
+                            <span class="task-priority high">High</span>
+                            <span>Estimate: 6h</span>
+                            <span>Assignee: Backend Dev</span>
+                            <span>Not started</span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-button primary">Start</button>
+                        <button class="task-button" onclick="editTask('task-4')">Edit</button>
+                        <button class="task-button danger" onclick="deleteTask('task-4')">Delete</button>
+                    </div>
+                </div>
+                
+                <div class="task-item blocked">
+                    <div class="task-info">
+                        <div class="task-name">Database Schema Design</div>
+                        <div class="task-description">Design and implement database schema for user data</div>
+                        <div class="task-meta">
+                            <span class="task-priority medium">Medium</span>
+                            <span>Estimate: 5h</span>
+                            <span>Assignee: DBA</span>
+                            <span>Blocked: Waiting for requirements</span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-button">Unblock</button>
+                        <button class="task-button" onclick="editTask('task-5')">Edit</button>
+                        <button class="task-button danger" onclick="deleteTask('task-5')">Delete</button>
+                    </div>
+                </div>
+                
+                <div class="task-item">
+                    <div class="task-info">
+                        <div class="task-name">UI Component Library</div>
+                        <div class="task-description">Create reusable UI components for the extension</div>
+                        <div class="task-meta">
+                            <span class="task-priority medium">Medium</span>
+                            <span>Estimate: 8h</span>
+                            <span>Assignee: Frontend Dev</span>
+                            <span>Not started</span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button class="task-button primary">Start</button>
+                        <button class="task-button" onclick="editTask('task-6')">Edit</button>
+                        <button class="task-button danger" onclick="deleteTask('task-6')">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function startSprint() {
+            const sprint = document.getElementById('sprintSelector').value;
+            failSafeAlert('Starting sprint: ' + sprint);
+            // Add sprint start logic here
+        }
+
+        function pauseSprint() {
+            failSafeAlert('Sprint paused');
+            // Add sprint pause logic here
+        }
+
+        function completeSprint() {
+            if (confirm('Are you sure you want to complete this sprint?')) {
+                failSafeAlert('Sprint completed!');
+                // Add sprint completion logic here
+            }
+        }
+
+        function createTask() {
+            failSafeAlert('Opening task creation form...');
+            // Add task creation logic here
+        }
+
+        function importSprints() {
+            failSafeAlert('Opening sprint import dialog...');
+            // Add sprint import logic here
+            // This would typically open a file picker for JSON/CSV files
+        }
+
+        function importTasks() {
+            failSafeAlert('Opening task import dialog...');
+            // Add task import logic here
+            // This would allow importing tasks into the current sprint
+        }
+
+        function exportData() {
+            const exportType = prompt('Export format (csv/json):', 'json');
+            if (exportType && ['csv', 'json'].includes(exportType.toLowerCase())) {
+                failSafeAlert(`Exporting sprint data as ${exportType.toUpperCase()}...`);
+                // Add export logic here
+            } else {
+                failSafeAlert('Invalid export format. Please use CSV or JSON.');
+            }
+        }
+
+        function bulkEdit() {
+            failSafeAlert('Opening bulk edit dialog...');
+            // Add bulk edit logic here
+            // This would allow editing multiple selected tasks at once
+        }
+
+        function bulkDelete() {
+            if (confirm('Are you sure you want to delete all selected tasks?')) {
+                failSafeAlert('Deleting selected tasks...');
+                // Add bulk delete logic here
+            }
+        }
+
+        // Filter tasks based on selected filters
+        document.getElementById('statusFilter').addEventListener('change', filterTasks);
+        document.getElementById('priorityFilter').addEventListener('change', filterTasks);
+
+        function filterTasks() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            
+            // Add filtering logic here
+            console.log('Filtering tasks:', { status: statusFilter, priority: priorityFilter });
+        }
+
+        // Task action handlers
+        function startTask(taskId) {
+            console.log('Starting task:', taskId);
+        }
+
+        function completeTask(taskId) {
+            console.log('Completing task:', taskId);
+        }
+
+        function editTask(taskId) {
+            failSafeAlert(`Opening edit form for task: ${taskId}`);
+            // Add task editing logic here
+            // This would typically open a modal or form for editing task details
+        }
+
+        function deleteTask(taskId) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                failSafeAlert(`Deleting task: ${taskId}`);
+                // Add task deletion logic here
+            }
+        }
+
+        function failSafeAlert(message) {
+            // Use a more sophisticated alert system
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #4CAF50;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 4px;
+                z-index: 1000;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+                animation: slideIn 0.3s ease;
+            `;
+            alertDiv.textContent = message;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => document.body.removeChild(alertDiv), 300);
+            }, 3000);
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html> 

@@ -1,0 +1,40 @@
+---
+description: |
+  Validates audit result claims to ensure they are based on actual audits.
+globs: ["*"]
+alwaysApply: false
+severity: error
+pattern: "\b(?:audit|review|analysis)\s+(?:shows|reveals|finds)\b"
+response: warn
+---
+# Audit Results Claim
+
+**Rule Type:** Regex Pattern  
+**Severity:** Warning  
+**Pattern:** `\b(?:audit|review|analysis|assessment)\s+(?:shows|indicates|reveals)\b`
+
+## Description
+Validates audit and analysis claims to ensure they are based on actual results.
+
+## Purpose
+audit_results
+
+## Pattern Matches
+- "audit shows"
+- "review indicates"
+- "analysis reveals"
+- "assessment shows"
+
+## Validation Required
+When this pattern is detected, verify:
+1. The audit/review actually occurred
+2. The results are based on real data
+3. The analysis is comprehensive and accurate
+
+## Response
+- **Warning Level:** Flag for audit verification
+- **Action:** Suggest result validation
+- **Fallback:** Encourage thorough analysis review
+
+## Implementation Notes
+This rule ensures audit claims are backed by actual analysis and real data.

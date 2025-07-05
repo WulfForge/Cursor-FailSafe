@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FailSafe Cursor Rules</title>
+    <style>
+        .rules-container {
+            padding: 20px;
+            background: #1e1e1e;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .rules-header {
+            background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #3d3d3d;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .brand-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .brand-info h1 {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-info p {
+            margin: 0;
+            color: #ccc;
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 30px;
+        }
+
+        .quick-stat {
+            text-align: center;
+            padding: 15px 20px;
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .rules-controls {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .search-input {
+            flex: 1;
+            background: #1e1e1e;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 8px 12px;
+            color: #ffffff;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .filter-select {
+            background: #1e1e1e;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 8px 12px;
+            color: #ffffff;
+            min-width: 150px;
+        }
+
+        .rules-button {
+            background: #4CAF50;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            color: #ffffff;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .rules-button:hover {
+            background: #45a049;
+        }
+
+        .rules-button.secondary {
+            background: #666;
+        }
+
+        .rules-button.secondary:hover {
+            background: #555;
+        }
+
+        .rules-statistics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #3d3d3d;
+            border-radius: 6px;
+            padding: 15px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .stat-title {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .stat-description {
+            font-size: 11px;
+            color: #aaa;
+        }
+
+        .rules-categories {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #555;
+            padding-bottom: 10px;
+        }
+
+        .category-tab {
+            background: #3d3d3d;
+            border: none;
+            border-radius: 4px 4px 0 0;
+            padding: 10px 20px;
+            color: #ccc;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .category-tab.active {
+            background: #4CAF50;
+            color: #ffffff;
+        }
+
+        .category-tab:hover {
+            background: #555;
+        }
+
+        .rules-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .rule-item {
+            background: #3d3d3d;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #555;
+        }
+
+        .rule-item.active {
+            border-left-color: #4CAF50;
+        }
+
+        .rule-item.disabled {
+            border-left-color: #666;
+            opacity: 0.6;
+        }
+
+        .rule-item.error {
+            border-left-color: #F44336;
+        }
+
+        .rule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .rule-info {
+            flex: 1;
+        }
+
+        .rule-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+
+        .rule-description {
+            font-size: 12px;
+            color: #ccc;
+            margin-bottom: 5px;
+        }
+
+        .rule-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 11px;
+            color: #888;
+        }
+
+        .rule-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: #4CAF50;
+            color: #ffffff;
+        }
+
+        .status-disabled {
+            background: #666;
+            color: #ccc;
+        }
+
+        .status-error {
+            background: #F44336;
+            color: #ffffff;
+        }
+
+        .rule-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .rule-button {
+            background: #555;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            color: #ffffff;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .rule-button:hover {
+            background: #666;
+        }
+
+        .rule-button.primary {
+            background: #4CAF50;
+        }
+
+        .rule-button.primary:hover {
+            background: #45a049;
+        }
+
+        .rule-button.danger {
+            background: #F44336;
+        }
+
+        .rule-button.danger:hover {
+            background: #d32f2f;
+        }
+
+        .rule-details {
+            background: #2d2d2d;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            color: #ccc;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="rules-container">
+        <div class="rules-header">
+            <div class="brand-section">
+                <img src="/images/MythologIQ.png" alt="MythologIQ" class="brand-logo">
+                <div class="brand-info">
+                    <h1>FailSafe Cursor Rules</h1>
+                    <p>Intelligent code validation and safety protocols</p>
+                </div>
+            </div>
+            <div class="header-stats">
+                <div class="quick-stat">
+                    <span class="stat-number">23</span>
+                    <span class="stat-label">Active</span>
+                </div>
+                <div class="quick-stat">
+                    <span class="stat-number">156</span>
+                    <span class="stat-label">Blocked</span>
+                </div>
+                <div class="quick-stat">
+                    <span class="stat-number">82.1%</span>
+                    <span class="stat-label">Success</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="rules-controls">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search rules..." onkeyup="filterRules()">
+            <select class="filter-select" id="statusFilter" onchange="filterRules()">
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="disabled">Disabled</option>
+                <option value="error">Error</option>
+            </select>
+            <select class="filter-select" id="priorityFilter" onchange="filterRules()">
+                <option value="all">All Priority</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
+            <button class="rules-button" onclick="createRule()">Create Rule</button>
+            <button class="rules-button secondary" onclick="importRules()">Import</button>
+            <button class="rules-button secondary" onclick="exportRules()">Export</button>
+            <button class="rules-button secondary" onclick="bulkEnable()">Bulk Enable</button>
+            <button class="rules-button secondary" onclick="bulkDisable()">Bulk Disable</button>
+        </div>
+
+        <div class="rules-statistics">
+            <div class="stat-card">
+                <div class="stat-title">Active Rules</div>
+                <div class="stat-value">23</div>
+                <div class="stat-description">Currently enabled</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">Total Rules</div>
+                <div class="stat-value">28</div>
+                <div class="stat-description">Including disabled</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">Success Rate</div>
+                <div class="stat-value">82.1%</div>
+                <div class="stat-description">23 of 28 rules working</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-title">Issues Blocked</div>
+                <div class="stat-value">156</div>
+                <div class="stat-description">Prevented problems</div>
+            </div>
+        </div>
+
+        <div class="rules-categories">
+            <div class="category-tabs">
+                <button class="category-tab active" onclick="switchCategory('security')">Security</button>
+                <button class="category-tab" onclick="switchCategory('quality')">Quality</button>
+                <button class="category-tab" onclick="switchCategory('performance')">Performance</button>
+                <button class="category-tab" onclick="switchCategory('workflow')">Workflow</button>
+                <button class="category-tab" onclick="switchCategory('compliance')">Compliance</button>
+                <button class="category-tab" onclick="switchCategory('ai-safety')">AI Safety</button>
+            </div>
+            
+            <div class="rules-list" id="rulesList">
+                <div class="rule-item active">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">Prevent SQL Injection</div>
+                            <div class="rule-description">Detects and blocks potential SQL injection patterns in code</div>
+                            <div class="rule-meta">
+                                <span>Category: Security</span>
+                                <span>Priority: High</span>
+                                <span>Triggered: 67 times</span>
+                                <span>Last: 2 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('sql-injection')">View</button>
+                            <button class="rule-button" onclick="editRule('sql-injection')">Edit</button>
+                            <button class="rule-button danger" onclick="disableRule('sql-injection')">Disable</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item active">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">Enforce Type Safety</div>
+                            <div class="rule-description">Ensures proper TypeScript type annotations are used</div>
+                            <div class="rule-meta">
+                                <span>Category: Quality</span>
+                                <span>Priority: Medium</span>
+                                <span>Triggered: 134 times</span>
+                                <span>Last: 15 min ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('type-safety')">View</button>
+                            <button class="rule-button" onclick="editRule('type-safety')">Edit</button>
+                            <button class="rule-button danger" onclick="disableRule('type-safety')">Disable</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item active">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">XSS Prevention</div>
+                            <div class="rule-description">Detects potential cross-site scripting vulnerabilities</div>
+                            <div class="rule-meta">
+                                <span>Category: Security</span>
+                                <span>Priority: High</span>
+                                <span>Triggered: 23 times</span>
+                                <span>Last: 1 hour ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('xss-prevention')">View</button>
+                            <button class="rule-button" onclick="editRule('xss-prevention')">Edit</button>
+                            <button class="rule-button danger" onclick="disableRule('xss-prevention')">Disable</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item disabled">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">Memory Leak Detection</div>
+                            <div class="rule-description">Identifies potential memory leaks in JavaScript code</div>
+                            <div class="rule-meta">
+                                <span>Category: Performance</span>
+                                <span>Priority: Medium</span>
+                                <span>Triggered: 12 times</span>
+                                <span>Last: 3 days ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-disabled">Disabled</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('memory-leak')">View</button>
+                            <button class="rule-button primary" onclick="enableRule('memory-leak')">Enable</button>
+                            <button class="rule-button" onclick="editRule('memory-leak')">Edit</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item error">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">API Rate Limiting</div>
+                            <div class="rule-description">Monitors and enforces API rate limits</div>
+                            <div class="rule-meta">
+                                <span>Category: Workflow</span>
+                                <span>Priority: High</span>
+                                <span>Triggered: 0 times</span>
+                                <span>Last: Never</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-error">Error</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('rate-limit')">View</button>
+                            <button class="rule-button primary" onclick="fixRule('rate-limit')">Fix</button>
+                            <button class="rule-button" onclick="editRule('rate-limit')">Edit</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item active">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">Code Duplication Check</div>
+                            <div class="rule-description">Identifies duplicate code patterns for refactoring</div>
+                            <div class="rule-meta">
+                                <span>Category: Quality</span>
+                                <span>Priority: Low</span>
+                                <span>Triggered: 45 times</span>
+                                <span>Last: 30 min ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('duplication-check')">View</button>
+                            <button class="rule-button" onclick="editRule('duplication-check')">Edit</button>
+                            <button class="rule-button danger" onclick="disableRule('duplication-check')">Disable</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item active">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">Async/Await Usage</div>
+                            <div class="rule-description">Enforces proper async/await patterns over callbacks</div>
+                            <div class="rule-meta">
+                                <span>Category: Quality</span>
+                                <span>Priority: Medium</span>
+                                <span>Triggered: 78 times</span>
+                                <span>Last: 45 min ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('async-await')">View</button>
+                            <button class="rule-button" onclick="editRule('async-await')">Edit</button>
+                            <button class="rule-button danger" onclick="disableRule('async-await')">Disable</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item active">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">Data Validation</div>
+                            <div class="rule-description">Ensures proper input validation and sanitization</div>
+                            <div class="rule-meta">
+                                <span>Category: Security</span>
+                                <span>Priority: High</span>
+                                <span>Triggered: 89 times</span>
+                                <span>Last: 20 min ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('data-validation')">View</button>
+                            <button class="rule-button" onclick="editRule('data-validation')">Edit</button>
+                            <button class="rule-button danger" onclick="disableRule('data-validation')">Disable</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item active">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">Error Handling</div>
+                            <div class="rule-description">Enforces proper error handling and logging</div>
+                            <div class="rule-meta">
+                                <span>Category: Quality</span>
+                                <span>Priority: Medium</span>
+                                <span>Triggered: 156 times</span>
+                                <span>Last: 5 min ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('error-handling')">View</button>
+                            <button class="rule-button" onclick="editRule('error-handling')">Edit</button>
+                            <button class="rule-button danger" onclick="disableRule('error-handling')">Disable</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item active">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">Authentication Check</div>
+                            <div class="rule-description">Verifies proper authentication mechanisms</div>
+                            <div class="rule-meta">
+                                <span>Category: Security</span>
+                                <span>Priority: High</span>
+                                <span>Triggered: 34 times</span>
+                                <span>Last: 1 hour ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('auth-check')">View</button>
+                            <button class="rule-button" onclick="editRule('auth-check')">Edit</button>
+                            <button class="rule-button danger" onclick="disableRule('auth-check')">Disable</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item active">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">Performance Optimization</div>
+                            <div class="rule-description">Identifies performance bottlenecks and optimization opportunities</div>
+                            <div class="rule-meta">
+                                <span>Category: Performance</span>
+                                <span>Priority: Medium</span>
+                                <span>Triggered: 67 times</span>
+                                <span>Last: 30 min ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('perf-optimization')">View</button>
+                            <button class="rule-button" onclick="editRule('perf-optimization')">Edit</button>
+                            <button class="rule-button danger" onclick="disableRule('perf-optimization')">Disable</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item active">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">Code Documentation</div>
+                            <div class="rule-description">Ensures proper code documentation and comments</div>
+                            <div class="rule-meta">
+                                <span>Category: Quality</span>
+                                <span>Priority: Low</span>
+                                <span>Triggered: 234 times</span>
+                                <span>Last: 10 min ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('code-docs')">View</button>
+                            <button class="rule-button" onclick="editRule('code-docs')">Edit</button>
+                            <button class="rule-button danger" onclick="disableRule('code-docs')">Disable</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item active">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">API Security</div>
+                            <div class="rule-description">Validates API security best practices</div>
+                            <div class="rule-meta">
+                                <span>Category: Security</span>
+                                <span>Priority: High</span>
+                                <span>Triggered: 45 times</span>
+                                <span>Last: 2 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('api-security')">View</button>
+                            <button class="rule-button" onclick="editRule('api-security')">Edit</button>
+                            <button class="rule-button danger" onclick="disableRule('api-security')">Disable</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item active">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">Testing Coverage</div>
+                            <div class="rule-description">Ensures adequate test coverage for new code</div>
+                            <div class="rule-meta">
+                                <span>Category: Quality</span>
+                                <span>Priority: Medium</span>
+                                <span>Triggered: 123 times</span>
+                                <span>Last: 15 min ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('test-coverage')">View</button>
+                            <button class="rule-button" onclick="editRule('test-coverage')">Edit</button>
+                            <button class="rule-button danger" onclick="disableRule('test-coverage')">Disable</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item active">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">Resource Management</div>
+                            <div class="rule-description">Monitors resource usage and cleanup</div>
+                            <div class="rule-meta">
+                                <span>Category: Performance</span>
+                                <span>Priority: Medium</span>
+                                <span>Triggered: 56 times</span>
+                                <span>Last: 1 hour ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('resource-mgmt')">View</button>
+                            <button class="rule-button" onclick="editRule('resource-mgmt')">Edit</button>
+                            <button class="rule-button danger" onclick="disableRule('resource-mgmt')">Disable</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item active">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">Workflow Compliance</div>
+                            <div class="rule-description">Ensures adherence to development workflow standards</div>
+                            <div class="rule-meta">
+                                <span>Category: Workflow</span>
+                                <span>Priority: Medium</span>
+                                <span>Triggered: 89 times</span>
+                                <span>Last: 25 min ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('workflow-compliance')">View</button>
+                            <button class="rule-button" onclick="editRule('workflow-compliance')">Edit</button>
+                            <button class="rule-button danger" onclick="disableRule('workflow-compliance')">Disable</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item active">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">AI Safety Protocol</div>
+                            <div class="rule-description">Validates AI-generated code for safety and reliability</div>
+                            <div class="rule-meta">
+                                <span>Category: AI Safety</span>
+                                <span>Priority: High</span>
+                                <span>Triggered: 178 times</span>
+                                <span>Last: 5 min ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('ai-safety')">View</button>
+                            <button class="rule-button" onclick="editRule('ai-safety')">Edit</button>
+                            <button class="rule-button danger" onclick="disableRule('ai-safety')">Disable</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item active">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">Regulatory Compliance</div>
+                            <div class="rule-description">Ensures code meets regulatory and compliance requirements</div>
+                            <div class="rule-meta">
+                                <span>Category: Compliance</span>
+                                <span>Priority: High</span>
+                                <span>Triggered: 23 times</span>
+                                <span>Last: 3 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('regulatory-compliance')">View</button>
+                            <button class="rule-button" onclick="editRule('regulatory-compliance')">Edit</button>
+                            <button class="rule-button danger" onclick="disableRule('regulatory-compliance')">Disable</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item disabled">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">Advanced Analytics</div>
+                            <div class="rule-description">Provides advanced code analytics and insights</div>
+                            <div class="rule-meta">
+                                <span>Category: Performance</span>
+                                <span>Priority: Low</span>
+                                <span>Triggered: 8 times</span>
+                                <span>Last: 1 week ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-disabled">Disabled</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('advanced-analytics')">View</button>
+                            <button class="rule-button primary" onclick="enableRule('advanced-analytics')">Enable</button>
+                            <button class="rule-button" onclick="editRule('advanced-analytics')">Edit</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item disabled">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">Legacy Code Analysis</div>
+                            <div class="rule-description">Analyzes and modernizes legacy code patterns</div>
+                            <div class="rule-meta">
+                                <span>Category: Quality</span>
+                                <span>Priority: Medium</span>
+                                <span>Triggered: 15 times</span>
+                                <span>Last: 2 days ago</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-disabled">Disabled</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('legacy-analysis')">View</button>
+                            <button class="rule-button primary" onclick="enableRule('legacy-analysis')">Enable</button>
+                            <button class="rule-button" onclick="editRule('legacy-analysis')">Edit</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item error">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">Real-time Monitoring</div>
+                            <div class="rule-description">Provides real-time code monitoring and alerts</div>
+                            <div class="rule-meta">
+                                <span>Category: Performance</span>
+                                <span>Priority: High</span>
+                                <span>Triggered: 0 times</span>
+                                <span>Last: Never</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-error">Error</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('real-time-monitoring')">View</button>
+                            <button class="rule-button primary" onclick="fixRule('real-time-monitoring')">Fix</button>
+                            <button class="rule-button" onclick="editRule('real-time-monitoring')">Edit</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rule-item error">
+                    <div class="rule-header">
+                        <div class="rule-info">
+                            <div class="rule-name">AI Ethics Check</div>
+                            <div class="rule-description">Validates AI code for ethical considerations</div>
+                            <div class="rule-meta">
+                                <span>Category: AI Safety</span>
+                                <span>Priority: High</span>
+                                <span>Triggered: 0 times</span>
+                                <span>Last: Never</span>
+                            </div>
+                        </div>
+                        <div class="rule-status">
+                            <span class="status-badge status-error">Error</span>
+                        </div>
+                        <div class="rule-actions">
+                            <button class="rule-button" onclick="viewRule('ai-ethics')">View</button>
+                            <button class="rule-button primary" onclick="fixRule('ai-ethics')">Fix</button>
+                            <button class="rule-button" onclick="editRule('ai-ethics')">Edit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentCategory = 'security';
+
+        function switchCategory(category) {
+            currentCategory = category;
+            
+            // Update active tab
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Filter rules by category
+            filterRules();
+        }
+
+        function filterRules() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            
+            // Add filtering logic here
+            console.log('Filtering rules:', { 
+                search: searchTerm, 
+                status: statusFilter, 
+                priority: priorityFilter, 
+                category: currentCategory 
+            });
+        }
+
+        function createRule() {
+            failSafeAlert('Opening rule creation form...');
+            // Add rule creation logic here
+        }
+
+        function importRules() {
+            failSafeAlert('Opening rule import dialog...');
+            // Add rule import logic here
+        }
+
+        function exportRules() {
+            const exportType = prompt('Export format (json/csv):', 'json');
+            if (exportType && ['json', 'csv'].includes(exportType.toLowerCase())) {
+                failSafeAlert(`Exporting rules as ${exportType.toUpperCase()}...`);
+                // Add rule export logic here
+            } else {
+                failSafeAlert('Invalid export format. Please use JSON or CSV.');
+            }
+        }
+
+        function viewRule(ruleId) {
+            failSafeAlert(`Opening rule details for: ${ruleId}`);
+            // Add rule viewing logic here
+        }
+
+        function editRule(ruleId) {
+            failSafeAlert(`Opening edit form for rule: ${ruleId}`);
+            // Add rule editing logic here
+        }
+
+        function enableRule(ruleId) {
+            failSafeAlert(`Enabling rule: ${ruleId}`);
+            // Add rule enabling logic here
+        }
+
+        function disableRule(ruleId) {
+            if (confirm('Are you sure you want to disable this rule?')) {
+                failSafeAlert(`Disabling rule: ${ruleId}`);
+                // Add rule disabling logic here
+            }
+        }
+
+        function fixRule(ruleId) {
+            failSafeAlert(`Attempting to fix rule: ${ruleId}`);
+            // Add rule fixing logic here
+        }
+
+        function bulkEnable() {
+            if (confirm('Enable all selected rules?')) {
+                failSafeAlert('Enabling selected rules...');
+                // Add bulk enabling logic here
+            }
+        }
+
+        function bulkDisable() {
+            if (confirm('Disable all selected rules?')) {
+                failSafeAlert('Disabling selected rules...');
+                // Add bulk disabling logic here
+            }
+        }
+
+        function failSafeAlert(message) {
+            // Use a more sophisticated alert system
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #4CAF50;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 4px;
+                z-index: 1000;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+                animation: slideIn 0.3s ease;
+            `;
+            alertDiv.textContent = message;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => document.body.removeChild(alertDiv), 300);
+            }, 3000);
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            filterRules();
+        });
+    </script>
+</body>
+</html> 

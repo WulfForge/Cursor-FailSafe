@@ -1,0 +1,32 @@
+---
+description: |
+  Validates claims about file content to prevent hallucinations.
+globs: ["*"]
+alwaysApply: false
+severity: error
+pattern: "\\b(?:content|text|data)\\s+(?:in|of|from)\\s+(?:file|document)\\b"
+response: warn
+---
+# File Content Claim Validation
+
+## Purpose
+hallucination_detection
+
+## Pattern Matches
+- "content in file"
+- "text of document"
+- "data from file"
+
+## Validation Required
+When this pattern is detected, verify:
+1. The file actually exists
+2. The content claim is accurate
+3. The file has been read and verified
+
+## Response
+- **Error Level:** Flag as potential hallucination
+- **Action:** Require file content verification
+- **Fallback:** Read and display actual file content
+
+## Implementation Notes
+This rule ensures AI doesn't make false claims about file contents without verification.

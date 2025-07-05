@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FailSafe Console</title>
+    <style>
+        .console-container {
+            padding: 20px;
+            background: #1e1e1e;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Background Animation */
+        .console-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.1) 0%, transparent 50%);
+            animation: backgroundShift 20s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(-10px, -10px) scale(1.05); }
+            50% { transform: translate(10px, -5px) scale(0.95); }
+            75% { transform: translate(-5px, 10px) scale(1.02); }
+        }
+
+        .console-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .quick-actions {
+            background: rgba(45, 45, 45, 0.9);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .actions-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .action-button {
+            padding: 12px 16px;
+            background: #007acc;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-button:hover {
+            background: #005a9e;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 122, 204, 0.3);
+        }
+
+        .action-button.danger {
+            background: #d73a49;
+        }
+
+        .action-button.danger:hover {
+            background: #b31d28;
+            box-shadow: 0 4px 12px rgba(215, 58, 73, 0.3);
+        }
+
+        .custom-action {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+        }
+
+        .custom-action:hover {
+            background: linear-gradient(135deg, #F57C00 0%, #E65100 100%);
+        }
+
+        /* Preview Dropdown Styles */
+        .preview-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .preview-main {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .preview-main:hover {
+            background: linear-gradient(135deg, #45a049 0%, #388E3C 100%);
+        }
+
+        .dropdown-arrow {
+            font-size: 10px;
+            transition: transform 0.2s ease;
+        }
+
+        .preview-dropdown.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .preview-dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #2d2d2d;
+            border: 1px solid #555;
+            border-radius: 6px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 1000;
+            min-width: 200px;
+            margin-top: 5px;
+        }
+
+        .preview-dropdown.active .preview-dropdown-content {
+            display: block;
+            animation: dropdownFadeIn 0.2s ease;
+        }
+
+        .dropdown-item {
+            display: block;
+            width: 100%;
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            color: #ffffff;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: #3d3d3d;
+        }
+
+        .dropdown-item:first-child {
+            border-radius: 6px 6px 0 0;
+        }
+
+        .dropdown-item:last-child {
+            border-radius: 0 0 6px 6px;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #555;
+            margin: 5px 0;
+        }
+
+        @keyframes dropdownFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .command-section {
+            background: rgba(45, 45, 45, 0.9);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .command-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .command-input {
+            flex: 1;
+            padding: 12px;
+            background: #1e1e1e;
+            border: 1px solid #555;
+            border-radius: 6px;
+            color: #ffffff;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+        }
+
+        .help-toggle-btn {
+            padding: 12px 16px;
+            background: rgba(0, 188, 212, 0.2);
+            border: 1px solid #00BCD4;
+            border-radius: 6px;
+            color: #00BCD4;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            min-width: 50px;
+        }
+
+        .help-toggle-btn:hover {
+            background: rgba(0, 188, 212, 0.3);
+            transform: scale(1.05);
+        }
+
+        .help-toggle-btn.active {
+            background: rgba(0, 188, 212, 0.4);
+            box-shadow: 0 0 10px rgba(0, 188, 212, 0.3);
+        }
+
+        .command-input:focus {
+            outline: none;
+            border-color: #007acc;
+            box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+        }
+
+        .command-history {
+            background: #1e1e1e;
+            border-radius: 6px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+        }
+
+        .history-item {
+            padding: 4px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-timestamp {
+            color: #888;
+            margin-right: 10px;
+        }
+
+        .history-command {
+            color: #007acc;
+        }
+
+        .system-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status-card {
+            background: rgba(45, 45, 45, 0.9);
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid #007acc;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-card.warning {
+            border-left-color: #FF9800;
+        }
+
+        .status-card.error {
+            border-left-color: #F44336;
+        }
+
+        .status-title {
+            font-size: 14px;
+            color: #cccccc;
+            margin-bottom: 8px;
+        }
+
+        .status-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .status-description {
+            font-size: 12px;
+            color: #999999;
+            margin-top: 5px;
+        }
+
+        .commands-help {
+            background: rgba(45, 45, 45, 0.9);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .help-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .help-category {
+            margin-bottom: 20px;
+        }
+
+        .category-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #007acc;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #333;
+        }
+
+        .command-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 10px;
+        }
+
+        .command-item {
+            background: rgba(30, 30, 30, 0.8);
+            border-radius: 6px;
+            padding: 12px;
+            border-left: 3px solid #007acc;
+        }
+
+        .command-name {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            color: #007acc;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .command-description {
+            font-size: 11px;
+            color: #cccccc;
+            line-height: 1.4;
+        }
+
+        .requests-section {
+            background: rgba(45, 45, 45, 0.9);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .requests-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .requests-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .requests-table th,
+        .requests-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+
+        .requests-table th {
+            background: #1e1e1e;
+            font-weight: bold;
+            color: #cccccc;
+        }
+
+        .status-200 {
+            color: #007acc;
+        }
+
+        .status-4xx {
+            color: #FF9800;
+        }
+
+        .status-5xx {
+            color: #F44336;
+        }
+
+        /* Commands Help Styling */
+        .commands-help {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+            border-radius: 8px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .help-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00BCD4;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .help-category {
+            margin-bottom: 25px;
+        }
+
+        .category-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #FF9800;
+            margin-bottom: 10px;
+            padding: 5px 0;
+            border-bottom: 1px solid #444;
+        }
+
+        .command-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .command-item {
+            display: flex;
+            flex-direction: column;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            border-left: 3px solid #00BCD4;
+        }
+
+        .command-name {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #00BCD4;
+            margin-bottom: 4px;
+        }
+
+        .command-description {
+            font-size: 13px;
+            color: #ccc;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="console-container">
+        <div class="console-content">
+            <div class="quick-actions">
+                <div class="actions-title">Quick Actions</div>
+                <div class="actions-grid">
+                    <button class="action-button" onclick="validateChat()">
+                        🔍 Validate Chat
+                    </button>
+                    <button class="action-button" onclick="buildAndTest()">
+                        🔨 Build & Test
+                    </button>
+                    <button class="action-button" onclick="versionBump()">
+                        📦 Version Bump
+                    </button>
+                    <button class="action-button" onclick="createSavePoint()">
+                        💾 Create Save Point
+                    </button>
+                    <button class="action-button" onclick="restoreSavePoint()">
+                        🔄 Restore Save Point
+                    </button>
+                    <button class="action-button custom-action" onclick="showCustomActions()">
+                        ⚙️ Custom Actions
+                    </button>
+                    <div class="action-button preview-dropdown">
+                        <button class="action-button preview-main" onclick="togglePreviewDropdown()">
+                            🖥️ Show Preview
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="preview-dropdown-content" id="previewDropdown">
+                            <button class="dropdown-item" onclick="openPreviewInWebview()">
+                                🖥️ VS Code Webview
+                            </button>
+                            <button class="dropdown-item" onclick="openPreviewInBrowser()">
+                                🌐 External Browser
+                            </button>
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-item" onclick="startPreviewServer()">
+                                🚀 Start Server
+                            </button>
+                            <button class="dropdown-item" onclick="stopPreviewServer()">
+                                🛑 Stop Server
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="command-section">
+                <div class="actions-title">Command Input</div>
+                <div class="command-input-container">
+                    <input type="text" class="command-input" placeholder="Enter FailSafe command... (type 'help' for list)" id="commandInput" onkeypress="handleCommandKeypress(event)">
+                    <button class="help-toggle-btn" onclick="toggleCommandsHelp()" title="Show/Hide Commands Help">
+                        📚
+                    </button>
+                </div>
+                <div class="command-history" id="commandHistory">
+                    <div class="history-item">
+                        <span class="history-timestamp">[12:34:56]</span>
+                        <span class="history-command">help</span>
+                    </div>
+                    <div class="history-item">
+                        <span class="history-timestamp">[12:33:45]</span>
+                        <span class="history-command">validate chat</span>
+                    </div>
+                    <div class="history-item">
+                        <span class="history-timestamp">[12:32:12]</span>
+                        <span class="history-command">check version consistency</span>
+                    </div>
+                </div>
+                
+                <!-- Commands Help Section - Positioned right after command history -->
+                <div class="commands-help" id="commandsHelp" style="display: none;">
+                    <div class="help-title">📚 Available FailSafe Commands</div>
+                    
+                    <div class="help-category">
+                        <div class="category-title">Core Validation</div>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <div class="command-name">failsafe.validateChat</div>
+                                <div class="command-description">Comprehensive AI response validation for hallucinations and drift</div>
+                            </div>
+                            <div class="command-item">
+                                <div class="command-name">failsafe.validateChatMinimal</div>
+                                <div class="command-description">Quick validation for common issues</div>
+                            </div>
+                            <div class="command-item">
+                                <div class="command-name">failsafe.validate</div>
+                                <div class="command-description">Validate current code file for safety issues</div>
+                            </div>
+                            <div class="command-item">
+                                <div class="command-name">failsafe.evaluateTechDebt</div>
+                                <div class="command-description">Analyze code complexity and maintainability</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-category">
+                        <div class="category-title">Project Management</div>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <div class="command-name">failsafe.showDashboard</div>
+                                <div class="command-description">Open the main project dashboard</div>
+                            </div>
+                            <div class="command-item">
+                                <div class="command-name">failsafe.createProjectPlan</div>
+                                <div class="command-description">Start a new project plan</div>
+                            </div>
+                            <div class="command-item">
+                                <div class="command-name">failsafe.editProjectPlan</div>
+                                <div class="command-description">Modify existing project plan</div>
+                            </div>
+                            <div class="command-item">
+                                <div class="command-name">failsafe.viewSessionLog</div>
+                                <div class="command-description">See recent validation history</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-category">
+                        <div class="category-title">Sprint Management</div>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <div class="command-name">failsafe.createSprint</div>
+                                <div class="command-description">Create a new sprint with templates and planning</div>
+                            </div>
+                            <div class="command-item">
+                                <div class="command-name">failsafe.startSprint</div>
+                                <div class="command-description">Start the current sprint and begin tracking</div>
+                            </div>
+                            <div class="command-item">
+                                <div class="command-name">failsafe.completeSprint</div>
+                                <div class="command-description">Complete the current sprint and archive it</div>
+                            </div>
+                            <div class="command-item">
+                                <div class="command-name">failsafe.addTaskToSprint</div>
+                                <div class="command-description">Add a new task to the current sprint</div>
+                            </div>
+                            <div class="command-item">
+                                <div class="command-name">failsafe.showSprintMetrics</div>
+                                <div class="command-description">Display sprint progress, velocity, and risk assessment</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-category">
+                        <div class="category-title">Version Management</div>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <div class="command-name">failsafe.checkVersionConsistency</div>
+                                <div class="command-description">Verify version consistency across files</div>
+                            </div>
+                            <div class="command-item">
+                                <div class="command-name">failsafe.autoBumpVersion</div>
+                                <div class="command-description">Automatically bump version based on detected changes</div>
+                            </div>
+                            <div class="command-item">
+                                <div class="command-name">failsafe.showVersionDetails</div>
+                                <div class="command-description">View version consistency warning logs</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-category">
+                        <div class="category-title">Preview System</div>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <div class="command-name">failsafe.startPreview</div>
+                                <div class="command-description">Start preview server for current workspace with auto-tracking</div>
+                            </div>
+                            <div class="command-item">
+                                <div class="command-name">failsafe.startPreviewForWorkspace</div>
+                                <div class="command-description">Start preview server for specific workspace (manual selection)</div>
+                            </div>
+                            <div class="command-item">
+                                <div class="command-name">failsafe.listPreviewInstances</div>
+                                <div class="command-description">Show all active preview instances</div>
+                            </div>
+                            <div class="command-item">
+                                <div class="command-name">failsafe.openPreviewInBrowser</div>
+                                <div class="command-description">Open preview in default browser</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-category">
+                        <div class="category-title">Utilities</div>
+                        <div class="command-list">
+                            <div class="command-item">
+                                <div class="command-name">failsafe.reportProblem</div>
+                                <div class="command-description">Report issues to GitHub</div>
+                            </div>
+                            <div class="command-item">
+                                <div class="command-name">failsafe.suggestFailsafe</div>
+                                <div class="command-description">Get custom failsafe suggestions</div>
+                            </div>
+                            <div class="command-item">
+                                <div class="command-name">failsafe.testExtension</div>
+                                <div class="command-description">Test extension functionality and components</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="system-status">
+                <div class="status-card">
+                    <div class="status-title">Server Status</div>
+                    <div class="status-value">🟢 Online</div>
+                    <div class="status-description">FailSafe server is running</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-title">Validation Status</div>
+                    <div class="status-value">✅ Active</div>
+                    <div class="status-description">Real-time validation enabled</div>
+                </div>
+                <div class="status-card warning">
+                    <div class="status-title">Active Rules</div>
+                    <div class="status-value">23/28</div>
+                    <div class="status-description">5 rules disabled/error</div>
+                </div>
+                <div class="status-card">
+                    <div class="status-title">Last Activity</div>
+                    <div class="status-value">2 min ago</div>
+                    <div class="status-description">File validation completed</div>
+                </div>
+            </div>
+
+            <div class="requests-section">
+                <div class="requests-title">📋 Recent Requests (Last 200)</div>
+                <table class="requests-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Method</th>
+                            <th>URL</th>
+                            <th>Status</th>
+                            <th>Response Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requestsBody">
+                        <tr>
+                            <td>12:34:56</td>
+                            <td>GET</td>
+                            <td>/api/dashboard/data</td>
+                            <td class="status-200">200</td>
+                            <td>45ms</td>
+                        </tr>
+                        <tr>
+                            <td>12:33:45</td>
+                            <td>POST</td>
+                            <td>/validate</td>
+                            <td class="status-200">200</td>
+                            <td>123ms</td>
+                        </tr>
+                        <tr>
+                            <td>12:32:12</td>
+                            <td>GET</td>
+                            <td>/status</td>
+                            <td class="status-200">200</td>
+                            <td>23ms</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+        </div>
+    </div>
+
+    <script>
+        function validateChat() {
+            addToHistory('validate chat');
+            showToast('Validating chat content for hallucinations and drift...', 'info');
+            // Simulate chat validation
+            setTimeout(() => {
+                showToast('Chat validation completed - No issues detected', 'success');
+            }, 2000);
+        }
+
+        function buildAndTest() {
+            addToHistory('build and test');
+            showToast('Building and testing project...', 'info');
+            // Simulate build and test
+            setTimeout(() => {
+                showToast('Build and test completed successfully', 'success');
+            }, 3000);
+        }
+
+        function versionBump() {
+            addToHistory('version bump');
+            showToast('Bumping version number...', 'info');
+            // Simulate version bump
+            setTimeout(() => {
+                showToast('Version bumped to 2.0.1', 'success');
+            }, 1000);
+        }
+
+        function createSavePoint() {
+            addToHistory('create save point');
+            showToast('Creating save point...', 'info');
+            // Simulate save point creation
+            setTimeout(() => {
+                showToast('Save point created successfully', 'success');
+            }, 1500);
+        }
+
+        function restoreSavePoint() {
+            addToHistory('restore save point');
+            showToast('Restoring save point...', 'info');
+            // Simulate restore
+            setTimeout(() => {
+                showToast('Save point restored successfully', 'success');
+            }, 2000);
+        }
+
+        function toggleCommandsHelp() {
+            addToHistory('toggle commands help');
+            const helpSection = document.getElementById('commandsHelp');
+            const toggleBtn = document.querySelector('.help-toggle-btn');
+            
+            if (helpSection.style.display === 'none') {
+                helpSection.style.display = 'block';
+                toggleBtn.classList.add('active');
+                showToast('Commands help displayed', 'success');
+            } else {
+                helpSection.style.display = 'none';
+                toggleBtn.classList.remove('active');
+                showToast('Commands help hidden', 'info');
+            }
+        }
+
+        function showCommandsHelp() {
+            toggleCommandsHelp();
+        }
+
+        function showCustomActions() {
+            addToHistory('show custom actions');
+            showToast('Opening custom actions panel...', 'info');
+            
+            // Create custom actions modal
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: #1e1e1e;
+                    border-radius: 8px;
+                    padding: 30px;
+                    max-width: 600px;
+                    width: 90%;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                    border: 1px solid #444;
+                ">
+                    <h3 style="color: #00BCD4; margin-bottom: 20px;">⚙️ Custom Actions</h3>
+                    <div style="display: grid; gap: 15px;">
+                        <button onclick="executeCustomAction('backup')" style="
+                            padding: 12px;
+                            background: rgba(0, 188, 212, 0.2);
+                            border: 1px solid #00BCD4;
+                            border-radius: 6px;
+                            color: #00BCD4;
+                            cursor: pointer;
+                        ">💾 Create Backup</button>
+                        <button onclick="executeCustomAction('cleanup')" style="
+                            padding: 12px;
+                            background: rgba(255, 152, 0, 0.2);
+                            border: 1px solid #FF9800;
+                            border-radius: 6px;
+                            color: #FF9800;
+                            cursor: pointer;
+                        ">🧹 Cleanup Project</button>
+                        <button onclick="executeCustomAction('analyze')" style="
+                            padding: 12px;
+                            background: rgba(156, 39, 176, 0.2);
+                            border: 1px solid #9C27B0;
+                            border-radius: 6px;
+                            color: #9C27B0;
+                            cursor: pointer;
+                        ">📊 Analyze Dependencies</button>
+                        <button onclick="executeCustomAction('deploy')" style="
+                            padding: 12px;
+                            background: rgba(76, 175, 80, 0.2);
+                            border: 1px solid #4CAF50;
+                            border-radius: 6px;
+                            color: #4CAF50;
+                            cursor: pointer;
+                        ">🚀 Deploy to Production</button>
+                    </div>
+                    <button onclick="closeCustomActions()" style="
+                        margin-top: 20px;
+                        padding: 10px 20px;
+                        background: #444;
+                        border: none;
+                        border-radius: 6px;
+                        color: white;
+                        cursor: pointer;
+                    ">Close</button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        function executeCustomAction(action) {
+            addToHistory(`custom action: ${action}`);
+            showToast(`Executing custom action: ${action}`, 'info');
+            
+            // Simulate action execution
+            setTimeout(() => {
+                showToast(`Custom action "${action}" completed successfully`, 'success');
+                closeCustomActions();
+            }, 2000);
+        }
+
+        function closeCustomActions() {
+            const modal = document.querySelector('div[style*="position: fixed"]');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // Preview Dropdown Functions
+        function togglePreviewDropdown() {
+            const dropdown = document.querySelector('.preview-dropdown');
+            dropdown.classList.toggle('active');
+            
+            // Close dropdown when clicking outside
+            if (dropdown.classList.contains('active')) {
+                setTimeout(() => {
+                    document.addEventListener('click', closePreviewDropdown);
+                }, 0);
+            }
+        }
+
+        function closePreviewDropdown(event) {
+            const dropdown = document.querySelector('.preview-dropdown');
+            if (!dropdown.contains(event.target)) {
+                dropdown.classList.remove('active');
+                document.removeEventListener('click', closePreviewDropdown);
+            }
+        }
+
+        function openPreviewInWebview() {
+            addToHistory('open preview in webview');
+            showToast('Opening preview in VS Code webview...', 'info');
+            
+            // Simulate opening webview
+            setTimeout(() => {
+                showToast('Preview opened in VS Code webview', 'success');
+                // In real implementation, this would call the VS Code command
+                // vscode.commands.executeCommand('failsafe.openPreviewInWebview');
+            }, 1000);
+            
+            closePreviewDropdown();
+        }
+
+        function openPreviewInBrowser() {
+            addToHistory('open preview in browser');
+            showToast('Opening preview in browser...', 'info');
+            
+            // Simulate opening browser
+            setTimeout(() => {
+                showToast('Preview opened in browser', 'success');
+                // In real implementation, this would call the VS Code command
+                // vscode.commands.executeCommand('failsafe.openPreviewInBrowser');
+            }, 1000);
+            
+            closePreviewDropdown();
+        }
+
+        function startPreviewServer() {
+            addToHistory('start preview server');
+            showToast('Starting preview server...', 'info');
+            
+            // Simulate server start
+            setTimeout(() => {
+                showToast('Preview server started successfully', 'success');
+                // In real implementation, this would call the VS Code command
+                // vscode.commands.executeCommand('failsafe.startPreview');
+            }, 2000);
+            
+            closePreviewDropdown();
+        }
+
+        function stopPreviewServer() {
+            addToHistory('stop preview server');
+            showToast('Stopping preview server...', 'info');
+            
+            // Simulate server stop
+            setTimeout(() => {
+                showToast('Preview server stopped', 'success');
+                // In real implementation, this would call the VS Code command
+                // vscode.commands.executeCommand('failsafe.stopAllPreviewInstances');
+            }, 1000);
+            
+            closePreviewDropdown();
+        }
+
+        function handleCommandKeypress(event) {
+            if (event.key === 'Enter') {
+                const command = event.target.value.trim().toLowerCase();
+                if (command) {
+                    addToHistory(command);
+                    event.target.value = '';
+                    
+                    if (command === 'help' || command === 'commands') {
+                        showCommandsHelp();
+                    } else {
+                        showToast(`Executing: ${command}`, 'info');
+                        // Simulate command execution
+                        setTimeout(() => {
+                            showToast(`Command executed: ${command}`, 'success');
+                        }, 1000);
+                    }
+                }
+            }
+        }
+
+        function addToHistory(command) {
+            const history = document.getElementById('commandHistory');
+            const timestamp = new Date().toLocaleTimeString();
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.innerHTML = `
+                <span class="history-timestamp">[${timestamp}]</span>
+                <span class="history-command">${command}</span>
+            `;
+            history.insertBefore(historyItem, history.firstChild);
+            
+            // Keep only last 10 commands
+            while (history.children.length > 10) {
+                history.removeChild(history.lastChild);
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 6px;
+                color: white;
+                z-index: 1000;
+                background: ${type === 'success' ? '#007acc' : type === 'error' ? '#F44336' : type === 'warning' ? '#FF9800' : '#007acc'};
+                font-size: 14px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Initialize console
+        document.addEventListener('DOMContentLoaded', () => {
+            // Focus on command input
+            document.getElementById('commandInput').focus();
+            
+            // Show initial help
+            setTimeout(() => {
+                showToast('Console initialized. Type "help" for available commands.', 'info');
+            }, 500);
+        });
+    </script>
+</body>
+</html> 

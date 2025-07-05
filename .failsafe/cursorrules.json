@@ -1,5 +1,41 @@
 [
   {
+    "id": "core-validate-chat",
+    "name": "Validate Chat",
+    "description": "Default, non-removable rule: All chat content must be validated for hallucinations, ambiguity, and drift.",
+    "pattern": "*",
+    "patternType": "default",
+    "purpose": "validate_chat",
+    "severity": "critical",
+    "enabled": true,
+    "createdAt": "2024-07-03T00:00:00.000Z",
+    "updatedAt": "2024-07-03T00:00:00.000Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    },
+    "response": "validate",
+    "createdBy": "system"
+  },
+  {
+    "id": "core-workspace-safety",
+    "name": "Workspace Safety",
+    "description": "Non-removable: Block all destructive commands unless a full workspace backup is verified and directory is confirmed.",
+    "pattern": "delete|remove|rm|del",
+    "patternType": "command",
+    "purpose": "safety",
+    "severity": "critical",
+    "enabled": true,
+    "createdAt": "2024-07-03T00:00:00.000Z",
+    "updatedAt": "2024-07-03T00:00:00.000Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    },
+    "response": "block",
+    "createdBy": "system"
+  },
+  {
     "name": "Filesystem Hallucination Detection",
     "pattern": "\\b(?:file|directory|folder|path)\\s+(?:exists|is\\s+present|can\\s+be\\s+found|is\\s+available)\\b",
     "patternType": "regex",
@@ -9,21 +45,6 @@
     "id": "rule_1750567996615_ymchm77xm",
     "createdAt": "2025-06-22T04:53:16.615Z",
     "updatedAt": "2025-06-22T04:53:16.615Z",
-    "usageStats": {
-      "triggers": 0,
-      "overrides": 0
-    }
-  },
-  {
-    "id": "rule_1750567996620_cfupsa977",
-    "name": "Proactive File Existence Check",
-    "pattern": "\\b(?:file|directory|folder|path)\\s+(?:exists|is\\s+present|can\\s+be\\s+found|is\\s+available)\\b",
-    "patternType": "regex",
-    "purpose": "hallucination_detection",
-    "severity": "error",
-    "enabled": true,
-    "createdAt": "2025-06-22T04:53:16.620Z",
-    "updatedAt": "2025-06-22T04:53:16.620Z",
     "usageStats": {
       "triggers": 0,
       "overrides": 0
@@ -415,6 +436,192 @@
     "id": "rule_1750825374510_3027aho39",
     "createdAt": "2025-06-25T04:22:54.510Z",
     "updatedAt": "2025-06-25T04:22:54.510Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Full Verification Process Enforcement",
+    "pattern": "\\b(?:compile\\s+and\\s+package|package\\s+for\\s+review|build\\s+package|generate\\s+package|create\\s+package|npm\\s+run\\s+package|package\\s+it\\s+up|let\\s*'s\\s+package|package\\s+the\\s+extension|package\\s+up|build\\s+and\\s+package)\\b",
+    "patternType": "regex",
+    "purpose": "full_verification_enforcement",
+    "severity": "error",
+    "enabled": true,
+    "message": "🚨 CRITICAL: Package generation detected without full verification process!",
+    "response": "block",
+    "description": "Enforces complete verification pipeline before any package generation. No exceptions allowed.",
+    "scope": {
+      "fileTypes": [
+        "*"
+      ],
+      "projectTypes": [
+        "*"
+      ],
+      "userRoles": [
+        "*"
+      ]
+    },
+    "override": {
+      "allowed": false,
+      "requiresJustification": true,
+      "escalationPath": "Use publish.bat or publish.ps1 for full verification pipeline"
+    },
+    "alerting": {
+      "whenToAlert": "immediate",
+      "howToAlert": "all",
+      "alertFrequency": "always",
+      "escalationDelay": 30,
+      "escalationLevels": [
+        {
+          "level": 1,
+          "delayMinutes": 1,
+          "alertMethod": "notification"
+        },
+        {
+          "level": 2,
+          "delayMinutes": 5,
+          "alertMethod": "toast"
+        },
+        {
+          "level": 3,
+          "delayMinutes": 10,
+          "alertMethod": "statusbar"
+        }
+      ]
+    },
+    "id": "rule_1751270792863_k8db0z3o5",
+    "createdAt": "2025-06-30T08:06:32.863Z",
+    "updatedAt": "2025-06-30T08:06:32.863Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Incomplete Build Detection",
+    "pattern": "\\b(?:npm\\s+run\\s+compile.*npm\\s+run\\s+package|compile.*package|just\\s+compile|only\\s+package)\\b",
+    "patternType": "regex",
+    "purpose": "incomplete_build_detection",
+    "severity": "warning",
+    "enabled": true,
+    "message": "⚠️ WARNING: Incomplete build process detected! Missing verification steps.",
+    "response": "warn",
+    "description": "Detects when only compilation and packaging are mentioned without full verification pipeline.",
+    "scope": {
+      "fileTypes": [
+        "*"
+      ],
+      "projectTypes": [
+        "*"
+      ],
+      "userRoles": [
+        "*"
+      ]
+    },
+    "override": {
+      "allowed": false,
+      "requiresJustification": true,
+      "escalationPath": "Use publish.bat or publish.ps1 for complete verification"
+    },
+    "alerting": {
+      "whenToAlert": "immediate",
+      "howToAlert": "notification",
+      "alertFrequency": "always"
+    },
+    "id": "rule_1751270792867_p8u2oci87",
+    "createdAt": "2025-06-30T08:06:32.867Z",
+    "updatedAt": "2025-06-30T08:06:32.867Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Verification Pipeline Reminder",
+    "pattern": "\\b(?:verification|testing|linting|quality\\s+check|compliance)\\b",
+    "patternType": "regex",
+    "purpose": "verification_pipeline_reminder",
+    "severity": "info",
+    "enabled": true,
+    "message": "💡 REMINDER: Ensure full verification pipeline includes: Compilation → Linting → Icon Check → Tests → Spec Gate → Packaging",
+    "response": "suggest",
+    "description": "Reminds about complete verification steps when verification is mentioned.",
+    "scope": {
+      "fileTypes": [
+        "*"
+      ],
+      "projectTypes": [
+        "*"
+      ],
+      "userRoles": [
+        "*"
+      ]
+    },
+    "override": {
+      "allowed": true,
+      "requiresJustification": false
+    },
+    "alerting": {
+      "whenToAlert": "delayed",
+      "delaySeconds": 10,
+      "howToAlert": "log",
+      "alertFrequency": "throttled",
+      "throttleMinutes": 5
+    },
+    "id": "rule_1751270792871_0m7338021",
+    "createdAt": "2025-06-30T08:06:32.871Z",
+    "updatedAt": "2025-06-30T08:06:32.871Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "id": "rule_1751612402963_hauxv0wma",
+    "name": "Proactive File Existence Check",
+    "pattern": "\\b(?:file|directory|folder|path)\\s+(?:exists|is\\s+present|can\\s+be\\s+found|is\\s+available)\\b",
+    "patternType": "regex",
+    "purpose": "hallucination_detection",
+    "severity": "error",
+    "enabled": true,
+    "message": "Potential hallucination: File existence claim detected. Verify file actually exists.",
+    "createdAt": "2025-07-04T07:00:02.963Z",
+    "updatedAt": "2025-07-04T07:00:02.963Z",
+    "usageStats": {
+      "triggers": 0,
+      "overrides": 0
+    }
+  },
+  {
+    "name": "Prevent Premature Victory Declarations",
+    "description": "Ensure proper validation before claiming success or victory",
+    "pattern": "(?:successfully|victory|fixed|completed|done|working|resolved).*(?:without|before|claiming|declaring|saying).*(?:validation|testing|verifying|checking)|(?:perfect|excellent|great|awesome).*(?:all|everything|completely).*(?:fixed|working|resolved|done)|(?:✅|🎉|🚀|✨).*(?:success|victory|complete|done|fixed)",
+    "patternType": "regex",
+    "purpose": "quality",
+    "severity": "warning",
+    "enabled": true,
+    "message": "Avoid claiming success before proper validation. Always test and validate before declaring victory.",
+    "response": "warn",
+    "scope": {
+      "fileTypes": [
+        "*"
+      ],
+      "projectTypes": [
+        "*"
+      ],
+      "userRoles": [
+        "*"
+      ]
+    },
+    "override": {
+      "allowed": true,
+      "requiresJustification": true
+    },
+    "createdBy": "system",
+    "id": "rule_1751695442641_tv2hxiqx4",
+    "createdAt": "2025-07-05T06:04:02.641Z",
+    "updatedAt": "2025-07-05T06:04:02.641Z",
     "usageStats": {
       "triggers": 0,
       "overrides": 0

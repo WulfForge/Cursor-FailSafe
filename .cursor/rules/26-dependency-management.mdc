@@ -1,0 +1,41 @@
+---
+description: |
+  Monitors dependency management activities to ensure best practices.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "\b(?:dependency|package|import|require|install)\b"
+response: suggest
+---
+# Dependency Management
+
+**Rule Type:** Regex Pattern  
+**Severity:** Info  
+**Pattern:** `\b(?:dependency|package|import|require|install)\b`
+
+## Description
+Monitors dependency management activities to ensure best practices.
+
+## Purpose
+dependency_management
+
+## Pattern Matches
+- "dependency"
+- "package"
+- "import"
+- "require"
+- "install"
+
+## Validation Required
+When this pattern is detected, verify:
+1. Dependencies are necessary and appropriate
+2. Version compatibility is checked
+3. Security implications are considered
+
+## Response
+- **Info Level:** Dependency management reminder
+- **Action:** Ensure proper dependency practices
+- **Fallback:** Suggest dependency review
+
+## Implementation Notes
+This rule helps ensure dependency management follows best practices and security considerations.

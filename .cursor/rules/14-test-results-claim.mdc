@@ -1,0 +1,40 @@
+---
+description: |
+  Validates test result claims to ensure they are based on actual test runs.
+globs: ["*"]
+alwaysApply: false
+severity: error
+pattern: "\b(?:tests\s+pass|test\s+results|coverage|tested)\b"
+response: warn
+---
+# Test Results Claim
+
+**Rule Type:** Regex Pattern  
+**Severity:** Warning  
+**Pattern:** `\b(?:tests\s+pass|test\s+results|coverage|tested)\b`
+
+## Description
+Validates test result claims to ensure they are based on actual test runs.
+
+## Purpose
+test_results
+
+## Pattern Matches
+- "tests pass"
+- "test results"
+- "coverage"
+- "tested"
+
+## Validation Required
+When this pattern is detected, verify:
+1. Tests were actually run
+2. Results are based on real test execution
+3. Coverage reports are accurate
+
+## Response
+- **Warning Level:** Flag for test verification
+- **Action:** Suggest test execution
+- **Fallback:** Encourage running the test suite
+
+## Implementation Notes
+This rule ensures test claims are backed by actual test execution and real results.

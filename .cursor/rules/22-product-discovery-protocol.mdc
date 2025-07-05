@@ -1,0 +1,41 @@
+---
+description: |
+  Monitors product planning activities to ensure structured approach.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "\b(?:plan|strategy|roadmap|milestone|goal)\b"
+response: suggest
+---
+# Product Discovery Protocol
+
+**Rule Type:** Regex Pattern  
+**Severity:** Info  
+**Pattern:** `\b(?:plan|strategy|roadmap|milestone|goal)\b`
+
+## Description
+Monitors product planning activities to ensure structured approach.
+
+## Purpose
+product_discovery_protocol
+
+## Pattern Matches
+- "plan"
+- "strategy"
+- "roadmap"
+- "milestone"
+- "goal"
+
+## Validation Required
+When this pattern is detected, verify:
+1. Planning follows structured methodology
+2. Goals are specific and measurable
+3. Milestones are realistic and achievable
+
+## Response
+- **Info Level:** Product planning reminder
+- **Action:** Suggest structured planning approach
+- **Fallback:** Encourage goal setting best practices
+
+## Implementation Notes
+This rule helps ensure product planning follows structured and effective methodologies.

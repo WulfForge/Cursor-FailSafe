@@ -1,0 +1,27 @@
+---
+description: |
+  Default, non-removable rule: All chat content must be validated for hallucinations, ambiguity, and drift.
+globs: ["*"]
+alwaysApply: true
+severity: critical
+nonRemovable: true
+pattern: "*"
+response: validate
+---
+# Validate Chat
+
+## Purpose
+validate_chat
+
+## Enforcement
+- **Always Active:** This rule cannot be disabled or removed
+- **Scope:** All chat interactions
+- **Action:** Validate all responses for accuracy and truthfulness
+
+## Validation Criteria
+- **Hallucination Detection:** Check for claims about files, code, or data that don't exist
+- **Ambiguity Detection:** Identify vague or unclear statements
+- **Drift Detection:** Ensure responses stay on topic and don't deviate from the original question
+
+## Implementation Notes
+This is a core safety rule that ensures all AI responses are grounded in reality and the actual workspace state.

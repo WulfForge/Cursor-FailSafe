@@ -1,0 +1,43 @@
+---
+description: |
+  Monitors GitHub workflow activities to ensure best practices.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "\b(?:github|pr|pull\s+request|merge|branch)\b"
+response: suggest
+---
+# GitHub Workflow Management
+
+**Rule Type:** Regex Pattern  
+**Severity:** Info  
+**Pattern:** `\b(?:branch|merge|commit|push|pull|issue|pr)\b`
+
+## Description
+Monitors GitHub workflow activities to ensure best practices.
+
+## Purpose
+github_workflow_management
+
+## Pattern Matches
+- "branch"
+- "merge"
+- "commit"
+- "push"
+- "pull"
+- "issue"
+- "pr"
+
+## Validation Required
+When this pattern is detected, verify:
+1. Git operations follow best practices
+2. Branch naming conventions are followed
+3. Commit messages are descriptive
+
+## Response
+- **Info Level:** Workflow management reminder
+- **Action:** Suggest workflow best practices
+- **Fallback:** Encourage proper Git practices
+
+## Implementation Notes
+This rule helps maintain good Git workflow practices and version control hygiene.

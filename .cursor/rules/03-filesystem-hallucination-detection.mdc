@@ -1,0 +1,33 @@
+---
+description: |
+  Detects claims about file or directory existence that may be hallucinations.
+globs: ["*"]
+alwaysApply: false
+severity: error
+pattern: "\\b(?:file|directory|folder|path)\\s+(?:exists|is\\s+present|can\\s+be\\s+found|is\\s+available)\\b"
+response: warn
+---
+# Filesystem Hallucination Detection
+
+## Purpose
+hallucination_detection
+
+## Pattern Matches
+- "file exists"
+- "directory is present" 
+- "folder can be found"
+- "path is available"
+
+## Validation Required
+When this pattern is detected, verify:
+1. The file/directory actually exists in the workspace
+2. The path is correct and accessible
+3. The claim is based on actual file system state
+
+## Response
+- **Error Level:** Flag as potential hallucination
+- **Action:** Require verification before proceeding
+- **Fallback:** Use file system APIs to confirm existence
+
+## Implementation Notes
+This rule helps prevent AI from making false claims about file system state.

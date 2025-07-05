@@ -1,0 +1,518 @@
+[
+  {
+    "timestamp": "2025-06-28T23:46:17.979Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:17.982Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:17.984Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:17.985Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:17.989Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:17.994Z",
+    "level": "info",
+    "message": "Sprint data loaded",
+    "data": {
+      "currentSprint": "sprint-1750568125875-xc9rdf10g",
+      "historyCount": 0
+    },
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:17.996Z",
+    "level": "info",
+    "message": "Sprint templates loaded",
+    "data": {
+      "templateCount": 2
+    },
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.008Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.029Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.031Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.033Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.048Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.049Z",
+    "level": "info",
+    "message": "Global AI response pipeline initialized",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.051Z",
+    "level": "info",
+    "message": "AI Response Hooks initialized",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.052Z",
+    "level": "info",
+    "message": "AI response hook registered: vscode-chat",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.055Z",
+    "level": "info",
+    "message": "AI response hook registered: github-copilot",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.058Z",
+    "level": "info",
+    "message": "AI response hook registered: cursor-ai",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.059Z",
+    "level": "info",
+    "message": "AI response hook registered: general-ai",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.060Z",
+    "level": "info",
+    "message": "AI response hooks initialized",
+    "data": {
+      "hookCount": 4,
+      "enabled": true
+    },
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.062Z",
+    "level": "info",
+    "message": "Global AI response hooks initialized",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.064Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.066Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.067Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.069Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.072Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.074Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.075Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.078Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.080Z",
+    "level": "info",
+    "message": "Chat Response Interceptor initialized",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.130Z",
+    "level": "info",
+    "message": "Initializing FailSafe server...",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.132Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.135Z",
+    "level": "info",
+    "message": "Initializing FailSafe Fastify server...",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.136Z",
+    "level": "info",
+    "message": "FailSafe Extension initialized with AI response pipeline, hooks, Chat Response Interceptor, Design Document Manager, and Fastify server",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.138Z",
+    "level": "info",
+    "message": "FailSafe extension activating...",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.140Z",
+    "level": "info",
+    "message": "Validating extension environment...",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.141Z",
+    "level": "warn",
+    "message": "Critical file not found: failsafe_ui_specification.md - some features may not work",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.142Z",
+    "level": "warn",
+    "message": "Critical file not found: o3-accountable.md - some features may not work",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.145Z",
+    "level": "warn",
+    "message": "Required directory not found: src/plugins - some features may not work",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.147Z",
+    "level": "info",
+    "message": "Extension environment validation completed",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.151Z",
+    "level": "info",
+    "message": "Extension context: c:\\Users\\krkna\\.cursor\\extensions\\mythologiq.failsafe-cursor-2.0.0",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.152Z",
+    "level": "info",
+    "message": "Workspace folders: 1",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.156Z",
+    "level": "info",
+    "message": "Basic project plan initialized",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.157Z",
+    "level": "info",
+    "message": "Task engine initializing...",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.159Z",
+    "level": "info",
+    "message": "Basic project plan initialized",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.163Z",
+    "level": "info",
+    "message": "Found available port: 3000",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.195Z",
+    "level": "info",
+    "message": "Found 0 plugins to auto-load",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.196Z",
+    "level": "info",
+    "message": "All Fastify plugins registered successfully",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.210Z",
+    "level": "error",
+    "message": "Failed to initialize FailSafe server:",
+    "data": {
+      "code": "FST_ERR_DUPLICATED_ROUTE",
+      "name": "FastifyError",
+      "statusCode": 500,
+      "message": "Method 'GET' already declared for route '/events'"
+    },
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.211Z",
+    "level": "error",
+    "message": "Failed to initialize Fastify server:",
+    "data": {
+      "code": "FST_ERR_DUPLICATED_ROUTE",
+      "name": "FastifyError",
+      "statusCode": 500,
+      "message": "Method 'GET' already declared for route '/events'"
+    },
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.214Z",
+    "level": "info",
+    "message": "Extension will continue without Fastify server functionality",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.235Z",
+    "level": "info",
+    "message": "Version manager initialized successfully",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.236Z",
+    "level": "info",
+    "message": "All components initialized successfully",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.238Z",
+    "level": "info",
+    "message": "Initializing design document for workspace...",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.241Z",
+    "level": "info",
+    "message": "Design document initialization completed",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.242Z",
+    "level": "info",
+    "message": "Initializing FailSafe server...",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.245Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.248Z",
+    "level": "info",
+    "message": "Initializing FailSafe Fastify server...",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.250Z",
+    "level": "info",
+    "message": "Found available port: 3000",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.267Z",
+    "level": "info",
+    "message": "Found 0 plugins to auto-load",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.268Z",
+    "level": "info",
+    "message": "All Fastify plugins registered successfully",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.272Z",
+    "level": "error",
+    "message": "Failed to initialize FailSafe server:",
+    "data": {
+      "code": "FST_ERR_DUPLICATED_ROUTE",
+      "name": "FastifyError",
+      "statusCode": 500,
+      "message": "Method 'GET' already declared for route '/events'"
+    },
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.274Z",
+    "level": "error",
+    "message": "Failed to initialize Fastify server:",
+    "data": {
+      "code": "FST_ERR_DUPLICATED_ROUTE",
+      "name": "FastifyError",
+      "statusCode": 500,
+      "message": "Method 'GET' already declared for route '/events'"
+    },
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.276Z",
+    "level": "info",
+    "message": "Extension will continue without Fastify server functionality",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.278Z",
+    "level": "info",
+    "message": "Registering commands...",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.285Z",
+    "level": "info",
+    "message": "Commands registered successfully",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.286Z",
+    "level": "info",
+    "message": "Registering view providers...",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.288Z",
+    "level": "info",
+    "message": "Registering dashboard webview provider...",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.293Z",
+    "level": "info",
+    "message": "Dashboard view type:",
+    "data": "failsafe-dashboard",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.294Z",
+    "level": "info",
+    "message": "Dashboard provider registered successfully",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.296Z",
+    "level": "info",
+    "message": "Registering commands tree provider...",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.298Z",
+    "level": "info",
+    "message": "Commands provider registered successfully",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.300Z",
+    "level": "info",
+    "message": "Setting up chat response interceptor...",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.302Z",
+    "level": "info",
+    "message": "Setting up chat response listeners...",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.304Z",
+    "level": "info",
+    "message": "Chat response listeners set up successfully",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.305Z",
+    "level": "info",
+    "message": "Chat response interceptor set up successfully",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.307Z",
+    "level": "info",
+    "message": "Version checking file watcher set up successfully",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:18.308Z",
+    "level": "info",
+    "message": "FailSafe extension activated successfully",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:19.315Z",
+    "level": "info",
+    "message": "Attempting to auto-open dashboard...",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-28T23:46:20.308Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250628-194617"
+  },
+  {
+    "timestamp": "2025-06-29T00:01:15.546Z",
+    "level": "info",
+    "message": "Dashboard auto-opened successfully",
+    "sessionId": "session-20250628-194617"
+  }
+]

@@ -1,0 +1,39 @@
+---
+description: |
+  Detects incomplete build or compilation claims.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "\b(?:build|compile|run)\s+(?:should|might|could)\b"
+response: suggest
+---
+# Incomplete Build Detection
+
+**Rule Type:** Regex Pattern  
+**Severity:** Warning  
+**Pattern:** `\b(?:npm\s+run\s+compile.*npm\s+run\s+package|compile.*package|just\s+compile|only\s+package)\b`
+
+## Description
+Detects when only compilation and packaging are mentioned without full verification pipeline.
+
+## Purpose
+incomplete_build_detection
+
+## Pattern Matches
+- "npm run compile...npm run package"
+- "compile...package"
+- "just compile"
+- "only package"
+
+## Response
+- **Warning Level:** ⚠️ WARNING: Incomplete build process detected! Missing verification steps.
+- **Action:** Warn user
+- **Message:** ⚠️ WARNING: Incomplete build process detected! Missing verification steps.
+
+## Override Settings
+- **Allowed:** false
+- **Requires Justification:** true
+- **Escalation Path:** Use publish.bat or publish.ps1 for complete verification
+
+## Implementation Notes
+This rule detects when the build process is incomplete and missing verification steps.

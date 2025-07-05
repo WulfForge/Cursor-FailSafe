@@ -1,0 +1,41 @@
+---
+description: |
+  Monitors documentation activities to ensure quality and completeness.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "\b(?:document|comment|readme|api|guide)\b"
+response: suggest
+---
+# Documentation Assistance
+
+**Rule Type:** Regex Pattern  
+**Severity:** Info  
+**Pattern:** `\b(?:document|comment|readme|api|guide)\b`
+
+## Description
+Monitors documentation activities to ensure quality and completeness.
+
+## Purpose
+documentation_assistance
+
+## Pattern Matches
+- "document"
+- "comment"
+- "readme"
+- "api"
+- "guide"
+
+## Validation Required
+When this pattern is detected, verify:
+1. Documentation is clear and comprehensive
+2. Examples are provided where helpful
+3. Documentation is up-to-date
+
+## Response
+- **Info Level:** Documentation reminder
+- **Action:** Ensure documentation quality
+- **Fallback:** Suggest documentation improvement
+
+## Implementation Notes
+This rule helps ensure documentation is high-quality, comprehensive, and helpful.

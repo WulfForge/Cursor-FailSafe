@@ -1,0 +1,39 @@
+---
+description: |
+  Detects vague offers that may indicate uncertainty.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "\b(?:I\s+can\s+help|I\s+can\s+assist|I\s+can\s+try)\b"
+response: suggest
+---
+# Vague Offer Detection
+
+**Rule Type:** Regex Pattern  
+**Severity:** Info  
+**Pattern:** `\b(?:I\s+can\s+help|I\s+can\s+assist|I\s+can\s+guide)\b`
+
+## Description
+Detects vague offers of assistance that may need more specificity.
+
+## Purpose
+vague_offers
+
+## Pattern Matches
+- "I can help"
+- "I can assist"
+- "I can guide"
+
+## Improvement Suggestions
+When this pattern is detected, suggest:
+1. **Be Specific:** What exactly can be helped with?
+2. **Provide Examples:** Give concrete examples of assistance
+3. **Set Expectations:** What will the help involve?
+
+## Response
+- **Info Level:** Suggestion for improvement
+- **Action:** Encourage specificity
+- **Fallback:** Ask for clarification
+
+## Implementation Notes
+This rule encourages more specific and actionable offers of assistance rather than vague promises.

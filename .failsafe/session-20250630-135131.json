@@ -1,0 +1,671 @@
+[
+  {
+    "timestamp": "2025-06-30T17:51:31.805Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.810Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.824Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.828Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.835Z",
+    "level": "info",
+    "message": "Loaded 31 Cursorrules",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.840Z",
+    "level": "info",
+    "message": "Sprint data loaded",
+    "data": {
+      "currentSprint": "sprint-1750568125875-xc9rdf10g",
+      "historyCount": 0
+    },
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.842Z",
+    "level": "info",
+    "message": "Sprint templates loaded",
+    "data": {
+      "templateCount": 2
+    },
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.844Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.850Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.852Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.864Z",
+    "level": "info",
+    "message": "Sprint data loaded",
+    "data": {
+      "currentSprint": "sprint-1750568125875-xc9rdf10g",
+      "historyCount": 0
+    },
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.868Z",
+    "level": "info",
+    "message": "Sprint templates loaded",
+    "data": {
+      "templateCount": 2
+    },
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.891Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.900Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.910Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.915Z",
+    "level": "info",
+    "message": "Loaded 31 Cursorrules",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.918Z",
+    "level": "info",
+    "message": "Loaded 31 Cursorrules",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.920Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.925Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.927Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.929Z",
+    "level": "info",
+    "message": "Global AI response pipeline initialized",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.931Z",
+    "level": "info",
+    "message": "AI Response Hooks initialized",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.933Z",
+    "level": "info",
+    "message": "AI response hook registered: vscode-chat",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.936Z",
+    "level": "info",
+    "message": "AI response hook registered: github-copilot",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.945Z",
+    "level": "info",
+    "message": "AI response hook registered: cursor-ai",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.956Z",
+    "level": "info",
+    "message": "AI response hook registered: general-ai",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.978Z",
+    "level": "info",
+    "message": "AI response hooks initialized",
+    "data": {
+      "hookCount": 4,
+      "enabled": true
+    },
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.991Z",
+    "level": "info",
+    "message": "Global AI response hooks initialized",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.996Z",
+    "level": "info",
+    "message": "Loaded 31 Cursorrules",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:31.999Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.001Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.003Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.006Z",
+    "level": "info",
+    "message": "Loaded 31 Cursorrules",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.009Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.019Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.027Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.036Z",
+    "level": "info",
+    "message": "Chat Response Interceptor initialized",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.087Z",
+    "level": "info",
+    "message": "Initializing FailSafe server...",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.089Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.092Z",
+    "level": "info",
+    "message": "Initializing FailSafe Fastify server...",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.100Z",
+    "level": "info",
+    "message": "FailSafe Extension initialized with AI response pipeline, hooks, Chat Response Interceptor, Design Document Manager, and Fastify server",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.103Z",
+    "level": "info",
+    "message": "FailSafe extension activating...",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.106Z",
+    "level": "info",
+    "message": "Validating extension environment...",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.108Z",
+    "level": "info",
+    "message": "Critical file found: failsafe_ui_specification.md (workspace)",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.111Z",
+    "level": "info",
+    "message": "Critical file found: o3-accountable.md (workspace)",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.118Z",
+    "level": "info",
+    "message": "Required directory found: out",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.121Z",
+    "level": "info",
+    "message": "Required directory found: src",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.125Z",
+    "level": "warn",
+    "message": "Required directory not found: src/plugins - some features may not work",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.128Z",
+    "level": "info",
+    "message": "Compiled file found: out/extension.js",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.138Z",
+    "level": "info",
+    "message": "Compiled file found: out/ui.js",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.145Z",
+    "level": "info",
+    "message": "Compiled file found: out/commands.js",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.151Z",
+    "level": "info",
+    "message": "Extension environment validation completed",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.155Z",
+    "level": "info",
+    "message": "Extension context: c:\\Users\\krkna\\.cursor\\extensions\\mythologiq.failsafe-cursor-2.0.0",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.161Z",
+    "level": "info",
+    "message": "Workspace folders: 1",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.165Z",
+    "level": "info",
+    "message": "Basic project plan initialized",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.166Z",
+    "level": "info",
+    "message": "Task engine initializing...",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.168Z",
+    "level": "info",
+    "message": "Basic project plan initialized",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.172Z",
+    "level": "info",
+    "message": "Found available port: 3000",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.206Z",
+    "level": "info",
+    "message": "Found 0 plugins to auto-load",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.207Z",
+    "level": "info",
+    "message": "All Fastify plugins registered successfully",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.213Z",
+    "level": "info",
+    "message": "All core routes registered successfully",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.302Z",
+    "level": "error",
+    "message": "Failed to start server:",
+    "data": {
+      "code": "FST_ERR_SCH_SERIALIZATION_BUILD",
+      "name": "FastifyError",
+      "statusCode": 500,
+      "message": "Failed building the serialization schema for GET: /status, due to error response schemas should be nested under a valid status code, e.g { 2xx: { type: \"object\" } }"
+    },
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.303Z",
+    "level": "error",
+    "message": "Failed to initialize FailSafe server:",
+    "data": {
+      "code": "FST_ERR_SCH_SERIALIZATION_BUILD",
+      "name": "FastifyError",
+      "statusCode": 500,
+      "message": "Failed building the serialization schema for GET: /status, due to error response schemas should be nested under a valid status code, e.g { 2xx: { type: \"object\" } }"
+    },
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.306Z",
+    "level": "error",
+    "message": "Failed to initialize Fastify server:",
+    "data": {
+      "code": "FST_ERR_SCH_SERIALIZATION_BUILD",
+      "name": "FastifyError",
+      "statusCode": 500,
+      "message": "Failed building the serialization schema for GET: /status, due to error response schemas should be nested under a valid status code, e.g { 2xx: { type: \"object\" } }"
+    },
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.309Z",
+    "level": "info",
+    "message": "Extension will continue without Fastify server functionality",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.349Z",
+    "level": "info",
+    "message": "Version manager initialized successfully",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.350Z",
+    "level": "info",
+    "message": "All components initialized successfully",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.352Z",
+    "level": "info",
+    "message": "Initializing design document for workspace...",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.359Z",
+    "level": "info",
+    "message": "Design document initialization completed",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.362Z",
+    "level": "info",
+    "message": "Initializing FailSafe server...",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.366Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.373Z",
+    "level": "info",
+    "message": "Initializing FailSafe Fastify server...",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.383Z",
+    "level": "info",
+    "message": "Found available port: 3000",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.410Z",
+    "level": "info",
+    "message": "Found 0 plugins to auto-load",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.450Z",
+    "level": "info",
+    "message": "All Fastify plugins registered successfully",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.460Z",
+    "level": "info",
+    "message": "All core routes registered successfully",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.512Z",
+    "level": "error",
+    "message": "Failed to start server:",
+    "data": {
+      "code": "FST_ERR_SCH_SERIALIZATION_BUILD",
+      "name": "FastifyError",
+      "statusCode": 500,
+      "message": "Failed building the serialization schema for GET: /status, due to error response schemas should be nested under a valid status code, e.g { 2xx: { type: \"object\" } }"
+    },
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.514Z",
+    "level": "error",
+    "message": "Failed to initialize FailSafe server:",
+    "data": {
+      "code": "FST_ERR_SCH_SERIALIZATION_BUILD",
+      "name": "FastifyError",
+      "statusCode": 500,
+      "message": "Failed building the serialization schema for GET: /status, due to error response schemas should be nested under a valid status code, e.g { 2xx: { type: \"object\" } }"
+    },
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.518Z",
+    "level": "error",
+    "message": "Failed to initialize Fastify server:",
+    "data": {
+      "code": "FST_ERR_SCH_SERIALIZATION_BUILD",
+      "name": "FastifyError",
+      "statusCode": 500,
+      "message": "Failed building the serialization schema for GET: /status, due to error response schemas should be nested under a valid status code, e.g { 2xx: { type: \"object\" } }"
+    },
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.521Z",
+    "level": "info",
+    "message": "Extension will continue without Fastify server functionality",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.526Z",
+    "level": "info",
+    "message": "Registering commands...",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.530Z",
+    "level": "info",
+    "message": "All FailSafe commands registered successfully",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.532Z",
+    "level": "info",
+    "message": "Commands registered successfully",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.536Z",
+    "level": "info",
+    "message": "Registering view providers...",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.539Z",
+    "level": "info",
+    "message": "Registering commands tree provider...",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.545Z",
+    "level": "info",
+    "message": "Commands provider registered successfully",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.553Z",
+    "level": "info",
+    "message": "Setting up chat response interceptor...",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.560Z",
+    "level": "info",
+    "message": "Setting up chat response listeners...",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.572Z",
+    "level": "info",
+    "message": "Chat response listeners set up successfully",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.576Z",
+    "level": "info",
+    "message": "Chat response interceptor set up successfully",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.580Z",
+    "level": "info",
+    "message": "Version checking file watcher set up successfully",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:32.582Z",
+    "level": "info",
+    "message": "FailSafe extension activated successfully",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:51:34.581Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T17:54:22.456Z",
+    "level": "info",
+    "message": "Dashboard opened successfully",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T19:44:33.096Z",
+    "level": "info",
+    "message": "Task added to sprint",
+    "data": {
+      "taskId": "task-1751312673096",
+      "sprintId": "sprint-1750568125875-xc9rdf10g"
+    },
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T19:44:43.379Z",
+    "level": "info",
+    "message": "Task removed from sprint",
+    "data": {
+      "taskId": "task-1750568125875-0",
+      "taskName": "Quick Planning",
+      "sprintId": "sprint-1750568125875-xc9rdf10g"
+    },
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T20:50:43.599Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T20:50:43.963Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T21:08:42.032Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T21:08:42.611Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250630-135131"
+  },
+  {
+    "timestamp": "2025-06-30T21:08:42.778Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250630-135131"
+  }
+]

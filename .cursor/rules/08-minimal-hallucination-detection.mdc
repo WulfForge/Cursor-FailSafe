@@ -1,0 +1,42 @@
+---
+description: |
+  Detects minimal hallucination patterns in AI responses.
+globs: ["*"]
+alwaysApply: false
+severity: error
+pattern: "\b(?:I\s+can\s+see|there\s+is|I\s+found|I\s+located|the\s+file\s+contains|I\s+can\s+see\s+in\s+the\s+file)\b"
+response: warn
+---
+# Minimal Hallucination Detection
+
+**Rule Type:** Regex Pattern  
+**Severity:** Warning  
+**Pattern:** `\b(?:I\s+can\s+see|there\s+is|I\s+found|I\s+located|the\s+file\s+contains|I\s+can\s+see\s+in\s+the\s+file)\b`
+
+## Description
+Detects minimal hallucination patterns in AI responses.
+
+## Purpose
+minimal_validation
+
+## Pattern Matches
+- "I can see"
+- "there is"
+- "I found"
+- "I located"
+- "the file contains"
+- "I can see in the file"
+
+## Validation Required
+When this pattern is detected, verify:
+1. The claim is based on actual file content
+2. The file has been read and verified
+3. The observation is accurate
+
+## Response
+- **Warning Level:** Flag for potential hallucination
+- **Action:** Suggest verification
+- **Fallback:** Encourage file content confirmation
+
+## Implementation Notes
+This rule catches common hallucination patterns that may indicate false claims about file contents.

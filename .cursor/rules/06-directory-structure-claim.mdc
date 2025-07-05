@@ -1,0 +1,39 @@
+---
+description: |
+  Validates claims about directory structure to prevent hallucinations.
+globs: ["*"]
+alwaysApply: false
+severity: error
+pattern: "\b(?:directory|folder)\s+(?:structure|layout|organization)\b"
+response: warn
+---
+# Directory Structure Claim
+
+**Rule Type:** Regex Pattern  
+**Severity:** Error  
+**Pattern:** `\b(?:directory|folder)\s+(?:structure|layout|organization)\b`
+
+## Description
+Validates claims about directory structure to prevent hallucinations.
+
+## Purpose
+hallucination_detection
+
+## Pattern Matches
+- "directory structure"
+- "folder layout"
+- "directory organization"
+
+## Validation Required
+When this pattern is detected, verify:
+1. The directory actually exists
+2. The structure claim is accurate
+3. Directory contents have been scanned
+
+## Response
+- **Error Level:** Flag as potential hallucination
+- **Action:** Require directory structure verification
+- **Fallback:** Scan and display actual directory structure
+
+## Implementation Notes
+This rule prevents AI from making false claims about directory organization without verification.

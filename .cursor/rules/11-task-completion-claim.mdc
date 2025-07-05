@@ -1,0 +1,41 @@
+---
+description: |
+  Validates task completion claims to ensure they are accurate.
+globs: ["*"]
+alwaysApply: false
+severity: error
+pattern: "\b(?:completed|finished|done|resolved)\b"
+response: warn
+---
+# Task Completion Claim
+
+**Rule Type:** Regex Pattern  
+**Severity:** Warning  
+**Pattern:** `\b(?:completed|finished|done|implemented|resolved)\b`
+
+## Description
+Validates task completion claims to ensure accuracy.
+
+## Purpose
+task_completion
+
+## Pattern Matches
+- "completed"
+- "finished"
+- "done"
+- "implemented"
+- "resolved"
+
+## Validation Required
+When this pattern is detected, verify:
+1. The task is actually complete
+2. All requirements have been met
+3. The work has been tested and verified
+
+## Response
+- **Warning Level:** Flag for task completion verification
+- **Action:** Suggest task review and validation
+- **Fallback:** Encourage thorough testing
+
+## Implementation Notes
+This rule prevents premature claims of task completion without proper verification.

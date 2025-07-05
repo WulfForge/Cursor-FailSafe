@@ -1,0 +1,39 @@
+---
+description: |
+  Detects when AI admits to potential hallucinations.
+globs: ["*"]
+alwaysApply: false
+severity: error
+pattern: "\b(?:I\s+dont\s+know|I\s+cant\s+see|I\s+assume|I\s+think)\b"
+response: warn
+---
+# Hallucination Admission
+
+**Rule Type:** Regex Pattern  
+**Severity:** Info  
+**Pattern:** `\b(?:I\s+don\s*'t\s+know|I\s+can\s*'t\s+see|I\s+don\s*'t\s+have\s+access)\b`
+
+## Description
+Recognizes when AI admits to not having information, which is good practice.
+
+## Purpose
+hallucination_admission
+
+## Pattern Matches
+- "I don't know"
+- "I can't see"
+- "I don't have access"
+
+## Positive Behavior
+When this pattern is detected:
+1. **Acknowledge:** This is good practice - admitting limitations
+2. **Encourage:** Continue to be honest about knowledge gaps
+3. **Support:** Help find alternative ways to get information
+
+## Response
+- **Info Level:** Positive reinforcement
+- **Action:** Encourage continued honesty
+- **Fallback:** Suggest alternative approaches
+
+## Implementation Notes
+This rule recognizes and encourages honest admission of knowledge limitations, which prevents hallucinations.

@@ -1,0 +1,39 @@
+---
+description: |
+  Ensures version consistency across project files.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "\b(?:version|v\d+\.\d+\.\d+|semver)\b"
+response: suggest
+---
+# Version Consistency Check
+
+**Rule Type:** Regex Pattern  
+**Severity:** Warning  
+**Pattern:** `\b(?:version|v\d+\.\d+\.\d+|semver)\b`
+
+## Description
+Ensures version consistency across project files.
+
+## Purpose
+version_consistency
+
+## Pattern Matches
+- "version"
+- "v1.2.3" (semver patterns)
+- "semver"
+
+## Validation Required
+When this pattern is detected, verify:
+1. Version numbers are consistent across package.json, README.md, CHANGELOG.md
+2. Version format follows semantic versioning
+3. All version references are updated together
+
+## Response
+- **Warning Level:** Flag for version consistency check
+- **Action:** Suggest version synchronization
+- **Fallback:** Recommend checking all version files
+
+## Implementation Notes
+This rule helps maintain version consistency across the project and prevents version drift.

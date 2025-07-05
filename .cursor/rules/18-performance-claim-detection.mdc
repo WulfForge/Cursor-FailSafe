@@ -1,0 +1,42 @@
+---
+description: |
+  Validates performance claims to ensure they are based on actual measurements.
+globs: ["*"]
+alwaysApply: false
+severity: error
+pattern: "\b(?:fast|slow|efficient|optimized|performance|speed)\b"
+response: warn
+---
+# Performance Claim Detection
+
+**Rule Type:** Regex Pattern  
+**Severity:** Warning  
+**Pattern:** `\b(?:fast|slow|efficient|optimized|performance|speed)\b`
+
+## Description
+Validates performance claims to ensure they are based on actual measurements.
+
+## Purpose
+performance_claims
+
+## Pattern Matches
+- "fast"
+- "slow"
+- "efficient"
+- "optimized"
+- "performance"
+- "speed"
+
+## Validation Required
+When this pattern is detected, verify:
+1. Performance has been measured
+2. Benchmarks are available
+3. Claims are based on real data
+
+## Response
+- **Warning Level:** Flag for performance verification
+- **Action:** Suggest performance testing
+- **Fallback:** Encourage benchmarking
+
+## Implementation Notes
+This rule ensures performance claims are backed by actual measurements and benchmarks.

@@ -1,0 +1,106 @@
+[
+  {
+    "timestamp": "2025-07-04T07:00:02.955Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250704-030002"
+  },
+  {
+    "timestamp": "2025-07-04T07:00:02.957Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250704-030002"
+  },
+  {
+    "timestamp": "2025-07-04T07:00:02.958Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250704-030002"
+  },
+  {
+    "timestamp": "2025-07-04T07:00:02.959Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250704-030002"
+  },
+  {
+    "timestamp": "2025-07-04T07:00:02.962Z",
+    "level": "info",
+    "message": "Loaded 32 Cursorrules",
+    "sessionId": "session-20250704-030002"
+  },
+  {
+    "timestamp": "2025-07-04T07:00:02.979Z",
+    "level": "info",
+    "message": "Saved 33 Cursorrules",
+    "sessionId": "session-20250704-030002"
+  },
+  {
+    "timestamp": "2025-07-04T07:00:02.980Z",
+    "level": "info",
+    "message": "Created Cursorrule: Proactive File Existence Check",
+    "sessionId": "session-20250704-030002"
+  },
+  {
+    "timestamp": "2025-07-04T07:00:02.983Z",
+    "level": "info",
+    "message": "Sprint data loaded",
+    "data": {
+      "currentSprint": "sprint-1750568125875-xc9rdf10g",
+      "historyCount": 0
+    },
+    "sessionId": "session-20250704-030002"
+  },
+  {
+    "timestamp": "2025-07-04T07:00:02.984Z",
+    "level": "info",
+    "message": "Sprint templates loaded",
+    "data": {
+      "templateCount": 2
+    },
+    "sessionId": "session-20250704-030002"
+  },
+  {
+    "timestamp": "2025-07-04T07:00:02.985Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250704-030002"
+  },
+  {
+    "timestamp": "2025-07-04T07:00:02.987Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250704-030002"
+  },
+  {
+    "timestamp": "2025-07-04T07:00:02.990Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250704-030002"
+  },
+  {
+    "timestamp": "2025-07-04T07:00:02.991Z",
+    "level": "info",
+    "message": "Sprint data loaded",
+    "data": {
+      "currentSprint": "sprint-1750568125875-xc9rdf10g",
+      "historyCount": 0
+    },
+    "sessionId": "session-20250704-030002"
+  },
+  {
+    "timestamp": "2025-07-04T07:00:02.992Z",
+    "level": "info",
+    "message": "Sprint templates loaded",
+    "data": {
+      "templateCount": 2
+    },
+    "sessionId": "session-20250704-030002"
+  },
+  {
+    "timestamp": "2025-07-04T07:00:02.993Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250704-030002"
+  }
+]

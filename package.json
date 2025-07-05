@@ -7,6 +7,7 @@
   "engines": {
     "vscode": "^1.74.0"
   },
+  "enabledApiProposals": [],
   "categories": [
     "Other",
     "Programming Languages",
@@ -47,15 +48,7 @@
   },
   "main": "./out/extension.js",
   "activationEvents": [
-    "onStartupFinished",
-    "onView:failsafe-dashboard",
-    "onCommand:failsafe.validateChat",
-    "onCommand:failsafe.validate",
-    "onCommand:failsafe.showDashboard",
-    "onCommand:failsafe.openDashboard",
-    "onCommand:failsafe.createCursorrule",
-    "onCommand:failsafe.manageCursorrules",
-    "onCommand:failsafe.validateWithCursorrules"
+    "onStartupFinished"
   ],
   "contributes": {
     "viewsContainers": {
@@ -70,11 +63,6 @@
     "views": {
       "failsafe-sidebar": [
         {
-          "id": "failsafe-dashboard",
-          "name": "Dashboard",
-          "type": "webview"
-        },
-        {
           "id": "failsafe-commands",
           "name": "Commands",
           "type": "tree"
@@ -84,8 +72,8 @@
     "menus": {
       "view/title": [
         {
-          "command": "failsafe.openDashboard",
-          "when": "view == failsafe-dashboard",
+          "command": "failsafe.showDashboard",
+          "when": "view == failsafe-commands",
           "group": "navigation"
         }
       ]
@@ -132,6 +120,30 @@
         "description": "Show project dashboard and plan"
       },
       {
+        "command": "failsafe.openPreview",
+        "title": "FailSafe: Open Preview Window",
+        "category": "FailSafe",
+        "description": "Open preview window for testing UI without reloading extension"
+      },
+      {
+        "command": "failsafe.openPreviewInWebview",
+        "title": "FailSafe: Open Preview in Webview",
+        "category": "FailSafe",
+        "description": "Open preview server in VS Code webview panel"
+      },
+      {
+        "command": "failsafe.runStartScriptInWebview",
+        "title": "FailSafe: Run Start Script in Webview",
+        "category": "FailSafe",
+        "description": "Run the start-preview.bat script in a VS Code webview with real-time output"
+      },
+      {
+        "command": "failsafe.openPreviewInWebview",
+        "title": "FailSafe: Open Preview in Webview",
+        "category": "FailSafe",
+        "description": "Open preview in VS Code webview panel"
+      },
+      {
         "command": "failsafe.createCursorrule",
         "title": "FailSafe: Create Cursorrule",
         "category": "FailSafe",
@@ -174,12 +186,6 @@
         "description": "Automatically bump version based on detected changes"
       },
       {
-        "command": "failsafe.openDashboard",
-        "title": "Open Dashboard",
-        "category": "FailSafe",
-        "description": "Open the FailSafe dashboard"
-      },
-      {
         "command": "failsafe.viewVersionLog",
         "title": "FailSafe: View Version Log",
         "category": "FailSafe",
@@ -204,6 +210,48 @@
         "command": "failsafe.showRestorePoints",
         "title": "Show Restore Points",
         "category": "FailSafe"
+      },
+      {
+        "command": "failsafe.startPreview",
+        "title": "FailSafe: Start Preview (Auto-Tracking)",
+        "category": "FailSafe",
+        "description": "Start preview server for current workspace with automatic workspace tracking"
+      },
+      {
+        "command": "failsafe.startPreviewForWorkspace",
+        "title": "FailSafe: Start Preview for Workspace",
+        "category": "FailSafe",
+        "description": "Start preview server for specific workspace (manual selection)"
+      },
+      {
+        "command": "failsafe.listPreviewInstances",
+        "title": "FailSafe: List Preview Instances",
+        "category": "FailSafe",
+        "description": "Show all active preview instances"
+      },
+      {
+        "command": "failsafe.stopPreviewInstance",
+        "title": "FailSafe: Stop Preview Instance",
+        "category": "FailSafe",
+        "description": "Stop specific preview instance"
+      },
+      {
+        "command": "failsafe.stopAllPreviewInstances",
+        "title": "FailSafe: Stop All Preview Instances",
+        "category": "FailSafe",
+        "description": "Stop all active preview instances"
+      },
+      {
+        "command": "failsafe.openPreviewInBrowser",
+        "title": "FailSafe: Open Preview in Browser",
+        "category": "FailSafe",
+        "description": "Open preview in default browser"
+      },
+      {
+        "command": "failsafe.togglePreviewAutoTracking",
+        "title": "FailSafe: Toggle Preview Auto-Tracking",
+        "category": "FailSafe",
+        "description": "Enable or disable automatic workspace tracking for preview"
       },
       {
         "command": "failsafe.showTroubleshootingStats",
@@ -245,6 +293,12 @@
         "title": "FailSafe: Create Sprint Template",
         "category": "FailSafe",
         "description": "Create a reusable sprint template"
+      },
+      {
+        "command": "failsafe.testExtension",
+        "title": "FailSafe: Test Extension",
+        "category": "FailSafe",
+        "description": "Test extension functionality and components"
       },
       {
         "command": "failsafe.exportSprintData",
@@ -655,6 +709,21 @@
           "type": "boolean",
           "default": true,
           "description": "Enable detection of product discovery activities"
+        },
+        "failsafe.passiveValidation.enableFullVerificationEnforcement": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enforce full verification process before package generation"
+        },
+        "failsafe.passiveValidation.enableIncompleteBuildDetection": {
+          "type": "boolean",
+          "default": true,
+          "description": "Detect incomplete build processes missing verification steps"
+        },
+        "failsafe.passiveValidation.enableVerificationPipelineReminder": {
+          "type": "boolean",
+          "default": true,
+          "description": "Remind about complete verification pipeline steps"
         }
       }
     }
@@ -669,7 +738,8 @@
     "prepackage": "node scripts/check-icon.js",
     "package": "vsce package",
     "publish": "vsce publish",
-    "spec-gate": "node scripts/spec-gate.js"
+    "spec-gate": "node scripts/spec-gate.js",
+    "preview": "node scripts/start-preview.js"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
@@ -682,17 +752,20 @@
     "eslint-config-standard": "^17.1.0",
     "eslint-config-typescript": "^3.0.0",
     "eventsource": "^4.0.0",
-    "fastify": "^5.4.0",
     "jest": "^30.0.1",
-    "node-fetch": "^3.3.2",
     "proxyquire": "^2.1.3",
     "ts-jest": "^29.4.0",
     "typescript": "^5.8.3",
     "vsce": "^2.7.0"
   },
   "dependencies": {
+    "@fastify/static": "^8.2.0",
+    "@sinclair/typebox": "^0.34.0",
     "@types/chokidar": "^1.7.5",
     "chokidar": "^4.0.3",
+    "fastify": "^5.4.0",
+    "node-fetch": "^3.3.2",
+    "open": "^10.1.2",
     "pino-pretty": "^10.3.1"
   },
   "extensionDependencies": [],

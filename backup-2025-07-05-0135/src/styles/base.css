@@ -1,0 +1,138 @@
+:root {
+  /* MythologIQ Theme Tokens */
+  --color-obsidian: #0b0c10;
+  --color-indigo-veil: #1e1b35;
+  --color-mythic-gold: #e4b868;
+  --color-halo-white: #f7f7f7;
+  --color-holographic-teal: #7efeff;
+  --color-slate-grey: #353945;
+  --color-earthen-bronze: #b48c6e;
+  --color-mist-blue: #cad8e1;
+  
+  /* Typography */
+  --font-display: 'Playfair Display', serif;
+  --font-sans: 'Inter', system-ui;
+  --font-code: 'JetBrains Mono', monospace;
+  
+  /* Spacing & Layout */
+  --radius-lg: 12px;
+  --duration-short: 150ms;
+  
+  /* Tailwind Integration */
+  --color-primary: var(--color-mythic-gold);
+  --color-surface: var(--color-indigo-veil);
+  --color-text: var(--color-halo-white);
+  --color-link: var(--color-holographic-teal);
+  --color-muted: var(--color-slate-grey);
+  --color-background: var(--color-obsidian);
+  --color-card: var(--color-indigo-veil);
+  --color-border: var(--color-slate-grey);
+  --color-accent: var(--color-earthen-bronze);
+  --color-info: var(--color-mist-blue);
+}
+
+/* Base styles */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--color-primary);
+}
+
+code, pre {
+  font-family: var(--font-code);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+/* Links */
+a {
+  color: var(--color-link);
+  transition: color var(--duration-short) ease;
+}
+
+a:hover {
+  color: var(--color-primary);
+}
+
+/* Buttons */
+.btn {
+  background-color: var(--color-primary);
+  color: var(--color-background);
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  transition: all var(--duration-short) ease;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background-color: var(--color-holographic-teal);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-muted);
+}
+
+/* Cards */
+.card {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  transition: all var(--duration-short) ease;
+}
+
+.card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(228, 184, 104, 0.1);
+}
+
+/* Form elements */
+input, textarea, select {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 0.5rem;
+  font-family: var(--font-sans);
+  transition: border-color var(--duration-short) ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(228, 184, 104, 0.2);
+}
+
+/* Status indicators */
+.status-success {
+  color: var(--color-holographic-teal);
+}
+
+.status-warning {
+  color: var(--color-earthen-bronze);
+}
+
+.status-error {
+  color: #ff6b6b;
+}
+
+.status-info {
+  color: var(--color-info);
+} 

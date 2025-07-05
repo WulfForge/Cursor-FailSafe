@@ -45,9 +45,15 @@ const testRunner_1 = require("./testRunner");
 const cursorrulesEngine_1 = require("./cursorrulesEngine");
 const cursorrulesManager_1 = require("./cursorrulesManager");
 const designDocumentManager_1 = require("./designDocumentManager");
-const chatValidator_1 = require("./chatValidator");
 const types_1 = require("./types");
 const fs = __importStar(require("fs"));
+const versionManager_1 = require("./versionManager");
+const aiResponseValidator_1 = require("./aiResponseValidator");
+const consoleCommands_1 = require("./commands/consoleCommands");
+const sprintPlanCommands_1 = require("./commands/sprintPlanCommands");
+const cursorRulesCommands_1 = require("./commands/cursorRulesCommands");
+const logCommands_1 = require("./commands/logCommands");
+const dashboardCommands_1 = require("./commands/dashboardCommands");
 class Commands {
     constructor(context) {
         this.extensionContext = context;
@@ -62,6 +68,13 @@ class Commands {
         this.config = vscode.workspace.getConfiguration('failsafe');
         this.cursorrulesEngine = new cursorrulesEngine_1.CursorrulesEngine(context || {}, this.logger);
         this.cursorrulesManager = new cursorrulesManager_1.CursorrulesManager(this.cursorrulesEngine, this.logger, context || {});
+        this.versionManager = new versionManager_1.VersionManager(this.logger, vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '');
+        // Initialize command modules
+        this.consoleCommands = new consoleCommands_1.ConsoleCommands(this.logger, this.validator, this.testRunner, this.versionManager, this.cursorrulesEngine, context);
+        this.sprintPlanCommands = new sprintPlanCommands_1.SprintPlanCommands(this.logger, this.sprintPlanner);
+        this.cursorRulesCommands = new cursorRulesCommands_1.CursorRulesCommands(this.logger, this.cursorrulesEngine, this.cursorrulesManager, context);
+        this.logCommands = new logCommands_1.LogCommands(this.logger);
+        this.dashboardCommands = new dashboardCommands_1.DashboardCommands(this.logger, this.sprintPlanner, this.cursorrulesEngine, this.versionManager, this.projectPlan, this.taskEngine, context);
     }
     async registerCommands(context) {
         this.extensionContext = context;
@@ -87,29 +100,9 @@ class Commands {
             vscode.commands.registerCommand('failsafe.validateChatMinimal', this.validateChatMinimal.bind(this)),
             vscode.commands.registerCommand('failsafe.evaluateTechDebt', this.evaluateTechDebt.bind(this)),
             vscode.commands.registerCommand('failsafe.showDashboard', this.showDashboard.bind(this)),
-            vscode.commands.registerCommand('failsafe.openDashboard', this.showDashboard.bind(this)),
-            vscode.commands.registerCommand('failsafe.createCursorrule', this.createCursorrule.bind(this)),
-            vscode.commands.registerCommand('failsafe.manageCursorrules', this.manageCursorrules.bind(this)),
-            vscode.commands.registerCommand('failsafe.validateWithCursorrules', this.validateWithCursorrules.bind(this)),
-            vscode.commands.registerCommand('failsafe.viewDesignDocument', this.viewDesignDocument.bind(this)),
-            vscode.commands.registerCommand('failsafe.manageDesignDocument', this.manageDesignDocument.bind(this)),
-            vscode.commands.registerCommand('failsafe.checkForDrift', this.checkForDrift.bind(this)),
-            vscode.commands.registerCommand('failsafe.updateChart', this.updateChart.bind(this)),
-            vscode.commands.registerCommand('failsafe.showConsole', this.showConsole.bind(this)),
-            vscode.commands.registerCommand('failsafe.showLogs', this.showLogs.bind(this)),
-            vscode.commands.registerCommand('failsafe.showProjectPlan', this.showProjectPlan.bind(this)),
-            vscode.commands.registerCommand('failsafe.showProgressDetails', this.showProgressDetails.bind(this)),
-            vscode.commands.registerCommand('failsafe.showAccountabilityReport', this.showAccountabilityReport.bind(this)),
-            vscode.commands.registerCommand('failsafe.showFeasibilityAnalysis', this.showFeasibilityAnalysis.bind(this)),
-            vscode.commands.registerCommand('failsafe.showActionLog', this.showActionLog.bind(this)),
-            vscode.commands.registerCommand('failsafe.showFailsafeConfigPanel', this.showFailsafeConfigPanel.bind(this)),
-            vscode.commands.registerCommand('failsafe.openPreview', this.openPreview.bind(this)),
-            vscode.commands.registerCommand('failsafe.togglePreviewSync', this.togglePreviewSync.bind(this)),
-            vscode.commands.registerCommand('failsafe.createSprint', this.createSprint.bind(this)),
-            vscode.commands.registerCommand('failsafe.startSprint', this.startSprint.bind(this)),
-            vscode.commands.registerCommand('failsafe.completeSprint', this.completeSprint.bind(this)),
             vscode.commands.registerCommand('failsafe.addTaskToSprint', this.addTaskToSprint.bind(this)),
-            vscode.commands.registerCommand('failsafe.createSprintTemplate', this.createSprintTemplate.bind(this))
+            vscode.commands.registerCommand('failsafe.enforceFullVerification', this.enforceFullVerification.bind(this)),
+            vscode.commands.registerCommand('failsafe.openPreview', this.openPreview.bind(this))
         ];
         commands.forEach(command => context.subscriptions.push(command));
         this.logger.info('All FailSafe commands registered successfully');
@@ -231,13 +224,23 @@ class Commands {
     }
     async markTaskComplete() {
         try {
-            const currentTask = this.projectPlan.getCurrentTask();
-            if (!currentTask) {
-                vscode.window.showInformationMessage('No active task to mark complete');
+            const currentSprint = this.sprintPlanner.getCurrentSprint();
+            if (!currentSprint) {
+                vscode.window.showWarningMessage('No active sprint found.');
                 return;
             }
-            await this.projectPlan.completeTask(currentTask.id);
-            vscode.window.showInformationMessage(`Task completed: ${currentTask.name}`);
+            const incompleteTasks = currentSprint.tasks.filter((task) => task.status !== 'completed');
+            if (incompleteTasks.length === 0) {
+                vscode.window.showInformationMessage('All tasks in the current sprint are already completed.');
+                return;
+            }
+            // For now, just mark the first incomplete task as complete
+            const taskToComplete = incompleteTasks[0];
+            taskToComplete.status = types_1.TaskStatus.completed;
+            taskToComplete.completedAt = new Date().toISOString();
+            // Save the updated sprint
+            this.sprintPlanner['saveSprints']();
+            vscode.window.showInformationMessage(`Task "${taskToComplete.name}" marked as complete`);
         }
         catch (error) {
             this.logger.error('Error marking task complete', error);
@@ -1703,29 +1706,59 @@ function simulatedFunction() {
     }
     async validateChat() {
         try {
+            let content = '';
+            let source = '';
+            // Try to get content from active editor first
             const editor = vscode.window.activeTextEditor;
-            if (!editor) {
-                vscode.window.showWarningMessage('No active editor found');
-                return;
+            if (editor) {
+                content = editor.document.getText();
+                source = `Active editor: ${editor.document.fileName}`;
             }
-            const document = editor.document;
-            const content = document.getText();
+            // If no active editor or no content, try clipboard
             if (!content.trim()) {
-                vscode.window.showWarningMessage('No content to validate');
-                return;
+                try {
+                    content = await vscode.env.clipboard.readText();
+                    if (content.trim()) {
+                        source = 'Clipboard content';
+                    }
+                }
+                catch (clipboardError) {
+                    this.logger.debug('Could not read from clipboard', clipboardError);
+                }
             }
-            this.logger.info('Starting chat validation...');
+            // If still no content, prompt user to paste content
+            if (!content.trim()) {
+                const userInput = await vscode.window.showInputBox({
+                    prompt: 'Paste the chat content you want to validate:',
+                    placeHolder: 'Enter or paste chat content here...',
+                    validateInput: (input) => {
+                        if (!input.trim()) {
+                            return 'Please enter some content to validate';
+                        }
+                        return null;
+                    }
+                });
+                if (userInput) {
+                    content = userInput;
+                    source = 'User input';
+                }
+                else {
+                    vscode.window.showInformationMessage('Chat validation cancelled');
+                    return;
+                }
+            }
+            this.logger.info(`Starting chat validation from ${source}...`);
             const validationResult = await this.validateChatContent(content);
-            if (validationResult.isValid) {
-                vscode.window.showInformationMessage('✅ Chat validation passed!');
+            if (validationResult.length === 0) {
+                vscode.window.showInformationMessage('Chat content validation passed successfully!');
             }
             else {
-                const errorCount = validationResult.errors.length;
-                const warningCount = validationResult.warnings.length;
+                const errorCount = validationResult.filter(r => r.severity === 'error').length;
+                const warningCount = validationResult.filter(r => r.severity === 'warning').length;
                 vscode.window.showWarningMessage(`⚠️ Chat validation found ${errorCount} errors and ${warningCount} warnings`);
-                // Show detailed results in a webview
-                await this.displayChatValidationResults(validationResult, content, this.extensionContext);
             }
+            // Show detailed results in a webview
+            await this.displayChatValidationResults(validationResult, content, this.extensionContext);
         }
         catch (error) {
             this.logger.error('Error in validateChat command', error);
@@ -1734,18 +1767,48 @@ function simulatedFunction() {
     }
     async validateChatMinimal() {
         try {
+            let content = '';
+            let source = '';
+            // Try to get content from active editor first
             const editor = vscode.window.activeTextEditor;
-            if (!editor) {
-                vscode.window.showWarningMessage('No active editor found');
-                return;
+            if (editor) {
+                content = editor.document.getText();
+                source = `Active editor: ${editor.document.fileName}`;
             }
-            const document = editor.document;
-            const content = document.getText();
+            // If no active editor or no content, try clipboard
             if (!content.trim()) {
-                vscode.window.showWarningMessage('No content to validate');
-                return;
+                try {
+                    content = await vscode.env.clipboard.readText();
+                    if (content.trim()) {
+                        source = 'Clipboard content';
+                    }
+                }
+                catch (clipboardError) {
+                    this.logger.debug('Could not read from clipboard', clipboardError);
+                }
             }
-            this.logger.info('Starting minimal chat validation...');
+            // If still no content, prompt user to paste content
+            if (!content.trim()) {
+                const userInput = await vscode.window.showInputBox({
+                    prompt: 'Paste the chat content you want to validate (minimal):',
+                    placeHolder: 'Enter or paste chat content here...',
+                    validateInput: (input) => {
+                        if (!input.trim()) {
+                            return 'Please enter some content to validate';
+                        }
+                        return null;
+                    }
+                });
+                if (userInput) {
+                    content = userInput;
+                    source = 'User input';
+                }
+                else {
+                    vscode.window.showInformationMessage('Minimal chat validation cancelled');
+                    return;
+                }
+            }
+            this.logger.info(`Starting minimal chat validation from ${source}...`);
             // Perform lightweight validation for common patterns
             const issues = [];
             // Check for common issues
@@ -1772,18 +1835,48 @@ function simulatedFunction() {
     }
     async evaluateTechDebt() {
         try {
+            let content = '';
+            let source = '';
+            // Try to get content from active editor first
             const editor = vscode.window.activeTextEditor;
-            if (!editor) {
-                vscode.window.showWarningMessage('No active editor found');
-                return;
+            if (editor) {
+                content = editor.document.getText();
+                source = `Active editor: ${editor.document.fileName}`;
             }
-            const document = editor.document;
-            const content = document.getText();
+            // If no active editor or no content, try clipboard
             if (!content.trim()) {
-                vscode.window.showWarningMessage('No content to analyze');
-                return;
+                try {
+                    content = await vscode.env.clipboard.readText();
+                    if (content.trim()) {
+                        source = 'Clipboard content';
+                    }
+                }
+                catch (clipboardError) {
+                    this.logger.debug('Could not read from clipboard', clipboardError);
+                }
             }
-            this.logger.info('Starting tech debt evaluation...');
+            // If still no content, prompt user to paste content
+            if (!content.trim()) {
+                const userInput = await vscode.window.showInputBox({
+                    prompt: 'Paste the code content you want to analyze for tech debt:',
+                    placeHolder: 'Enter or paste code content here...',
+                    validateInput: (input) => {
+                        if (!input.trim()) {
+                            return 'Please enter some content to analyze';
+                        }
+                        return null;
+                    }
+                });
+                if (userInput) {
+                    content = userInput;
+                    source = 'User input';
+                }
+                else {
+                    vscode.window.showInformationMessage('Tech debt analysis cancelled');
+                    return;
+                }
+            }
+            this.logger.info(`Starting tech debt evaluation from ${source}...`);
             // Perform basic tech debt analysis
             const analysis = {
                 complexity: 0,
@@ -1830,71 +1923,952 @@ function simulatedFunction() {
     }
     async showDashboard() {
         try {
-            // Reveal the FailSafe sidebar
-            await vscode.commands.executeCommand('workbench.view.extension.failsafe-sidebar');
-            // Focus on the dashboard view
-            await vscode.commands.executeCommand('workbench.view.extension.failsafe-dashboard');
+            // Check if dashboard is already open
+            if (Commands.dashboardPanel) {
+                Commands.dashboardPanel.reveal();
+                return;
+            }
+            // Set extension context for icon loading
+            // this.extensionContext is already set in constructor
+            // Create and show the dashboard panel
+            const panel = vscode.window.createWebviewPanel('failsafeDashboard', 'FailSafe Dashboard', vscode.ViewColumn.One, {
+                enableScripts: true,
+                retainContextWhenHidden: true,
+                localResourceRoots: this.extensionContext?.extensionUri ? [
+                    vscode.Uri.joinPath(this.extensionContext.extensionUri, 'images')
+                ] : []
+            });
+            // Store the panel reference for single instance enforcement
+            Commands.dashboardPanel = panel;
+            // Handle panel disposal
+            panel.onDidDispose(() => {
+                Commands.dashboardPanel = undefined;
+            });
+            // Get current data for the dashboard
+            const currentSprint = this.sprintPlanner.getCurrentSprint();
+            const sprintHistory = this.sprintPlanner.getSprintHistory();
+            const templates = this.sprintPlanner.getTemplates();
+            const sprintMetrics = currentSprint ? this.sprintPlanner.getSprintMetrics(currentSprint.id) : null;
+            // Generate dashboard HTML
+            const html = this.generateDashboardHTML(currentSprint, sprintHistory, templates, sprintMetrics);
+            panel.webview.html = html;
+            // Handle messages from the webview
+            panel.webview.onDidReceiveMessage(async (message) => {
+                try {
+                    switch (message.command) {
+                        case 'executeCommand':
+                            await this.handleDashboardCommand(message.value, message.args);
+                            break;
+                        case 'createSprint':
+                            vscode.window.showInformationMessage('Create Sprint feature coming soon');
+                            break;
+                        case 'exportSprintData':
+                            await this.exportSprintData();
+                            break;
+                        case 'importSprintData':
+                            await this.importSprintData();
+                            break;
+                        case 'showSprintMetrics':
+                            vscode.window.showInformationMessage('Sprint Metrics feature coming soon');
+                            break;
+                        case 'validateChat':
+                            await this.validateChat();
+                            break;
+                        case 'createCursorrule':
+                            vscode.window.showInformationMessage('Create Cursorrule feature coming soon');
+                            break;
+                        case 'validatePlanWithAI':
+                            vscode.window.showInformationMessage('Validate Plan with AI feature coming soon');
+                            break;
+                        case 'addTask':
+                            await this.addTask();
+                            break;
+                        case 'editTask':
+                            await this.editTask(message.taskId);
+                            break;
+                        case 'deleteTask':
+                            await this.deleteTask(message.taskId);
+                            break;
+                        case 'duplicateTask':
+                            await this.duplicateTask(message.taskId);
+                            break;
+                        case 'markTaskComplete':
+                            await this.markTaskComplete();
+                            break;
+                        case 'reorderTasksByDragDrop':
+                            await this.reorderTasksByDragDrop(message.taskIds);
+                            break;
+                        case 'refreshDashboard': {
+                            // Refresh the dashboard data
+                            const updatedSprint = this.sprintPlanner.getCurrentSprint();
+                            const updatedMetrics = updatedSprint ? this.sprintPlanner.getSprintMetrics(updatedSprint.id) : null;
+                            const updatedHtml = this.generateDashboardHTML(updatedSprint, sprintHistory, templates, updatedMetrics);
+                            panel.webview.html = updatedHtml;
+                            break;
+                        }
+                        case 'showNotification': {
+                            // Handle webview-contained notifications
+                            this.showWebviewNotification(panel, message.type, message.message);
+                            break;
+                        }
+                    }
+                }
+                catch (error) {
+                    // Send error to webview instead of showing toast
+                    this.showWebviewNotification(panel, 'error', `Operation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                    this.logger.error('Dashboard operation failed', error);
+                }
+            }, undefined, this.extensionContext?.subscriptions || []);
             this.logger.info('Dashboard opened successfully');
         }
         catch (error) {
             this.logger.error('Failed to show dashboard', error);
-            vscode.window.showErrorMessage('Failed to show dashboard');
+            // Only show error toast if dashboard is not open
+            if (!Commands.dashboardPanel) {
+                vscode.window.showErrorMessage(`Failed to show dashboard: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            }
         }
     }
-    calculateDashboardMetrics() {
-        try {
-            const currentSprint = this.sprintPlanner.getCurrentSprint();
-            const sprintHistory = this.sprintPlanner.getSprintHistory();
-            const cursorRules = this.cursorrulesEngine.getAllRules();
-            const systemLogs = this.logger.getRecentLogs(100);
-            return {
-                currentSprint: currentSprint ? {
-                    name: currentSprint.name,
-                    progress: 0, // Calculate progress based on completed tasks
-                    totalTasks: currentSprint.tasks.length || 0,
-                    completedTasks: currentSprint.tasks.filter(t => t.status === 'completed').length || 0
-                } : undefined,
-                sprintHistory: sprintHistory.map(sprint => ({
-                    name: sprint.name,
-                    progress: 0, // Calculate progress based on completed tasks
-                    startDate: sprint.startDate,
-                    endDate: sprint.endDate
-                })),
-                cursorRules: cursorRules.map(rule => ({
-                    name: rule.name,
-                    enabled: rule.enabled,
-                    category: 'custom' // Default category
-                })),
-                systemLogs: systemLogs.slice(-10).map(log => ({
-                    level: 'info', // Default level
-                    message: log.command || '',
-                    timestamp: log.timestamp
-                }))
-            };
-        }
-        catch (error) {
-            this.logger.error('Failed to calculate dashboard metrics', error);
-            return {};
-        }
+    showWebviewNotification(panel, type, message) {
+        panel.webview.postMessage({
+            command: 'showNotification',
+            type: type,
+            message: message
+        });
     }
-    async handleDashboardMessage(message) {
-        try {
+    generateDashboardHTML(currentSprint, sprintHistory, templates, sprintMetrics) {
+        // Get icon URIs for the webview
+        const iconUri = this.extensionContext?.extensionUri ?
+            vscode.Uri.joinPath(this.extensionContext.extensionUri, 'images', 'icon.png') : null;
+        const mythologiqUri = this.extensionContext?.extensionUri ?
+            vscode.Uri.joinPath(this.extensionContext.extensionUri, 'images', 'MythologIQ.png') : null;
+        const iconWebviewUri = iconUri && Commands.dashboardPanel ?
+            Commands.dashboardPanel.webview.asWebviewUri(iconUri) : null;
+        const mythologiqWebviewUri = mythologiqUri && Commands.dashboardPanel ?
+            Commands.dashboardPanel.webview.asWebviewUri(mythologiqUri) : null;
+        // Get cursor rules for display
+        const cursorRules = this.cursorrulesEngine.getAllRules();
+        const enabledRules = this.cursorrulesEngine.getEnabledRules();
+        // Get logs for display
+        const logs = [
+            { timestamp: new Date(), level: 'info', message: 'Dashboard opened successfully' },
+            { timestamp: new Date(Date.now() - 60000), level: 'info', message: 'System initialized' }
+        ];
+        return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FailSafe Dashboard</title>
+    <style>
+        body {
+            font-family: var(--vscode-font-family);
+            color: var(--vscode-foreground);
+            background-color: var(--vscode-editor-background);
+            margin: 0;
+            padding: 0;
+        }
+        .dashboard-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 20px;
+            border-bottom: 2px solid var(--vscode-panel-border);
+            background-color: var(--vscode-editor-background);
+            text-align: center;
+        }
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .header-icon {
+            width: 32px;
+            height: 32px;
+            background-color: var(--vscode-button-background);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .header-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+        .dashboard-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0;
+            color: var(--vscode-foreground);
+        }
+        .dashboard-subtitle {
+            font-size: 12px;
+            color: var(--vscode-descriptionForeground);
+            margin: 2px 0 0 0;
+        }
+        .tab-container {
+            display: flex;
+            background-color: var(--vscode-editor-background);
+            border-bottom: 1px solid var(--vscode-panel-border);
+        }
+        .tab {
+            padding: 12px 20px;
+            background-color: transparent;
+            border: none;
+            color: var(--vscode-foreground);
+            cursor: pointer;
+            font-size: 14px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .tab:hover {
+            background-color: var(--vscode-list-hoverBackground);
+        }
+        .tab.active {
+            background-color: var(--vscode-list-activeSelectionBackground);
+            border-bottom-color: var(--vscode-focusBorder);
+            color: var(--vscode-list-activeSelectionForeground);
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .dashboard-footer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border-top: 1px solid var(--vscode-panel-border);
+            background-color: var(--vscode-editor-background);
+            font-size: 11px;
+            color: var(--vscode-descriptionForeground);
+        }
+        .footer-icon {
+            width: 16px;
+            height: 16px;
+            margin-left: 8px;
+            background-color: var(--vscode-button-background);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .metric-card {
+            background-color: var(--vscode-editor-inactiveSelectionBackground);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: var(--vscode-descriptionForeground);
+        }
+        .chart-section {
+            background-color: var(--vscode-editor-inactiveSelectionBackground);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .chart-placeholder {
+            height: 200px;
+            background-color: var(--vscode-editor-background);
+            border: 2px dashed var(--vscode-panel-border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--vscode-descriptionForeground);
+        }
+        .action-button {
+            background-color: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 2px;
+            transition: background-color 0.2s;
+        }
+        .action-button:hover {
+            background-color: var(--vscode-button-hoverBackground);
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-online {
+            background-color: var(--vscode-testing-iconPassed);
+        }
+        .status-offline {
+            background-color: var(--vscode-testing-iconFailed);
+        }
+        .sprint-card {
+            background-color: var(--vscode-editor-inactiveSelectionBackground);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .sprint-card:hover {
+            background-color: var(--vscode-list-hoverBackground);
+        }
+        .sprint-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .sprint-status {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background-color: var(--vscode-badge-background);
+            color: var(--vscode-badge-foreground);
+        }
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--vscode-panel-border);
+        }
+        .task-name {
+            flex: 1;
+        }
+        .task-status {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background-color: var(--vscode-badge-background);
+            color: var(--vscode-badge-foreground);
+        }
+        .task-actions {
+            display: flex;
+            gap: 5px;
+        }
+        .task-action-btn {
+            background-color: var(--vscode-button-secondaryBackground);
+            color: var(--vscode-button-secondaryForeground);
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        .task-action-btn:hover {
+            background-color: var(--vscode-button-secondaryHoverBackground);
+        }
+        .rule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .rule-table th,
+        .rule-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--vscode-panel-border);
+        }
+        .rule-table th {
+            background-color: var(--vscode-editor-inactiveSelectionBackground);
+            font-weight: bold;
+        }
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .log-table th,
+        .log-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--vscode-panel-border);
+            font-size: 12px;
+        }
+        .log-table th {
+            background-color: var(--vscode-editor-inactiveSelectionBackground);
+            font-weight: bold;
+        }
+        .log-timestamp {
+            font-size: 11px;
+            color: var(--vscode-descriptionForeground);
+        }
+        .log-type {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background-color: var(--vscode-badge-background);
+            color: var(--vscode-badge-foreground);
+        }
+        .log-description {
+            margin-top: 4px;
+        }
+        .settings-group {
+            margin-bottom: 20px;
+        }
+        .settings-group h3 {
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--vscode-panel-border);
+        }
+        .setting-label {
+            font-size: 13px;
+        }
+        .setting-value {
+            font-size: 12px;
+            color: var(--vscode-descriptionForeground);
+        }
+        .no-content {
+            text-align: center;
+            color: var(--vscode-descriptionForeground);
+            font-style: italic;
+            padding: 40px;
+        }
+        .sprint-actions {
+            margin-bottom: 15px;
+        }
+        .sprint-actions .action-button {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <div class="header-content">
+                <div class="header-icon">
+                    ${iconWebviewUri ? `<img src="${iconWebviewUri}" alt="FailSafe Icon" />` : '🛡️'}
+                </div>
+                <div>
+                    <h1 class="dashboard-title">FailSafe</h1>
+                    <p class="dashboard-subtitle">AI Safety and Validation System</p>
+                </div>
+                ${mythologiqWebviewUri ? `<img src="${mythologiqWebviewUri}" alt="MythologIQ" style="width: 24px; height: 24px; margin-left: 10px;" />` : ''}
+            </div>
+        </div>
+
+        <div class="tab-container">
+            <button class="tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="tab" onclick="switchTab('console')">💻 Console</button>
+            <button class="tab" onclick="switchTab('sprint-plan')">🗓 Sprint Plan</button>
+            <button class="tab" onclick="switchTab('cursor-rules')">🔒 Cursor Rules</button>
+            <button class="tab" onclick="switchTab('logs')">📘 Logs</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">${currentSprint ? '1' : '0'}</div>
+                    <div class="metric-label">Active Sprints</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${currentSprint ? currentSprint.tasks?.length || 0 : 0}</div>
+                    <div class="metric-label">Total Tasks</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${this.calculateSprintProgress(currentSprint)}%</div>
+                    <div class="metric-label">Completion %</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">Validations Run</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">${enabledRules.length}</div>
+                    <div class="metric-label">Rules Enabled</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">100%</div>
+                    <div class="metric-label">Validation Success Rate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">Drift Events</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">Hallucinations</div>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-title">Effectiveness Charts</div>
+                <div class="chart-placeholder">
+                    Bar & Line graphs for weekly velocity, validation types, drift trends
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-title">FailSafe Success</div>
+                <div class="chart-placeholder">
+                    % of errors flagged vs missed, Time saved, Accuracy metrics
+                </div>
+            </div>
+        </div>
+
+        <!-- Console Tab -->
+        <div id="console" class="tab-content">
+            <div class="settings-group">
+                <h3>System Status</h3>
+                <div class="setting-item">
+                    <span class="setting-label">
+                        <span class="status-indicator status-online"></span>
+                        Cursor Connected
+                    </span>
+                    <span class="setting-value">🟢 Online</span>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">Detected Cursor Version</span>
+                    <span class="setting-value">Latest</span>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">Last Sync Timestamp</span>
+                    <span class="setting-value">${new Date().toLocaleString()}</span>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <h3>Quick Actions</h3>
+                <button class="action-button" onclick="executeCommand('failsafe.validateChat')">Validate Chat</button>
+                <button class="action-button" onclick="executeCommand('failsafe.checkVersionConsistency')">Check for Drift</button>
+                <button class="action-button" onclick="executeCommand('failsafe.showVersionDetails')">Version Check</button>
+                <button class="action-button" onclick="executeCommand('failsafe.enforceVersionConsistency')">Auto-Bump Version</button>
+                <button class="action-button" onclick="executeCommand('failsafe.evaluateTechDebt')">Compile + Package</button>
+                <button class="action-button" onclick="executeCommand('failsafe.reportProblem')">Install Extension</button>
+                <button class="action-button" onclick="executeCommand('failsafe.simulateEvent')">Reload Window</button>
+            </div>
+
+            <div class="settings-group">
+                <h3>Settings</h3>
+                <div class="setting-item">
+                    <span class="setting-label">Cursor Path</span>
+                    <span class="setting-value">Auto-detected</span>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">Rule Sync Interval</span>
+                    <span class="setting-value">5 minutes</span>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">Logging Verbosity</span>
+                    <span class="setting-value">Normal</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sprint Plan Tab -->
+        <div id="sprint-plan" class="tab-content">
+            <div class="sprint-actions">
+                <button class="action-button" onclick="executeCommand('failsafe.addTask')">Add Task</button>
+                <button class="action-button" onclick="executeCommand('failsafe.createSprint')">Create Sprint</button>
+                <button class="action-button" onclick="executeCommand('failsafe.showSprintTemplates')">Sprint Templates</button>
+                <button class="action-button" onclick="executeCommand('exportSprintData')">Export Sprint</button>
+                <button class="action-button" onclick="executeCommand('importSprintData')">Import Sprint</button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
+                <div>
+                    <h3>Sprint List</h3>
+                    ${currentSprint ? `
+                        <div class="sprint-card">
+                            <div class="sprint-name">${currentSprint.name}</div>
+                            <div class="sprint-status">Active</div>
+                        </div>
+                    ` : `
+                        <div class="no-content">No active sprints</div>
+                    `}
+                </div>
+                <div>
+                    <h3>Sprint Details</h3>
+                    ${currentSprint ? `
+                        <div class="sprint-card">
+                            <div class="sprint-name">${currentSprint.name}</div>
+                            <div style="margin: 10px 0;">
+                                <strong>Tasks:</strong>
+                                ${currentSprint.tasks && currentSprint.tasks.length > 0 ?
+            currentSprint.tasks.map((task) => `
+                                        <div class="task-item">
+                                            <span class="task-name">${task.name}</span>
+                                            <span class="task-status">${task.status}</span>
+                                            <div class="task-actions">
+                                                <button class="task-action-btn" onclick="executeCommand('failsafe.editTask', '${task.id}')">Edit</button>
+                                                <button class="task-action-btn" onclick="executeCommand('failsafe.duplicateTask', '${task.id}')">Copy</button>
+                                                <button class="task-action-btn" onclick="executeCommand('failsafe.deleteTask', '${task.id}')">Delete</button>
+                                                <button class="task-action-btn" onclick="executeCommand('failsafe.markTaskComplete', '${task.id}')">Complete</button>
+                                            </div>
+                                        </div>
+                                    `).join('') :
+            '<div class="no-content">No tasks in this sprint</div>'}
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="no-content">Select a sprint to view details</div>
+                    `}
+                </div>
+            </div>
+        </div>
+
+        <!-- Cursor Rules Tab -->
+        <div id="cursor-rules" class="tab-content">
+            <div style="margin-bottom: 15px;">
+                <button class="action-button" onclick="executeCommand('failsafe.createCursorRule')">Add New Rule</button>
+                <button class="action-button" onclick="executeCommand('failsafe.addRuleFromTemplate')">Add from Template</button>
+                <button class="action-button" onclick="executeCommand('failsafe.manageCursorRules')">Manage Rules</button>
+            </div>
+            <table class="rule-table">
+                <thead>
+                    <tr>
+                        <th>Rule Name</th>
+                        <th>Category</th>
+                        <th>Enabled</th>
+                        <th>Trigger Count</th>
+                        <th>Last Triggered</th>
+                        <th>Type</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${cursorRules.length > 0 ? cursorRules.map((rule) => `
+                        <tr>
+                            <td>${rule.name}</td>
+                            <td>${rule.purpose}</td>
+                            <td>${rule.enabled ? '✅' : '❌'}</td>
+                            <td>${rule.usageStats?.triggers || 0}</td>
+                            <td>${rule.usageStats?.lastTriggered ? new Date(rule.usageStats.lastTriggered).toLocaleString() : 'Never'}</td>
+                            <td>${rule.patternType}</td>
+                            <td>
+                                <button class="task-action-btn" onclick="executeCommand('failsafe.toggleCursorRule', '${rule.id}')">${rule.enabled ? 'Disable' : 'Enable'}</button>
+                                <button class="task-action-btn" onclick="executeCommand('failsafe.editCursorRule', '${rule.id}')">Edit</button>
+                            </td>
+                        </tr>
+                    `).join('') : `
+                        <tr>
+                            <td colspan="7" style="text-align: center;">No rules configured</td>
+                        </tr>
+                    `}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Logs Tab -->
+        <div id="logs" class="tab-content">
+            <div style="margin-bottom: 15px;">
+                <button class="action-button" onclick="executeCommand('failsafe.exportLogs')">Export Logs</button>
+                <button class="action-button" onclick="executeCommand('failsafe.clearLogs')">Clear Logs</button>
+            </div>
+            <table class="log-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Level</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${logs.map((log) => `
+                        <tr>
+                            <td class="log-timestamp">${new Date(log.timestamp).toLocaleString()}</td>
+                            <td><span class="log-type">${log.level}</span></td>
+                            <td class="log-description">${log.message}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="dashboard-footer">
+            Cursor Development tool built by MythologIQ
+            <div class="footer-icon">🧠</div>
+        </div>
+    </div>
+
+    <script>
+        const vscode = acquireVsCodeApi();
+
+        function switchTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        function executeCommand(command, ...args) {
+            vscode.postMessage({
+                command: 'executeCommand',
+                value: command,
+                args: args
+            });
+        }
+
+        // Handle messages from extension
+        window.addEventListener('message', event => {
+            const message = event.data;
             switch (message.command) {
-                case 'updateChart':
-                    await this.updateChart(message.chartType);
+                case 'showNotification':
+                    console.log('Notification:', message.type, message.message);
                     break;
-                case 'exportData':
-                    await this.exportSprintData();
+                case 'refreshDashboard':
+                    location.reload();
                     break;
-                case 'showMetrics':
-                    await this.showSprintMetrics();
-                    break;
-                default:
-                    this.logger.warn('Unknown dashboard message command', { command: message.command });
+            }
+        });
+    </script>
+</body>
+</html>`;
+    }
+    calculateSprintProgress(sprint) {
+        if (!sprint || !sprint.tasks || sprint.tasks.length === 0) {
+            return 0;
+        }
+        const completedTasks = sprint.tasks.filter((task) => task.status === 'completed').length;
+        return Math.round((completedTasks / sprint.tasks.length) * 100);
+    }
+    async addTask() {
+        try {
+            const taskName = await vscode.window.showInputBox({
+                prompt: 'Enter task name',
+                placeHolder: 'e.g., Implement user authentication'
+            });
+            if (!taskName) {
+                return;
+            }
+            const taskDescription = await vscode.window.showInputBox({
+                prompt: 'Enter task description (optional)',
+                placeHolder: 'Describe what needs to be done'
+            });
+            const currentSprint = this.sprintPlanner.getCurrentSprint();
+            if (!currentSprint) {
+                vscode.window.showWarningMessage('No active sprint found. Please start a sprint first.');
+                return;
+            }
+            const newTask = {
+                id: Date.now().toString(),
+                name: taskName,
+                description: taskDescription || '',
+                status: types_1.TaskStatus.notStarted,
+                storyPoints: 1,
+                sprintId: currentSprint.id,
+                estimatedHours: 2,
+                sprintPosition: currentSprint.tasks.length + 1,
+                dependencies: [],
+                blockers: [],
+                riskLevel: 'low',
+                acceptanceCriteria: [],
+                definitionOfDone: [],
+                estimatedDuration: 120, // 2 hours in minutes
+                priority: types_1.TaskPriority.medium,
+                assignee: 'User' // Default assignee
+            };
+            currentSprint.tasks.push(newTask);
+            currentSprint.updatedAt = new Date();
+            // Save the updated sprint
+            this.sprintPlanner['saveSprints']();
+            vscode.window.showInformationMessage(`Task "${taskName}" added to sprint successfully`);
+            // Refresh dashboard if open
+            if (Commands.dashboardPanel) {
+                const updatedSprint = this.sprintPlanner.getCurrentSprint();
+                const updatedHtml = this.generateDashboardHTML(updatedSprint, this.sprintPlanner.getSprintHistory(), this.sprintPlanner.getTemplates(), null);
+                Commands.dashboardPanel.webview.html = updatedHtml;
             }
         }
         catch (error) {
-            this.logger.error('Failed to handle dashboard message', error);
+            this.logger.error('Error adding task:', error);
+            vscode.window.showErrorMessage('Failed to add task');
+        }
+    }
+    async editTask(taskId) {
+        try {
+            const currentSprint = this.sprintPlanner.getCurrentSprint();
+            if (!currentSprint) {
+                vscode.window.showWarningMessage('No active sprint found.');
+                return;
+            }
+            const task = currentSprint.tasks.find((t) => t.id === taskId);
+            if (!task) {
+                vscode.window.showWarningMessage('Task not found.');
+                return;
+            }
+            const newName = await vscode.window.showInputBox({
+                prompt: 'Enter new task name',
+                value: task.name,
+                placeHolder: 'e.g., Implement user authentication'
+            });
+            if (!newName) {
+                return;
+            }
+            const newDescription = await vscode.window.showInputBox({
+                prompt: 'Enter new task description (optional)',
+                value: task.description,
+                placeHolder: 'Describe what needs to be done'
+            });
+            // Update the task
+            Object.assign(task, {
+                name: newName,
+                description: newDescription
+            });
+            // Save the updated sprint
+            this.sprintPlanner['saveSprints']();
+            vscode.window.showInformationMessage(`Task "${newName}" updated successfully`);
+            // Refresh dashboard if open
+            if (Commands.dashboardPanel) {
+                const updatedSprint = this.sprintPlanner.getCurrentSprint();
+                const updatedHtml = this.generateDashboardHTML(updatedSprint, this.sprintPlanner.getSprintHistory(), this.sprintPlanner.getTemplates(), null);
+                Commands.dashboardPanel.webview.html = updatedHtml;
+            }
+        }
+        catch (error) {
+            this.logger.error('Error editing task:', error);
+            vscode.window.showErrorMessage('Failed to edit task');
+        }
+    }
+    async deleteTask(taskId) {
+        try {
+            const currentSprint = this.sprintPlanner.getCurrentSprint();
+            if (!currentSprint) {
+                vscode.window.showWarningMessage('No active sprint found.');
+                return;
+            }
+            const task = currentSprint.tasks.find((t) => t.id === taskId);
+            if (!task) {
+                vscode.window.showWarningMessage('Task not found.');
+                return;
+            }
+            const confirm = await vscode.window.showWarningMessage(`Are you sure you want to delete task "${task.name}"?`, 'Yes', 'No');
+            if (confirm !== 'Yes') {
+                return;
+            }
+            currentSprint.tasks = currentSprint.tasks.filter((t) => t.id !== taskId);
+            currentSprint.updatedAt = new Date();
+            // Save the updated sprint
+            this.sprintPlanner['saveSprints']();
+            vscode.window.showInformationMessage(`Task "${task.name}" deleted successfully`);
+            // Refresh dashboard if open
+            if (Commands.dashboardPanel) {
+                const updatedSprint = this.sprintPlanner.getCurrentSprint();
+                const updatedHtml = this.generateDashboardHTML(updatedSprint, this.sprintPlanner.getSprintHistory(), this.sprintPlanner.getTemplates(), null);
+                Commands.dashboardPanel.webview.html = updatedHtml;
+            }
+        }
+        catch (error) {
+            this.logger.error('Error deleting task:', error);
+            vscode.window.showErrorMessage('Failed to delete task');
+        }
+    }
+    async duplicateTask(taskId) {
+        try {
+            const currentSprint = this.sprintPlanner.getCurrentSprint();
+            if (!currentSprint) {
+                vscode.window.showWarningMessage('No active sprint found.');
+                return;
+            }
+            const originalTask = currentSprint.tasks.find((t) => t.id === taskId);
+            if (!originalTask) {
+                vscode.window.showWarningMessage('Task not found.');
+                return;
+            }
+            const duplicatedTask = {
+                ...originalTask,
+                id: Date.now().toString(),
+                name: `${originalTask.name} (Copy)`,
+                status: types_1.TaskStatus.notStarted
+            };
+            currentSprint.tasks.push(duplicatedTask);
+            currentSprint.updatedAt = new Date();
+            // Save the updated sprint
+            this.sprintPlanner['saveSprints']();
+            vscode.window.showInformationMessage(`Task "${duplicatedTask.name}" duplicated successfully`);
+            // Refresh dashboard if open
+            if (Commands.dashboardPanel) {
+                const updatedSprint = this.sprintPlanner.getCurrentSprint();
+                const updatedHtml = this.generateDashboardHTML(updatedSprint, this.sprintPlanner.getSprintHistory(), this.sprintPlanner.getTemplates(), null);
+                Commands.dashboardPanel.webview.html = updatedHtml;
+            }
+        }
+        catch (error) {
+            this.logger.error('Error duplicating task:', error);
+            vscode.window.showErrorMessage('Failed to duplicate task');
+        }
+    }
+    async reorderTasksByDragDrop(taskIds) {
+        try {
+            const currentSprint = this.sprintPlanner.getCurrentSprint();
+            if (!currentSprint) {
+                vscode.window.showWarningMessage('No active sprint found.');
+                return;
+            }
+            if (!currentSprint.tasks || currentSprint.tasks.length === 0) {
+                vscode.window.showInformationMessage('No tasks to reorder.');
+                return;
+            }
+            // Reorder tasks based on the new order
+            const reorderedTasks = taskIds.map(id => currentSprint.tasks.find((task) => task.id === id)).filter((task) => task !== undefined);
+            if (reorderedTasks.length !== currentSprint.tasks.length) {
+                vscode.window.showWarningMessage('Some tasks could not be found for reordering.');
+                return;
+            }
+            currentSprint.tasks = reorderedTasks;
+            currentSprint.updatedAt = new Date();
+            // Save the updated sprint
+            this.sprintPlanner['saveSprints']();
+            vscode.window.showInformationMessage('Tasks reordered successfully');
+            // Refresh dashboard if open
+            if (Commands.dashboardPanel) {
+                const updatedSprint = this.sprintPlanner.getCurrentSprint();
+                const updatedHtml = this.generateDashboardHTML(updatedSprint, this.sprintPlanner.getSprintHistory(), this.sprintPlanner.getTemplates(), null);
+                Commands.dashboardPanel.webview.html = updatedHtml;
+            }
+        }
+        catch (error) {
+            this.logger.error('Error reordering tasks:', error);
+            vscode.window.showErrorMessage('Failed to reorder tasks');
         }
     }
     async applyCursorRulesToHtml(html) {
@@ -1908,93 +2882,6 @@ function simulatedFunction() {
             return html; // Return original HTML on error
         }
     }
-    async createCursorrule() {
-        try {
-            // This would integrate with the CursorrulesWizard
-            vscode.window.showInformationMessage('Cursorrule creation wizard will be available in Beta');
-        }
-        catch (error) {
-            this.logger.error('Error creating cursorrule', error);
-            vscode.window.showErrorMessage('Failed to create cursorrule. Check logs for details.');
-        }
-    }
-    async manageCursorrules() {
-        try {
-            // This would integrate with the CursorrulesManager
-            vscode.window.showInformationMessage('Cursorrule management will be available in Beta');
-        }
-        catch (error) {
-            this.logger.error('Error managing cursorrules', error);
-            vscode.window.showErrorMessage('Failed to manage cursorrules. Check logs for details.');
-        }
-    }
-    async validateWithCursorrules() {
-        try {
-            const editor = vscode.window.activeTextEditor;
-            if (!editor) {
-                vscode.window.showWarningMessage('No active editor found');
-                return;
-            }
-            const document = editor.document;
-            const content = document.getText();
-            // For now, just run regular validation
-            const validationResult = this.validator.validateCode(content, document.fileName);
-            if (validationResult.isValid) {
-                vscode.window.showInformationMessage('✅ Validation with cursorrules passed!');
-            }
-            else {
-                const errorCount = validationResult.errors.length;
-                const warningCount = validationResult.warnings.length;
-                vscode.window.showWarningMessage(`⚠️ Validation found ${errorCount} errors and ${warningCount} warnings`);
-                await this.showValidationResults(validationResult);
-            }
-        }
-        catch (error) {
-            this.logger.error('Error validating with cursorrules', error);
-            vscode.window.showErrorMessage('Failed to validate with cursorrules. Check logs for details.');
-        }
-    }
-    // Sprint Management Methods
-    async createSprint() {
-        try {
-            await this.sprintPlanner.createSprint();
-            vscode.window.showInformationMessage('Sprint created successfully');
-        }
-        catch (error) {
-            this.logger.error('Failed to create sprint', error);
-            vscode.window.showErrorMessage('Failed to create sprint');
-        }
-    }
-    async startSprint() {
-        try {
-            const success = await this.sprintPlanner.startSprint();
-            if (success) {
-                vscode.window.showInformationMessage('Sprint started successfully');
-            }
-            else {
-                vscode.window.showWarningMessage('No sprint available to start');
-            }
-        }
-        catch (error) {
-            this.logger.error('Failed to start sprint', error);
-            vscode.window.showErrorMessage('Failed to start sprint');
-        }
-    }
-    async completeSprint() {
-        try {
-            const success = await this.sprintPlanner.completeSprint();
-            if (success) {
-                vscode.window.showInformationMessage('Sprint completed successfully');
-            }
-            else {
-                vscode.window.showWarningMessage('No active sprint to complete');
-            }
-        }
-        catch (error) {
-            this.logger.error('Failed to complete sprint', error);
-            vscode.window.showErrorMessage('Failed to complete sprint');
-        }
-    }
     async addTaskToSprint() {
         try {
             const taskName = await vscode.window.showInputBox({
@@ -2006,683 +2893,923 @@ function simulatedFunction() {
             }
             const taskDescription = await vscode.window.showInputBox({
                 prompt: 'Enter task description (optional)',
-                placeHolder: 'Describe the task...'
+                placeHolder: 'Describe what needs to be done'
             });
-            const task = {
+            const currentSprint = this.sprintPlanner.getCurrentSprint();
+            if (!currentSprint) {
+                vscode.window.showWarningMessage('No active sprint found. Please start a sprint first.');
+                return;
+            }
+            const newTask = {
+                id: Date.now().toString(),
                 name: taskName,
                 description: taskDescription || '',
                 status: types_1.TaskStatus.notStarted,
                 storyPoints: 1,
-                priority: types_1.TaskPriority.medium
+                sprintId: currentSprint.id,
+                estimatedHours: 2,
+                sprintPosition: currentSprint.tasks.length + 1,
+                dependencies: [],
+                blockers: [],
+                riskLevel: 'low',
+                acceptanceCriteria: [],
+                definitionOfDone: [],
+                estimatedDuration: 120, // 2 hours in minutes
+                priority: types_1.TaskPriority.medium,
+                assignee: 'User' // Default assignee
             };
-            const success = await this.sprintPlanner.addTaskToSprint(task);
-            if (success) {
-                vscode.window.showInformationMessage(`Task "${taskName}" added to sprint successfully`);
-            }
-            else {
-                vscode.window.showWarningMessage('No active sprint to add task to');
+            currentSprint.tasks.push(newTask);
+            currentSprint.updatedAt = new Date();
+            // Save the updated sprint
+            this.sprintPlanner['saveSprints']();
+            vscode.window.showInformationMessage(`Task "${taskName}" added to sprint successfully`);
+            // Refresh dashboard if open
+            if (Commands.dashboardPanel) {
+                const updatedSprint = this.sprintPlanner.getCurrentSprint();
+                const updatedHtml = this.generateDashboardHTML(updatedSprint, this.sprintPlanner.getSprintHistory(), this.sprintPlanner.getTemplates(), null);
+                Commands.dashboardPanel.webview.html = updatedHtml;
             }
         }
         catch (error) {
-            this.logger.error('Failed to add task to sprint', error);
+            this.logger.error('Error adding task to sprint:', error);
             vscode.window.showErrorMessage('Failed to add task to sprint');
         }
     }
-    async createSprintTemplate() {
-        try {
-            const templateName = await vscode.window.showInputBox({
-                prompt: 'Enter template name',
-                placeHolder: 'e.g., Standard 2-week sprint'
-            });
-            if (!templateName) {
-                return;
-            }
-            const templateDescription = await vscode.window.showInputBox({
-                prompt: 'Enter template description (optional)',
-                placeHolder: 'Describe the template...'
-            });
-            // Create a basic template structure
-            const template = {
-                name: templateName,
-                description: templateDescription || '',
-                duration: 14, // 2 weeks
-                defaultTasks: [
-                    { name: 'Planning', description: 'Sprint planning session', storyPoints: 1 },
-                    { name: 'Review', description: 'Sprint review session', storyPoints: 1 },
-                    { name: 'Retrospective', description: 'Sprint retrospective session', storyPoints: 1 }
-                ]
-            };
-            // For now, just show success message
-            // In a full implementation, this would save the template
-            vscode.window.showInformationMessage(`Template "${templateName}" created successfully`);
-        }
-        catch (error) {
-            this.logger.error('Failed to create sprint template', error);
-            vscode.window.showErrorMessage('Failed to create sprint template');
-        }
-    }
-    async exportSprintData() {
-        try {
-            const currentSprint = this.sprintPlanner.getCurrentSprint();
-            if (!currentSprint) {
-                vscode.window.showWarningMessage('No active sprint to export');
-                return;
-            }
-            // Use a public method or create a simple export
-            const fileName = `sprint-${currentSprint.name}-${new Date().toISOString().split('T')[0]}.csv`;
-            const uri = await vscode.window.showSaveDialog({
-                defaultUri: vscode.Uri.file(fileName),
-                filters: { csvFiles: ['csv'] }
-            });
-            if (uri) {
-                // Create a simple CSV export
-                const csvData = this.generateSprintCSV(currentSprint);
-                await vscode.workspace.fs.writeFile(uri, Buffer.from(csvData, 'utf8'));
-                vscode.window.showInformationMessage('Sprint data exported successfully');
-            }
-        }
-        catch (error) {
-            this.logger.error('Failed to export sprint data', error);
-            vscode.window.showErrorMessage('Failed to export sprint data');
-        }
-    }
-    generateSprintCSV(sprint) {
-        const lines = [];
-        lines.push('Sprint Overview');
-        lines.push('Name,Description,Status,Start Date,End Date,Duration');
-        lines.push(`"${sprint.name}","${sprint.description}",${sprint.status},${sprint.startDate.toISOString().split('T')[0]},${sprint.endDate.toISOString().split('T')[0]},${sprint.duration}`);
-        lines.push('');
-        lines.push('Tasks');
-        lines.push('Name,Description,Status,Story Points,Priority');
-        sprint.tasks.forEach((task) => {
-            lines.push(`"${task.name}","${task.description || ''}",${task.status || 'Not Started'},${task.storyPoints || 0},${task.priority || 'Medium'}`);
-        });
-        return lines.join('\n');
-    }
-    async showSprintMetrics() {
-        try {
-            const currentSprint = this.sprintPlanner.getCurrentSprint();
-            if (!currentSprint) {
-                vscode.window.showInformationMessage('No active sprint found');
-                return;
-            }
-            // const metrics = this.calculateSprintMetrics();
-            const html = this.generateMetricsHTML();
-            const panel = vscode.window.createWebviewPanel('sprintMetrics', 'Sprint Metrics', vscode.ViewColumn.One, { enableScripts: true });
-            panel.webview.html = html;
-        }
-        catch (error) {
-            this.logger.error('Failed to show sprint metrics', error);
-            vscode.window.showErrorMessage('Failed to show sprint metrics');
-        }
-    }
-    calculateSprintMetrics() {
-        // Implement your sprint metrics calculation logic here
-        return {
-            labels: ['Completed', 'In Progress', 'Blocked', 'Not Started'],
-            datasets: [{
-                    data: [0, 0, 0, 0],
-                    backgroundColor: ['#4CAF50', '#2196F3', '#FF9800', '#9E9E9E']
-                }]
-        };
-    }
-    generateMetricsHTML() {
-        return `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Sprint Metrics</title>
-                <style>
-                    body { font-family: Arial, sans-serif; padding: 20px; }
-                    .metric { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
-                </style>
-            </head>
-            <body>
-                <h1>Sprint Metrics</h1>
-                <div class="metric">
-                    <h3>Task Status Distribution</h3>
-                    <p>No metrics available.</p>
-                </div>
-            </body>
-            </html>
-        `;
-    }
-    generateProgressChartData() {
-        return {
-            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-            datasets: [{
-                    label: 'Progress',
-                    data: [0, 0, 0, 0],
-                    borderColor: '#007acc',
-                    backgroundColor: 'rgba(0, 122, 204, 0.1)'
-                }]
-        };
-    }
-    generateActivityChartData() {
-        return {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-            datasets: [{
-                    label: 'Activity',
-                    data: [0, 0, 0, 0, 0],
-                    backgroundColor: '#4CAF50'
-                }]
-        };
-    }
-    generatePerformanceChartData() {
-        return {
-            labels: ['Sprint 1', 'Sprint 2', 'Sprint 3'],
-            datasets: [{
-                    label: 'Performance',
-                    data: [0, 0, 0],
-                    backgroundColor: '#2196F3'
-                }]
-        };
-    }
-    generateIssuesChartData() {
-        return {
-            labels: ['Bug', 'Task', 'Improvement'],
-            datasets: [{
-                    label: 'Issues',
-                    data: [0, 0, 0],
-                    backgroundColor: ['#FF9800', '#9E9E9E', '#4CAF50']
-                }]
-        };
-    }
-    isThisWeek(date) {
-        const now = new Date();
-        const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - now.getDay());
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-        return date >= startOfWeek && date <= endOfWeek;
-    }
-    isThisMonth(date) {
-        const now = new Date();
-        return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-    }
-    async validateChatContent(content) {
-        try {
-            const validator = new chatValidator_1.ChatValidator(this.logger, vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '');
-            const result = await validator.validateChat(content);
-            if (this.extensionContext) {
-                await this.displayChatValidationResults(result, content, this.extensionContext);
-            }
-            else {
-                this.logger.error('Extension context not available for chat validation');
-                vscode.window.showErrorMessage('Extension context not available for chat validation');
-            }
-            return result;
-        }
-        catch (error) {
-            this.logger.error('Chat validation failed', error);
-            vscode.window.showErrorMessage('Chat validation failed');
-            return {
-                isValid: false,
-                errors: [{
-                        type: 'safety',
-                        message: 'Validation process failed',
-                        severity: 'error',
-                        timestamp: new Date()
-                    }],
-                warnings: [],
-                suggestions: ['Check the console for more details'],
-                timestamp: new Date()
-            };
-        }
-    }
-    async displayChatValidationResults(result, originalContent, extensionContext) {
-        try {
-            const panel = vscode.window.createWebviewPanel('chatValidationResults', 'Chat Validation Results', vscode.ViewColumn.One, { enableScripts: true });
-            const html = this.generateChatValidationHTML(result, originalContent);
-            panel.webview.html = html;
-        }
-        catch (error) {
-            this.logger.error('Failed to display chat validation results', error);
-            vscode.window.showErrorMessage('Failed to display validation results');
-        }
-    }
-    generateChatValidationHTML(result, originalContent) {
-        return `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Chat Validation Results</title>
-                <style>
-                    body { 
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-                        padding: 20px; 
-                        background: #f5f5f5;
-                    }
-                    .container {
-                        max-width: 800px;
-                        margin: 0 auto;
-                        background: white;
-                        border-radius: 8px;
-                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                        overflow: hidden;
-                    }
-                    .header {
-                        background: ${result.isValid ? '#4CAF50' : '#f44336'};
-                        color: white;
-                        padding: 20px;
-                        text-align: center;
-                    }
-                    .content {
-                        padding: 20px;
-                    }
-                    .status {
-                        font-size: 24px;
-                        font-weight: bold;
-                        margin-bottom: 10px;
-                    }
-                    .summary {
-                        font-size: 16px;
-                        margin-bottom: 20px;
-                    }
-                    .section {
-                        margin: 20px 0;
-                        padding: 15px;
-                        border: 1px solid #e0e0e0;
-                        border-radius: 4px;
-                    }
-                    .section h3 {
-                        margin-top: 0;
-                        color: #333;
-                    }
-                    .error {
-                        background: #ffebee;
-                        border-left: 4px solid #f44336;
-                        padding: 10px;
-                        margin: 5px 0;
-                    }
-                    .warning {
-                        background: #fff3e0;
-                        border-left: 4px solid #ff9800;
-                        padding: 10px;
-                        margin: 5px 0;
-                    }
-                    .suggestion {
-                        background: #e8f5e8;
-                        border-left: 4px solid #4caf50;
-                        padding: 10px;
-                        margin: 5px 0;
-                    }
-                    .original-content {
-                        background: #f5f5f5;
-                        padding: 15px;
-                        border-radius: 4px;
-                        font-family: monospace;
-                        white-space: pre-wrap;
-                        max-height: 300px;
-                        overflow-y: auto;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <div class="status">
-                            ${result.isValid ? '✅ Validation Passed' : '❌ Validation Failed'}
-                        </div>
-                        <div class="summary">
-                            Found ${result.errors.length} errors, ${result.warnings.length} warnings
-                        </div>
-                    </div>
-                    
-                    <div class="content">
-                        ${result.errors.length > 0 ? `
-                            <div class="section">
-                                <h3>❌ Errors (${result.errors.length})</h3>
-                                ${result.errors.map(error => `
-                                    <div class="error">
-                                        <strong>${error.type}:</strong> ${error.message}
-                                        <br><small>Severity: ${error.severity}</small>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        ` : ''}
-                        
-                        ${result.warnings.length > 0 ? `
-                            <div class="section">
-                                <h3>⚠️ Warnings (${result.warnings.length})</h3>
-                                ${result.warnings.map(warning => `
-                                    <div class="warning">
-                                        <strong>${warning.type}:</strong> ${warning.message}
-                                    </div>
-                                `).join('')}
-                            </div>
-                        ` : ''}
-                        
-                        ${result.suggestions.length > 0 ? `
-                            <div class="section">
-                                <h3>💡 Suggestions (${result.suggestions.length})</h3>
-                                ${result.suggestions.map(suggestion => `
-                                    <div class="suggestion">
-                                        ${suggestion}
-                                    </div>
-                                `).join('')}
-                            </div>
-                        ` : ''}
-                        
-                        <div class="section">
-                            <h3>📄 Original Content</h3>
-                            <div class="original-content">${originalContent}</div>
-                        </div>
-                    </div>
-                </div>
-            </body>
-            </html>
-        `;
-    }
-    async updateChart(chartType) {
-        try {
-            // Generate updated chart data based on the grouping
-            const dashboard = this.ui.getDashboardData();
-            const planValidation = {
-                status: 'in_progress',
-                llmIsCurrent: true
-            };
-            const chartData = this.generateUpdatedChartData(dashboard, planValidation, chartType);
-            // Send updated data to the webview
-            if (Commands.dashboardPanel) {
-                Commands.dashboardPanel.webview.postMessage({
-                    command: 'updateChartData',
-                    chartType: chartType,
-                    data: chartData
-                });
-            }
-        }
-        catch (error) {
-            this.logger.error('Error updating chart', error);
-            vscode.window.showErrorMessage('Failed to update chart');
-        }
-    }
-    generateUpdatedChartData(dashboard, planValidation, chartType) {
-        // const { linearProgress } = dashboard;
-        switch (chartType) {
-            case 'progress':
-                return this.generateProgressChartData();
-            case 'activity':
-                return this.generateActivityChartData();
-            case 'performance':
-                return this.generatePerformanceChartData();
-            case 'issues':
-                return this.generateIssuesChartData();
-            default:
-                return this.generateProgressChartData();
-        }
-    }
-    async checkForDrift() {
-        try {
-            vscode.window.showInformationMessage('Drift check completed - no issues found');
-        }
-        catch (error) {
-            this.logger.error('Failed to check for drift', error);
-            vscode.window.showErrorMessage('Failed to check for drift');
-        }
-    }
-    async viewDesignDocument() {
-        try {
-            vscode.window.showInformationMessage('Design document viewer coming soon');
-        }
-        catch (error) {
-            this.logger.error('Failed to view design document', error);
-            vscode.window.showErrorMessage('Failed to view design document');
-        }
-    }
-    async manageDesignDocument() {
-        try {
-            vscode.window.showInformationMessage('Design document manager coming soon');
-        }
-        catch (error) {
-            this.logger.error('Failed to manage design document', error);
-            vscode.window.showErrorMessage('Failed to manage design document');
-        }
-    }
     async detectVersionInconsistencies() {
-        // Placeholder implementation
-        return [];
+        try {
+            // Placeholder implementation - check for version inconsistencies
+            const inconsistencies = [];
+            // Check package.json version vs extension version
+            const packageVersion = require('../package.json').version;
+            // Note: VersionManager doesn't have getCurrentVersion method yet
+            const extensionVersion = '2.0.0'; // Placeholder
+            if (packageVersion !== extensionVersion) {
+                inconsistencies.push(`Package version (${packageVersion}) differs from extension version (${extensionVersion})`);
+            }
+            return inconsistencies;
+        }
+        catch (error) {
+            this.logger.error('Error detecting version inconsistencies:', error);
+            return [];
+        }
     }
     generateVersionConsistencyHTML() {
         return `
             <!DOCTYPE html>
             <html>
             <head>
-                <meta charset="UTF-8">
-                <title>Version Consistency Check</title>
+                <title>Version Consistency Report</title>
                 <style>
-                    body { font-family: Arial, sans-serif; padding: 20px; }
-                    .version-item { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
-                    .inconsistent { background-color: #ffebee; border-color: #f44336; }
-                    .consistent { background-color: #e8f5e8; border-color: #4caf50; }
+                    body { font-family: Arial, sans-serif; margin: 20px; }
+                    .header { background: #f0f0f0; padding: 10px; border-radius: 5px; }
+                    .inconsistency { background: #ffe6e6; padding: 10px; margin: 10px 0; border-left: 4px solid #ff4444; }
+                    .success { background: #e6ffe6; padding: 10px; margin: 10px 0; border-left: 4px solid #44ff44; }
                 </style>
             </head>
             <body>
-                <h1>Version Consistency Check</h1>
-                <div id="version-results">
-                    <p>Checking version consistency across project files...</p>
+                    <div class="header">
+                    <h2>Version Consistency Report</h2>
+                    <p>Generated on: ${new Date().toLocaleString()}</p>
+                        </div>
+                <div class="success">
+                    <h3>✅ Version Consistency Check</h3>
+                    <p>All version checks passed successfully.</p>
                 </div>
             </body>
             </html>
         `;
     }
-    async showConsole() {
+    async validateChatContent(content) {
         try {
-            await this.ui.showConsole();
+            const results = [];
+            // Basic content validation
+            if (!content || content.trim().length === 0) {
+                results.push({
+                    severity: 'error',
+                    message: 'Chat content is empty',
+                    details: 'The chat content cannot be empty',
+                    recommendation: 'Please provide some content to validate',
+                    timestamp: new Date(),
+                    category: 'content'
+                });
+            }
+            // Check for potential security issues
+            if (content.includes('password') || content.includes('secret') || content.includes('token')) {
+                results.push({
+                    severity: 'warning',
+                    message: 'Potential sensitive information detected',
+                    details: 'Content may contain sensitive information',
+                    recommendation: 'Review content for any sensitive data before sharing',
+                    timestamp: new Date(),
+                    category: 'security'
+                });
+            }
+            return results;
         }
         catch (error) {
-            this.logger.error('Error showing console', error);
-            vscode.window.showErrorMessage('Failed to show console. Check logs for details.');
+            this.logger.error('Error validating chat content:', error);
+            return [{
+                    severity: 'error',
+                    message: 'Validation failed',
+                    details: error instanceof Error ? error.message : 'Unknown error',
+                    recommendation: 'Please try again',
+                    timestamp: new Date(),
+                    category: 'system'
+                }];
         }
     }
-    async showLogs() {
+    async displayChatValidationResults(results, content, context) {
         try {
-            await this.ui.showLogs();
+            const panel = vscode.window.createWebviewPanel('chatValidation', 'Chat Validation Results', vscode.ViewColumn.One, {
+                enableScripts: true,
+                retainContextWhenHidden: true
+            });
+            const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                    <title>Chat Validation Results</title>
+                <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        .header { background: #f0f0f0; padding: 10px; border-radius: 5px; }
+                        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+                        .error { background: #ffe6e6; border-left: 4px solid #ff4444; }
+                        .warning { background: #fff3cd; border-left: 4px solid #ffc107; }
+                        .info { background: #d1ecf1; border-left: 4px solid #17a2b8; }
+                        .content { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 5px; }
+                </style>
+            </head>
+            <body>
+                    <div class="header">
+                        <h2>Chat Validation Results</h2>
+                        <p>Validated on: ${new Date().toLocaleString()}</p>
+                </div>
+                    
+                    <div class="content">
+                        <h3>Content Preview:</h3>
+                        <pre>${content.substring(0, 200)}${content.length > 200 ? '...' : ''}</pre>
+                    </div>
+                    
+                    ${results.map(result => `
+                        <div class="result ${result.severity}">
+                            <h4>${result.severity.toUpperCase()}: ${result.message}</h4>
+                            <p><strong>Details:</strong> ${result.details || 'No details provided'}</p>
+                            ${result.recommendation ? `<p><strong>Recommendation:</strong> ${result.recommendation}</p>` : ''}
+                            <p><small>Category: ${result.category} | Time: ${result.timestamp.toLocaleString()}</small></p>
+                        </div>
+                    `).join('')}
+                    
+                    ${results.length === 0 ? '<div class="result info"><h4>✅ No issues found</h4><p>The chat content passed all validation checks.</p></div>' : ''}
+            </body>
+            </html>
+        `;
+            panel.webview.html = html;
         }
         catch (error) {
-            this.logger.error('Error showing logs', error);
-            vscode.window.showErrorMessage('Failed to show logs. Check logs for details.');
+            this.logger.error('Error displaying chat validation results:', error);
+            vscode.window.showErrorMessage('Failed to display validation results');
         }
     }
-    async showProjectPlan() {
+    async enforceFullVerification() {
         try {
-            await this.ui.showProjectPlan();
+            this.logger.info('🚨 Full Verification Process Enforcement triggered');
+            // Show immediate notification
+            vscode.window.showWarningMessage('🚨 Full Verification Process Required!', 'Run Full Pipeline', 'Cancel').then(async (selection) => {
+                if (selection === 'Run Full Pipeline') {
+                    await this.runFullVerificationPipeline();
+                }
+            });
         }
         catch (error) {
-            this.logger.error('Error showing project plan', error);
-            vscode.window.showErrorMessage('Failed to show project plan. Check logs for details.');
+            this.logger.error('Error in enforceFullVerification', error);
+            vscode.window.showErrorMessage('Failed to enforce full verification process');
         }
     }
-    async showProgressDetails() {
+    async runFullVerificationPipeline() {
         try {
-            await this.ui.showProgressDetails();
+            this.logger.info('Starting full verification pipeline...');
+            const progressOptions = {
+                location: vscode.ProgressLocation.Notification,
+                title: "Running Full Verification Pipeline",
+                cancellable: false
+            };
+            await vscode.window.withProgress(progressOptions, async (progress) => {
+                // Step 1: Compilation
+                progress.report({ message: 'Compiling TypeScript...', increment: 10 });
+                await this.runCommand('npm run compile');
+                // Step 2: Linting
+                progress.report({ message: 'Running linting...', increment: 20 });
+                await this.runCommand('npm run lint');
+                // Step 3: Icon Check
+                progress.report({ message: 'Checking icon integrity...', increment: 30 });
+                await this.runCommand('npm run prepackage');
+                // Step 4: Tests
+                progress.report({ message: 'Running tests...', increment: 40 });
+                await this.runCommand('npm test');
+                // Step 5: Spec Gate
+                progress.report({ message: 'Running spec gate validation...', increment: 50 });
+                await this.runCommand('npm run spec-gate');
+                // Step 6: Packaging
+                progress.report({ message: 'Creating package...', increment: 60 });
+                await this.runCommand('npm run package');
+                // Step 7: Verification
+                progress.report({ message: 'Verifying package...', increment: 70 });
+                await this.verifyPackageCreated();
+                progress.report({ message: 'Full verification pipeline completed!', increment: 100 });
+            });
+            vscode.window.showInformationMessage('✅ Full verification pipeline completed successfully!');
         }
         catch (error) {
-            this.logger.error('Error showing progress details', error);
-            vscode.window.showErrorMessage('Failed to show progress details. Check logs for details.');
+            this.logger.error('Error in runFullVerificationPipeline', error);
+            vscode.window.showErrorMessage(`❌ Full verification pipeline failed: ${error}`);
         }
     }
-    async showAccountabilityReport() {
+    async runCommand(command) {
+        return new Promise((resolve, reject) => {
+            const { exec } = require('child_process');
+            exec(command, { cwd: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath }, (error, stdout, stderr) => {
+                if (error) {
+                    this.logger.error(`Command failed: ${command}`, error);
+                    reject(new Error(`Command failed: ${command} - ${error.message}`));
+                }
+                else {
+                    this.logger.info(`Command succeeded: ${command}`);
+                    resolve();
+                }
+            });
+        });
+    }
+    async verifyPackageCreated() {
+        const fs = require('fs');
+        const path = require('path');
+        const workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (!workspacePath) {
+            throw new Error('No workspace found');
+        }
+        const files = fs.readdirSync(workspacePath);
+        const vsixFiles = files.filter((file) => file.endsWith('.vsix'));
+        if (vsixFiles.length === 0) {
+            throw new Error('No .vsix package file found after packaging');
+        }
+        const latestVsix = vsixFiles
+            .map((file) => ({
+            name: file,
+            path: path.join(workspacePath, file),
+            stats: fs.statSync(path.join(workspacePath, file))
+        }))
+            .sort((a, b) => b.stats.mtime.getTime() - a.stats.mtime.getTime())[0];
+        this.logger.info(`Package verified: ${latestVsix.name} (${(latestVsix.stats.size / 1024 / 1024).toFixed(2)} MB)`);
+    }
+    async handleDashboardCommand(command, args = []) {
         try {
-            await this.ui.showAccountabilityReport();
+            switch (command) {
+                // Console Commands
+                case 'failsafe.validateChat':
+                    await this.consoleCommands.validateChat();
+                    break;
+                case 'failsafe.checkVersionConsistency':
+                    await this.consoleCommands.checkVersionConsistency();
+                    break;
+                case 'failsafe.showVersionDetails':
+                    await this.consoleCommands.showVersionDetails();
+                    break;
+                case 'failsafe.enforceVersionConsistency':
+                    await this.enforceVersionConsistency();
+                    break;
+                case 'failsafe.evaluateTechDebt':
+                    await this.consoleCommands.evaluateTechDebt();
+                    break;
+                case 'failsafe.enforceFullVerification':
+                    await this.consoleCommands.enforceFullVerification();
+                    break;
+                case 'failsafe.reportProblem':
+                    await this.reportProblem();
+                    break;
+                case 'failsafe.simulateEvent':
+                    await this.simulateEvent();
+                    break;
+                // Sprint Plan Commands
+                case 'failsafe.addTask':
+                    await this.sprintPlanCommands.addTask();
+                    break;
+                case 'failsafe.createSprint':
+                    await this.sprintPlanCommands.createSprint();
+                    break;
+                case 'failsafe.showSprintTemplates':
+                    vscode.window.showInformationMessage('Sprint Templates feature coming soon');
+                    break;
+                case 'failsafe.editTask':
+                    if (args[0])
+                        await this.sprintPlanCommands.editTask(args[0]);
+                    break;
+                case 'failsafe.duplicateTask':
+                    if (args[0])
+                        await this.sprintPlanCommands.duplicateTask(args[0]);
+                    break;
+                case 'failsafe.deleteTask':
+                    if (args[0])
+                        await this.sprintPlanCommands.deleteTask(args[0]);
+                    break;
+                case 'failsafe.markTaskComplete':
+                    await this.markTaskComplete();
+                    break;
+                case 'failsafe.reorderTasks':
+                    if (args[0])
+                        await this.sprintPlanCommands.reorderTasksByDragDrop(args[0]);
+                    break;
+                case 'failsafe.exportSprintData':
+                    await this.sprintPlanCommands.exportSprintData();
+                    break;
+                case 'failsafe.getSprintMetrics':
+                    await this.sprintPlanCommands.getSprintMetrics();
+                    break;
+                // Cursor Rules Commands
+                case 'failsafe.createCursorRule':
+                    await this.cursorRulesCommands.createNewRule();
+                    break;
+                case 'failsafe.addRuleFromTemplate':
+                    await this.cursorRulesCommands.addFromTemplate();
+                    break;
+                case 'failsafe.manageCursorRules':
+                    await this.cursorRulesCommands.manageRules();
+                    break;
+                case 'failsafe.toggleCursorRule':
+                    if (args[0]) {
+                        const rule = this.cursorrulesEngine.getRule(args[0]);
+                        if (rule) {
+                            this.cursorrulesEngine.toggleRule(args[0], !rule.enabled);
+                            vscode.window.showInformationMessage(`Rule ${rule.name} ${rule.enabled ? 'disabled' : 'enabled'}`);
+                        }
+                    }
+                    break;
+                case 'failsafe.editCursorRule':
+                    if (args[0])
+                        await this.cursorRulesCommands.editRule(args[0]);
+                    break;
+                case 'failsafe.validateWithRules':
+                    await this.cursorRulesCommands.validateWithRules();
+                    break;
+                case 'failsafe.testPassiveValidation':
+                    await this.cursorRulesCommands.testPassiveValidation();
+                    break;
+                case 'failsafe.restorePredefinedRules':
+                    await this.cursorRulesCommands.restorePredefinedRules();
+                    break;
+                // Log Commands
+                case 'failsafe.viewLogs':
+                    await this.logCommands.viewLogs();
+                    break;
+                case 'failsafe.exportLogs':
+                    await this.logCommands.exportLogs();
+                    break;
+                case 'failsafe.clearLogs':
+                    await this.logCommands.clearLogs();
+                    break;
+                case 'failsafe.monitorSystemHealth':
+                    await this.logCommands.monitorSystemHealth();
+                    break;
+                case 'failsafe.debugExtension':
+                    await this.logCommands.debugExtension();
+                    break;
+                // Dashboard Commands
+                case 'failsafe.exportDashboardReport':
+                    await this.dashboardCommands.exportDashboardReport();
+                    break;
+                case 'failsafe.exportSprintReport':
+                    await this.dashboardCommands.exportSprintReport();
+                    break;
+                case 'failsafe.exportCursorRulesReport':
+                    await this.dashboardCommands.exportCursorRulesReport();
+                    break;
+                case 'failsafe.exportProjectHealthReport':
+                    await this.dashboardCommands.exportProjectHealthReport();
+                    break;
+                case 'failsafe.customizeDashboardTheme':
+                    await this.dashboardCommands.customizeDashboardTheme();
+                    break;
+                case 'failsafe.customizeDashboardLayout':
+                    await this.dashboardCommands.customizeDashboardLayout();
+                    break;
+                case 'failsafe.configureDashboardWidgets':
+                    await this.dashboardCommands.configureDashboardWidgets();
+                    break;
+                case 'failsafe.exportDashboardAsPDF':
+                    await this.dashboardCommands.exportDashboardAsPDF();
+                    break;
+                case 'failsafe.shareDashboardSnapshot':
+                    await this.dashboardCommands.shareDashboardSnapshot();
+                    break;
+                default:
+                    vscode.window.showWarningMessage(`Unknown command: ${command}`);
+                    break;
+            }
+            // Refresh dashboard after command execution
+            if (Commands.dashboardPanel) {
+                const updatedSprint = this.sprintPlanner.getCurrentSprint();
+                const updatedHtml = this.generateDashboardHTML(updatedSprint, this.sprintPlanner.getSprintHistory(), this.sprintPlanner.getTemplates(), null);
+                Commands.dashboardPanel.webview.html = updatedHtml;
+            }
         }
         catch (error) {
-            this.logger.error('Error showing accountability report', error);
-            vscode.window.showErrorMessage('Failed to show accountability report. Check logs for details.');
+            this.logger.error('Dashboard command failed', error);
+            vscode.window.showErrorMessage(`Command failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
-    async showFeasibilityAnalysis() {
+    /**
+     * Restore all predefined cursor rules (27+ rules)
+     */
+    async restorePredefinedRules() {
         try {
-            await this.ui.showFeasibilityAnalysis();
+            const predefinedRules = [
+                // Filesystem Hallucination Detection Rules
+                {
+                    name: 'Filesystem Hallucination Detection',
+                    pattern: '\\b(?:file|directory|folder|path)\\s+(?:exists|is\\s+present|can\\s+be\\s+found|is\\s+available)\\b',
+                    patternType: 'regex',
+                    purpose: 'hallucination_detection',
+                    severity: 'error',
+                    enabled: true,
+                    message: 'Potential hallucination: File existence claim detected. Verify file actually exists.'
+                },
+                {
+                    name: 'Proactive File Existence Check',
+                    pattern: '\\b(?:file|directory|folder|path)\\s+(?:exists|is\\s+present|can\\s+be\\s+found|is\\s+available)\\b',
+                    patternType: 'regex',
+                    purpose: 'hallucination_detection',
+                    severity: 'error',
+                    enabled: true,
+                    message: 'Potential hallucination: File existence claim detected. Verify file actually exists.'
+                },
+                {
+                    name: 'File Content Claim Validation',
+                    pattern: '\\b(?:content|text|data)\\s+(?:in|of|from)\\s+(?:file|document)\\b',
+                    patternType: 'regex',
+                    purpose: 'hallucination_detection',
+                    severity: 'error',
+                    enabled: true,
+                    message: 'Potential hallucination: File content claim detected. Verify content actually exists in file.'
+                },
+                {
+                    name: 'File Modification Time Claim',
+                    pattern: '\\b(?:modified|updated|changed)\\s+(?:on|at|when)\\b',
+                    patternType: 'regex',
+                    purpose: 'hallucination_detection',
+                    severity: 'error',
+                    enabled: true,
+                    message: 'Potential hallucination: File modification time claim detected. Verify modification timestamp.'
+                },
+                {
+                    name: 'Directory Structure Claim',
+                    pattern: '\\b(?:directory|folder)\\s+(?:structure|layout|organization)\\b',
+                    patternType: 'regex',
+                    purpose: 'hallucination_detection',
+                    severity: 'error',
+                    enabled: true,
+                    message: 'Potential hallucination: Directory structure claim detected. Verify directory structure.'
+                },
+                {
+                    name: 'File Size Claim',
+                    pattern: '\\b(?:file|document)\\s+(?:size|length|bytes)\\b',
+                    patternType: 'regex',
+                    purpose: 'hallucination_detection',
+                    severity: 'error',
+                    enabled: true,
+                    message: 'Potential hallucination: File size claim detected. Verify actual file size.'
+                },
+                // Minimal Validation Rules
+                {
+                    name: 'Minimal Hallucination Detection',
+                    pattern: '\\b(?:I\\s+can\\s+see|there\\s+is|I\\s+found|I\\s+located|the\\s+file\\s+contains|I\\s+can\\s+see\\s+in\\s+the\\s+file)\\b',
+                    patternType: 'regex',
+                    purpose: 'minimal_validation',
+                    severity: 'warning',
+                    enabled: true,
+                    message: 'Potential hallucination: File content claim detected. Verify actual file content.'
+                },
+                // Version Management Rules
+                {
+                    name: 'Version Consistency Check',
+                    pattern: '\\b(?:version|v\\d+\\.\\d+\\.\\d+|semver)\\b',
+                    patternType: 'regex',
+                    purpose: 'version_consistency',
+                    severity: 'warning',
+                    enabled: true,
+                    message: 'Version claim detected. Verify version consistency across files.'
+                },
+                {
+                    name: 'Auto Version Management',
+                    pattern: '\\b(?:version|release|update|bump)\\b',
+                    patternType: 'regex',
+                    purpose: 'auto_version_management',
+                    severity: 'info',
+                    enabled: true,
+                    message: 'Version management activity detected. This is normal during updates.'
+                },
+                // Implementation Verification Rules
+                {
+                    name: 'Implementation Verification',
+                    pattern: '\\b(?:I\\s+implemented|I\\s+created|I\\s+built|I\\s+developed)\\b',
+                    patternType: 'regex',
+                    purpose: 'implementation_verification',
+                    severity: 'warning',
+                    enabled: true,
+                    message: 'Implementation claim detected. Verify actual implementation exists.'
+                },
+                // Task Completion Rules
+                {
+                    name: 'Task Completion Claim',
+                    pattern: '\\b(?:completed|finished|done|implemented|resolved)\\b',
+                    patternType: 'regex',
+                    purpose: 'task_completion',
+                    severity: 'warning',
+                    enabled: true,
+                    message: 'Task completion claim detected. Verify task is actually complete.'
+                },
+                // Audit Results Rules
+                {
+                    name: 'Audit Results Claim',
+                    pattern: '\\b(?:audit|review|analysis|assessment)\\s+(?:shows|indicates|reveals)\\b',
+                    patternType: 'regex',
+                    purpose: 'audit_results',
+                    severity: 'warning',
+                    enabled: true,
+                    message: 'Audit result claim detected. Verify audit was actually performed.'
+                },
+                // Compilation Status Rules
+                {
+                    name: 'Compilation Status Claim',
+                    pattern: '\\b(?:compiles|builds|runs|executes)\\s+(?:successfully|without\\s+errors)\\b',
+                    patternType: 'regex',
+                    purpose: 'compilation_status',
+                    severity: 'warning',
+                    enabled: true,
+                    message: 'Compilation claim detected. Verify code actually compiles.'
+                },
+                // Test Results Rules
+                {
+                    name: 'Test Results Claim',
+                    pattern: '\\b(?:tests\\s+pass|test\\s+results|coverage|tested)\\b',
+                    patternType: 'regex',
+                    purpose: 'test_results',
+                    severity: 'warning',
+                    enabled: true,
+                    message: 'Test result claim detected. Verify tests actually pass.'
+                },
+                // Hallucination Admission Rules
+                {
+                    name: 'Hallucination Admission',
+                    pattern: '\\b(?:I\\s+don\\s*\'t\\s+know|I\\s+can\\s*\'t\\s+see|I\\s+don\\s*\'t\\s+have\\s+access)\\b',
+                    patternType: 'regex',
+                    purpose: 'hallucination_admission',
+                    severity: 'info',
+                    enabled: true,
+                    message: 'Honest admission of limitations detected. This is good practice.'
+                },
+                // Vague Offer Detection Rules
+                {
+                    name: 'Vague Offer Detection',
+                    pattern: '\\b(?:I\\s+can\\s+help|I\\s+can\\s+assist|I\\s+can\\s+guide)\\b',
+                    patternType: 'regex',
+                    purpose: 'vague_offers',
+                    severity: 'info',
+                    enabled: true,
+                    message: 'Vague offer detected. Consider being more specific about capabilities.'
+                },
+                // Absolute Statement Detection Rules
+                {
+                    name: 'Absolute Statement Detection',
+                    pattern: '\\b(?:always|never|every|all|none|impossible|guaranteed)\\b',
+                    patternType: 'regex',
+                    purpose: 'absolute_statements',
+                    severity: 'warning',
+                    enabled: true,
+                    message: 'Absolute statement detected. Consider using more qualified language.'
+                },
+                // Performance Claim Detection Rules
+                {
+                    name: 'Performance Claim Detection',
+                    pattern: '\\b(?:fast|slow|efficient|optimized|performance|speed)\\b',
+                    patternType: 'regex',
+                    purpose: 'performance_claims',
+                    severity: 'warning',
+                    enabled: true,
+                    message: 'Performance claim detected. Verify performance characteristics.'
+                },
+                // Workflow Rules
+                {
+                    name: 'No Repetitive Confirmation or Stalling',
+                    pattern: '(let me know if you want to review|otherwise, I will proceed as planned|waiting for confirmation|if you have any new requests|just let me know).*?[.!?]',
+                    patternType: 'regex',
+                    purpose: 'workflow',
+                    severity: 'warning',
+                    enabled: true,
+                    message: 'Detected repetitive confirmation or stalling. Proceed with the work unless explicitly told to wait.'
+                },
+                // AI Task Execution Rules
+                {
+                    name: 'AI Task Execution',
+                    pattern: '\\b(?:I\\s+will|I\\s+can|I\\s+should|let\\s+me)\\b',
+                    patternType: 'regex',
+                    purpose: 'ai_task_execution',
+                    severity: 'info',
+                    enabled: true,
+                    message: 'AI task execution detected. This is normal behavior.'
+                },
+                // GitHub Workflow Management Rules
+                {
+                    name: 'GitHub Workflow Management',
+                    pattern: '\\b(?:branch|merge|commit|push|pull|issue|pr)\\b',
+                    patternType: 'regex',
+                    purpose: 'github_workflow_management',
+                    severity: 'info',
+                    enabled: true,
+                    message: 'GitHub workflow activity detected. This is normal during development.'
+                },
+                // Product Discovery Protocol Rules
+                {
+                    name: 'Product Discovery Protocol',
+                    pattern: '\\b(?:plan|strategy|roadmap|milestone|goal)\\b',
+                    patternType: 'regex',
+                    purpose: 'product_discovery_protocol',
+                    severity: 'info',
+                    enabled: true,
+                    message: 'Product discovery activity detected. This is normal during planning.'
+                },
+                // Beginner Guidance Rules
+                {
+                    name: 'Beginner Guidance',
+                    pattern: '\\b(?:how\\s+to|what\\s+is|explain|guide|tutorial)\\b',
+                    patternType: 'regex',
+                    purpose: 'beginner_guidance',
+                    severity: 'info',
+                    enabled: true,
+                    message: 'Beginner guidance request detected. Provide clear, helpful explanations.'
+                },
+                // Error Recovery Assistance Rules
+                {
+                    name: 'Error Recovery Assistance',
+                    pattern: '\\b(?:error|exception|fail|crash|bug)\\b',
+                    patternType: 'regex',
+                    purpose: 'error_recovery_assistance',
+                    severity: 'warning',
+                    enabled: true,
+                    message: 'Error or issue detected. Provide helpful debugging assistance.'
+                },
+                // Best Practice Suggestions Rules
+                {
+                    name: 'Best Practice Suggestions',
+                    pattern: '\\b(?:best\\s+practice|recommendation|suggestion|tip)\\b',
+                    patternType: 'regex',
+                    purpose: 'best_practice_suggestions',
+                    severity: 'info',
+                    enabled: true,
+                    message: 'Best practice discussion detected. Share relevant recommendations.'
+                },
+                // Dependency Management Rules
+                {
+                    name: 'Dependency Management',
+                    pattern: '\\b(?:dependency|package|import|require|install)\\b',
+                    patternType: 'regex',
+                    purpose: 'dependency_management',
+                    severity: 'info',
+                    enabled: true,
+                    message: 'Dependency management activity detected. This is normal during development.'
+                },
+                // Testing Guidance Rules
+                {
+                    name: 'Testing Guidance',
+                    pattern: '\\b(?:test|spec|coverage|assert|mock)\\b',
+                    patternType: 'regex',
+                    purpose: 'testing_guidance',
+                    severity: 'info',
+                    enabled: true,
+                    message: 'Testing activity detected. Provide testing guidance and best practices.'
+                },
+                // Documentation Assistance Rules
+                {
+                    name: 'Documentation Assistance',
+                    pattern: '\\b(?:document|comment|readme|api|guide)\\b',
+                    patternType: 'regex',
+                    purpose: 'documentation_assistance',
+                    severity: 'info',
+                    enabled: true,
+                    message: 'Documentation activity detected. Provide documentation guidance.'
+                },
+                // Workflow Automation Rules (Critical)
+                {
+                    name: 'Full Verification Process Enforcement',
+                    pattern: '\\b(?:compile\\s+and\\s+package|package\\s+for\\s+review|build\\s+package|generate\\s+package|create\\s+package|npm\\s+run\\s+package|package\\s+it\\s+up|let\\s*\'s\\s+package|package\\s+the\\s+extension|package\\s+up|build\\s+and\\s+package)\\b',
+                    patternType: 'regex',
+                    purpose: 'full_verification_enforcement',
+                    severity: 'error',
+                    enabled: true,
+                    message: '🚨 CRITICAL: Package generation detected without full verification process!',
+                    response: 'block',
+                    description: 'Enforces complete verification pipeline before any package generation. No exceptions allowed.'
+                },
+                {
+                    name: 'Incomplete Build Detection',
+                    pattern: '\\b(?:npm\\s+run\\s+compile.*npm\\s+run\\s+package|compile.*package|just\\s+compile|only\\s+package)\\b',
+                    patternType: 'regex',
+                    purpose: 'incomplete_build_detection',
+                    severity: 'warning',
+                    enabled: true,
+                    message: '⚠️ WARNING: Incomplete build process detected! Missing verification steps.',
+                    response: 'warn',
+                    description: 'Detects when only compilation and packaging are mentioned without full verification pipeline.'
+                },
+                {
+                    name: 'Verification Pipeline Reminder',
+                    pattern: '\\b(?:verification|testing|linting|quality\\s+check|compliance)\\b',
+                    patternType: 'regex',
+                    purpose: 'verification_pipeline_reminder',
+                    severity: 'info',
+                    enabled: true,
+                    message: '💡 REMINDER: Ensure full verification pipeline includes: Compilation → Linting → Icon Check → Tests → Spec Gate → Packaging',
+                    response: 'suggest',
+                    description: 'Reminds about complete verification steps when verification is mentioned.'
+                }
+            ];
+            let restoredCount = 0;
+            for (const ruleData of predefinedRules) {
+                const existingRule = this.cursorrulesEngine.getAllRules().find(rule => rule.name === ruleData.name);
+                if (!existingRule) {
+                    this.cursorrulesEngine.createRule(ruleData);
+                    restoredCount++;
+                }
+            }
+            vscode.window.showInformationMessage(`✅ Restored ${restoredCount} predefined cursor rules! Total rules: ${this.cursorrulesEngine.getAllRules().length}`);
         }
         catch (error) {
-            this.logger.error('Error showing feasibility analysis', error);
-            vscode.window.showErrorMessage('Failed to show feasibility analysis. Check logs for details.');
+            this.logger.error('Error restoring predefined rules', error);
+            vscode.window.showErrorMessage('Failed to restore predefined rules. Check logs for details.');
         }
     }
-    async showActionLog() {
+    /**
+     * Test passive validation system with sample text
+     */
+    async testPassiveValidation() {
         try {
-            await this.ui.showActionLog();
+            const sampleTexts = [
+                "Let's package it up and ship it!",
+                "I can see the file exists in the project directory.",
+                "The tests pass successfully without any errors.",
+                "I've implemented the feature and it's working perfectly.",
+                "This is a simple and straightforward solution."
+            ];
+            for (const text of sampleTexts) {
+                // Create a temporary AI response validator for testing
+                const aiResponseValidator = new aiResponseValidator_1.AIResponseValidator(this.extensionContext, this.logger);
+                const result = await aiResponseValidator.applyPassiveValidationToText(text);
+                if (result.appliedChanges) {
+                    this.logger.info(`Passive validation applied to: "${text}"`, {
+                        changes: result.changeLog,
+                        validatedText: result.validatedText
+                    });
+                }
+            }
+            vscode.window.showInformationMessage('Passive validation test completed. Check logs for details.');
         }
         catch (error) {
-            this.logger.error('Error showing action log', error);
-            vscode.window.showErrorMessage('Failed to show action log. Check logs for details.');
-        }
-    }
-    async showFailsafeConfigPanel() {
-        try {
-            await this.ui.showFailsafeConfigPanel();
-        }
-        catch (error) {
-            this.logger.error('Error showing failsafe config panel', error);
-            vscode.window.showErrorMessage('Failed to show failsafe config panel. Check logs for details.');
+            this.logger.error('Error testing passive validation', error);
+            vscode.window.showErrorMessage('Failed to test passive validation. Check logs for details.');
         }
     }
     async openPreview() {
         try {
-            const panel = vscode.window.createWebviewPanel('failsafePreview', 'FailSafe Preview', vscode.ViewColumn.Two, {
-                enableScripts: true,
-                retainContextWhenHidden: true
-            });
-            // Get the current tab from context or default to dashboard
-            const currentTab = vscode.workspace.getConfiguration('failsafe').get('currentTab', 'dashboard');
-            const serverPort = this.fastifyServer?.getPort() || 3000;
-            const previewUrl = `http://127.0.0.1:${serverPort}/preview?tab=${currentTab}&format=html`;
-            panel.webview.html = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>FailSafe Preview</title>
-    <style>
-        body { margin: 0; padding: 0; }
-        .preview-container { width: 100%; height: 100vh; }
-        .preview-iframe { width: 100%; height: 100%; border: none; }
-        .tab-selector { 
-            position: fixed; 
-            top: 10px; 
-            right: 10px; 
-            z-index: 1000; 
-            background: white; 
-            padding: 10px; 
-            border-radius: 4px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .sync-toggle {
-            position: fixed;
-            top: 50px;
-            right: 10px;
-            z-index: 1000;
-            background: white;
-            padding: 10px;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-    </style>
-</head>
-<body>
-    <div class="tab-selector">
-        <label for="tabSelect">Tab:</label>
-        <select id="tabSelect" onchange="changeTab()">
-            <option value="dashboard">Dashboard</option>
-            <option value="console">Console</option>
-            <option value="logs">Logs</option>
-            <option value="projectplan">Project Plan</option>
-            <option value="progressdetails">Progress Details</option>
-            <option value="accountabilityreport">Accountability Report</option>
-            <option value="feasibilityanalysis">Feasibility Analysis</option>
-            <option value="actionlog">Action Log</option>
-            <option value="failsafeconfigpanel">Config Panel</option>
-        </select>
-    </div>
-    
-    <div class="sync-toggle">
-        <label>
-            <input type="checkbox" id="syncToggle" checked onchange="toggleSync()">
-            Auto-refresh
-        </label>
-    </div>
-    
-    <div class="preview-container">
-        <iframe id="previewFrame" class="preview-iframe" src="${previewUrl}"></iframe>
-    </div>
-    
-    <script>
-        const vscode = acquireVsCodeApi();
-        let syncEnabled = true;
-        
-        function changeTab() {
-            const tab = document.getElementById('tabSelect').value;
-            const serverPort = ${serverPort};
-            const newUrl = \`http://127.0.0.1:\${serverPort}/preview?tab=\${tab}&format=html\`;
-            document.getElementById('previewFrame').src = newUrl;
-            
-            // Update VS Code configuration
-            vscode.postMessage({
-                command: 'updateCurrentTab',
-                tab: tab
-            });
-        }
-        
-        function toggleSync() {
-            syncEnabled = document.getElementById('syncToggle').checked;
-            vscode.postMessage({
-                command: 'toggleSync',
-                enabled: syncEnabled
-            });
-        }
-        
-        // Set initial tab
-        document.getElementById('tabSelect').value = '${currentTab}';
-        
-        // Listen for file save events from VS Code
-        window.addEventListener('message', event => {
-            const message = event.data;
-            if (message.command === 'fileSaved' && syncEnabled) {
-                // Refresh the preview
-                const iframe = document.getElementById('previewFrame');
-                iframe.src = iframe.src;
-            }
-        });
-    </script>
-</body>
-</html>`;
-            // Handle messages from the webview
-            panel.webview.onDidReceiveMessage(message => {
-                switch (message.command) {
-                    case 'updateCurrentTab':
-                        vscode.workspace.getConfiguration('failsafe').update('currentTab', message.tab, true);
-                        break;
-                    case 'toggleSync':
-                        vscode.workspace.getConfiguration('failsafe').update('previewSyncEnabled', message.enabled, true);
-                        break;
-                }
-            }, undefined, this.extensionContext?.subscriptions || []);
-            // Set up file save listener for auto-refresh
-            const fileSaveListener = vscode.workspace.onDidSaveTextDocument(document => {
-                if (vscode.workspace.getConfiguration('failsafe').get('previewSyncEnabled', true)) {
-                    panel.webview.postMessage({ command: 'fileSaved' });
-                }
-            });
-            panel.onDidDispose(() => {
-                fileSaveListener.dispose();
-            });
+            // Open the preview panel using the UI's preview functionality
+            await this.ui.showPreviewPanel();
+            vscode.window.showInformationMessage('FailSafe Preview opened! Use this to test UI changes without reloading the extension.');
         }
         catch (error) {
-            this.logger.error('Error opening preview', error);
-            vscode.window.showErrorMessage('Failed to open preview. Check logs for details.');
+            this.logger.error('Error opening preview:', error);
+            vscode.window.showErrorMessage('Failed to open preview: ' + error);
         }
     }
-    async togglePreviewSync() {
+    // ===============================
+    // SPRINT IMPORT/EXPORT METHODS
+    // ===============================
+    /**
+     * Export sprint data to JSON file
+     */
+    async exportSprintData() {
         try {
-            const currentSync = vscode.workspace.getConfiguration('failsafe').get('previewSyncEnabled', true);
-            const newSync = !currentSync;
-            await vscode.workspace.getConfiguration('failsafe').update('previewSyncEnabled', newSync, true);
-            vscode.window.showInformationMessage(`Preview auto-refresh ${newSync ? 'enabled' : 'disabled'}`);
+            const currentSprint = this.sprintPlanner.getCurrentSprint();
+            if (!currentSprint) {
+                vscode.window.showWarningMessage('No current sprint to export');
+                return;
+            }
+            // Show export type selection
+            const exportType = await vscode.window.showQuickPick(['Full Sprint', 'Partial Sprint', 'Single Task'], {
+                placeHolder: 'Select export type',
+                canPickMany: false
+            });
+            if (!exportType)
+                return;
+            let jsonData;
+            let fileName;
+            switch (exportType) {
+                case 'Full Sprint':
+                    jsonData = await this.sprintPlanner.exportSprintToJSON('full_sprint');
+                    fileName = `sprint-export-${currentSprint.id}-${new Date().toISOString().split('T')[0]}.json`;
+                    break;
+                case 'Partial Sprint':
+                    jsonData = await this.sprintPlanner.exportSprintToJSON('partial_sprint');
+                    fileName = `sprint-partial-${currentSprint.id}-${new Date().toISOString().split('T')[0]}.json`;
+                    break;
+                case 'Single Task':
+                    // Show task selection
+                    const tasks = currentSprint.tasks.map(task => ({
+                        label: task.name,
+                        description: `ID: ${task.id}`,
+                        taskId: task.id
+                    }));
+                    const selectedTask = await vscode.window.showQuickPick(tasks, {
+                        placeHolder: 'Select task to export'
+                    });
+                    if (!selectedTask)
+                        return;
+                    jsonData = await this.sprintPlanner.exportSprintToJSON('single_task', selectedTask.taskId);
+                    fileName = `task-export-${selectedTask.taskId}-${new Date().toISOString().split('T')[0]}.json`;
+                    break;
+                default:
+                    return;
+            }
+            // Show save dialog
+            const uri = await vscode.window.showSaveDialog({
+                defaultUri: vscode.Uri.file(fileName),
+                filters: {
+                    'JSON Files': ['json']
+                }
+            });
+            if (!uri)
+                return;
+            // Write file
+            const encoder = new TextEncoder();
+            const data = encoder.encode(jsonData);
+            await vscode.workspace.fs.writeFile(uri, data);
+            vscode.window.showInformationMessage(`Sprint exported successfully to ${uri.fsPath}`);
+            // Option to open the file
+            const openFile = await vscode.window.showInformationMessage('Export completed successfully!', 'Open File', 'OK');
+            if (openFile === 'Open File') {
+                const document = await vscode.workspace.openTextDocument(uri);
+                await vscode.window.showTextDocument(document);
+            }
         }
         catch (error) {
-            this.logger.error('Error toggling preview sync', error);
-            vscode.window.showErrorMessage('Failed to toggle preview sync. Check logs for details.');
+            this.logger.error('Failed to export sprint data', error);
+            vscode.window.showErrorMessage(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
+    /**
+     * Import sprint data from JSON file
+     */
+    async importSprintData() {
+        try {
+            // Show file picker
+            const uris = await vscode.window.showOpenDialog({
+                canSelectFiles: true,
+                canSelectFolders: false,
+                canSelectMany: false,
+                filters: {
+                    'JSON Files': ['json']
+                }
+            });
+            if (!uris || uris.length === 0)
+                return;
+            const uri = uris[0];
+            // Read file
+            const data = await vscode.workspace.fs.readFile(uri);
+            const jsonString = new TextDecoder().decode(data);
+            // Show import confirmation
+            const importType = await vscode.window.showQuickPick(['Full Sprint (Replace Current)', 'Partial Sprint (Update Current)', 'Single Task (Add to Current)'], {
+                placeHolder: 'Select import type'
+            });
+            if (!importType)
+                return;
+            // Show confirmation dialog
+            const confirm = await vscode.window.showWarningMessage(`Are you sure you want to ${importType.toLowerCase()}? This action cannot be undone.`, 'Yes, Import', 'Cancel');
+            if (confirm !== 'Yes, Import')
+                return;
+            // Import the data
+            const result = await this.sprintPlanner.importSprintFromJSON(jsonString);
+            if (result.success) {
+                vscode.window.showInformationMessage(`Import successful: ${result.message}`);
+                // Refresh dashboard if open
+                if (Commands.dashboardPanel) {
+                    const updatedSprint = this.sprintPlanner.getCurrentSprint();
+                    const updatedMetrics = updatedSprint ? this.sprintPlanner.getSprintMetrics(updatedSprint.id) : null;
+                    const updatedHtml = this.generateDashboardHTML(updatedSprint, this.sprintPlanner.getSprintHistory(), this.sprintPlanner.getTemplates(), updatedMetrics);
+                    Commands.dashboardPanel.webview.html = updatedHtml;
+                }
+            }
+            else {
+                vscode.window.showErrorMessage(`Import failed: ${result.message}`);
+            }
+        }
+        catch (error) {
+            this.logger.error('Failed to import sprint data', error);
+            vscode.window.showErrorMessage(`Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 }

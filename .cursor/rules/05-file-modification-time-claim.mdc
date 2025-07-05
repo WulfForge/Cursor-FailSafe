@@ -1,0 +1,32 @@
+---
+description: |
+  Validates claims about file modification times to prevent hallucinations.
+globs: ["*"]
+alwaysApply: false
+severity: error
+pattern: "\\b(?:modified|updated|changed)\\s+(?:on|at|when)\\b"
+response: warn
+---
+# File Modification Time Claim
+
+## Purpose
+hallucination_detection
+
+## Pattern Matches
+- "modified on"
+- "updated at"
+- "changed when"
+
+## Validation Required
+When this pattern is detected, verify:
+1. The file actually exists
+2. The modification time claim is accurate
+3. File system metadata has been checked
+
+## Response
+- **Error Level:** Flag as potential hallucination
+- **Action:** Require file metadata verification
+- **Fallback:** Check actual file modification time
+
+## Implementation Notes
+This rule prevents AI from making false claims about when files were last modified.

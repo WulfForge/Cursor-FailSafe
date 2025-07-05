@@ -1,0 +1,41 @@
+---
+description: |
+  Monitors testing activities to ensure comprehensive test coverage.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "\b(?:test|spec|coverage|assert|mock)\b"
+response: suggest
+---
+# Testing Guidance
+
+**Rule Type:** Regex Pattern  
+**Severity:** Info  
+**Pattern:** `\b(?:test|spec|coverage|assert|mock)\b`
+
+## Description
+Monitors testing activities to ensure comprehensive test coverage.
+
+## Purpose
+testing_guidance
+
+## Pattern Matches
+- "test"
+- "spec"
+- "coverage"
+- "assert"
+- "mock"
+
+## Validation Required
+When this pattern is detected, verify:
+1. Tests are comprehensive and meaningful
+2. Coverage targets are appropriate
+3. Test quality is high
+
+## Response
+- **Info Level:** Testing reminder
+- **Action:** Ensure comprehensive testing
+- **Fallback:** Suggest test improvement
+
+## Implementation Notes
+This rule helps ensure testing follows best practices and provides adequate coverage.

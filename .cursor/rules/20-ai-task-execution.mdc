@@ -1,0 +1,40 @@
+---
+description: |
+  Monitors AI task execution to ensure proper completion.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "\b(?:I\s+will|I\s+can|I\s+should)\b"
+response: suggest
+---
+# AI Task Execution
+
+**Rule Type:** Regex Pattern  
+**Severity:** Info  
+**Pattern:** `\b(?:I\s+will|I\s+can|I\s+should|let\s+me)\b`
+
+## Description
+Monitors AI task execution statements to ensure they are actionable.
+
+## Purpose
+ai_task_execution
+
+## Pattern Matches
+- "I will"
+- "I can"
+- "I should"
+- "let me"
+
+## Validation Required
+When this pattern is detected, verify:
+1. The task is actually executable
+2. The AI has the necessary capabilities
+3. The action is appropriate and safe
+
+## Response
+- **Info Level:** Task execution monitoring
+- **Action:** Ensure task is executable
+- **Fallback:** Verify AI capabilities
+
+## Implementation Notes
+This rule helps ensure AI task execution statements are realistic and actionable.

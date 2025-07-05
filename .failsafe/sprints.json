@@ -8,23 +8,6 @@
     "duration": 7,
     "tasks": [
       {
-        "name": "Quick Planning",
-        "description": "Rapid task planning and estimation",
-        "storyPoints": 1,
-        "estimatedHours": 2,
-        "priority": "high",
-        "riskLevel": "medium",
-        "id": "task-1750568125875-0",
-        "sprintId": "sprint-1750568125875-x1yae4ikw",
-        "sprintPosition": 0,
-        "status": "not_started",
-        "dependencies": [],
-        "blockers": [],
-        "acceptanceCriteria": [],
-        "definitionOfDone": [],
-        "estimatedDuration": 240
-      },
-      {
         "name": "Daily Sync",
         "description": "Brief daily team synchronization",
         "storyPoints": 1,
@@ -40,6 +23,24 @@
         "acceptanceCriteria": [],
         "definitionOfDone": [],
         "estimatedDuration": 240
+      },
+      {
+        "id": "task-1751312673096",
+        "name": "Daily Sync (Copy)",
+        "description": "Brief daily team synchronization",
+        "status": "not_started",
+        "priority": "medium",
+        "storyPoints": 1,
+        "sprintId": "sprint-1750568125875-xc9rdf10g",
+        "estimatedHours": 1,
+        "sprintPosition": 2,
+        "dependencies": [],
+        "blockers": [],
+        "riskLevel": "low",
+        "acceptanceCriteria": [],
+        "definitionOfDone": [],
+        "estimatedDuration": 60,
+        "assignee": "User"
       }
     ],
     "status": "active",
@@ -47,7 +48,7 @@
     "capacity": 8,
     "teamSize": 3,
     "createdAt": "2025-06-22T04:55:25.875Z",
-    "updatedAt": "2025-06-22T04:55:29.313Z",
+    "updatedAt": "2025-06-30T19:44:43.378Z",
     "createdBy": "User",
     "version": "1.0",
     "metadata": {
@@ -62,5 +63,5 @@
     }
   },
   "sprintHistory": [],
-  "lastUpdated": "2025-06-22T04:55:29.313Z"
+  "lastUpdated": "2025-06-30T19:44:43.378Z"
 }

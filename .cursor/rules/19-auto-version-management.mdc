@@ -1,0 +1,40 @@
+---
+description: |
+  Monitors version management activities to ensure consistency.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "\b(?:version|release|update|bump)\b"
+response: suggest
+---
+# Auto Version Management
+
+**Rule Type:** Regex Pattern  
+**Severity:** Info  
+**Pattern:** `\b(?:version|release|update|bump)\b`
+
+## Description
+Monitors version management activities to ensure consistency.
+
+## Purpose
+auto_version_management
+
+## Pattern Matches
+- "version"
+- "release"
+- "update"
+- "bump"
+
+## Validation Required
+When this pattern is detected, verify:
+1. Version numbers are updated consistently
+2. All version files are synchronized
+3. Release notes are updated
+
+## Response
+- **Info Level:** Version management reminder
+- **Action:** Suggest version consistency check
+- **Fallback:** Encourage comprehensive version update
+
+## Implementation Notes
+This rule helps maintain version consistency across all project files and documentation.

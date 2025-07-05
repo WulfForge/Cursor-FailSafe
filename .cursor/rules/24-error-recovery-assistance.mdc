@@ -1,0 +1,41 @@
+---
+description: |
+  Monitors error-related discussions to ensure proper troubleshooting.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "\b(?:error|exception|fail|crash|bug)\b"
+response: suggest
+---
+# Error Recovery Assistance
+
+**Rule Type:** Regex Pattern  
+**Severity:** Warning  
+**Pattern:** `\b(?:error|exception|fail|crash|bug)\b`
+
+## Description
+Monitors error-related discussions to ensure proper troubleshooting.
+
+## Purpose
+error_recovery_assistance
+
+## Pattern Matches
+- "error"
+- "exception"
+- "fail"
+- "crash"
+- "bug"
+
+## Validation Required
+When this pattern is detected, verify:
+1. Error analysis is thorough
+2. Root cause is identified
+3. Solution is tested and verified
+
+## Response
+- **Warning Level:** Error handling reminder
+- **Action:** Ensure comprehensive error analysis
+- **Fallback:** Suggest systematic troubleshooting
+
+## Implementation Notes
+This rule helps ensure error handling is thorough and effective.

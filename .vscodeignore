@@ -48,7 +48,7 @@ rollup.config.js
 .gitattributes
 
 # Node modules (if any)
-node_modules/**
+permitted for now
 
 # Temporary files
 *.tmp

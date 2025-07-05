@@ -1,0 +1,41 @@
+---
+description: |
+  Monitors beginner guidance requests to ensure helpful responses.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "\b(?:how\s+to|what\s+is|explain|guide|tutorial)\b"
+response: suggest
+---
+# Beginner Guidance
+
+**Rule Type:** Regex Pattern  
+**Severity:** Info  
+**Pattern:** `\b(?:how\s+to|what\s+is|explain|guide|tutorial)\b`
+
+## Description
+Monitors beginner guidance requests to ensure helpful responses.
+
+## Purpose
+beginner_guidance
+
+## Pattern Matches
+- "how to"
+- "what is"
+- "explain"
+- "guide"
+- "tutorial"
+
+## Validation Required
+When this pattern is detected, verify:
+1. Explanation is clear and accessible
+2. Steps are well-defined
+3. Examples are provided when helpful
+
+## Response
+- **Info Level:** Beginner guidance reminder
+- **Action:** Ensure clear, step-by-step explanation
+- **Fallback:** Provide comprehensive guidance
+
+## Implementation Notes
+This rule helps ensure beginner guidance is clear, comprehensive, and helpful.

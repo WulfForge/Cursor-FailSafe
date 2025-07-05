@@ -1,0 +1,35 @@
+---
+description: |
+  Detects repetitive confirmation or stalling patterns that slow down workflow.
+globs: ["*"]
+alwaysApply: false
+severity: info
+pattern: "(let me know if you want to review|otherwise, I will proceed as planned|waiting for confirmation|if you have any new requests|just let me know).*?[.!?]"
+response: suggest
+---
+# No Repetitive Confirmation or Stalling
+
+**Rule Type:** Regex Pattern  
+**Severity:** Warning  
+**Pattern:** `(let me know if you want to review|otherwise, I will proceed as planned|waiting for confirmation|if you have any new requests|just let me know).*?[.!?]`
+
+## Description
+Detects repetitive confirmation or stalling patterns that slow down workflow.
+
+## Purpose
+workflow
+
+## Pattern Matches
+- "let me know if you want to review"
+- "otherwise, I will proceed as planned"
+- "waiting for confirmation"
+- "if you have any new requests"
+- "just let me know"
+
+## Response
+- **Warning Level:** Detected repetitive confirmation or stalling
+- **Action:** Proceed with the work unless explicitly told to wait
+- **Message:** Detected repetitive confirmation or stalling. Proceed with the work unless explicitly told to wait.
+
+## Implementation Notes
+This rule helps maintain workflow efficiency by preventing unnecessary stalling and repetitive confirmations.
