@@ -1,0 +1,92 @@
+[
+  {
+    "timestamp": "2025-06-18T21:59:16.821Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250618-175916"
+  },
+  {
+    "timestamp": "2025-06-18T21:59:16.823Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250618-175916"
+  },
+  {
+    "timestamp": "2025-06-18T21:59:16.824Z",
+    "level": "info",
+    "message": "Loaded 25 Cursorrules",
+    "sessionId": "session-20250618-175916"
+  },
+  {
+    "timestamp": "2025-06-18T21:59:16.826Z",
+    "level": "info",
+    "message": "Saved 25 Cursorrules",
+    "sessionId": "session-20250618-175916"
+  },
+  {
+    "timestamp": "2025-06-18T21:59:16.827Z",
+    "level": "info",
+    "message": "Added inherent rule: Passive Troubleshooting Tracking",
+    "sessionId": "session-20250618-175916"
+  },
+  {
+    "timestamp": "2025-06-18T21:59:16.828Z",
+    "level": "info",
+    "message": "Saved 26 Cursorrules",
+    "sessionId": "session-20250618-175916"
+  },
+  {
+    "timestamp": "2025-06-18T21:59:16.829Z",
+    "level": "info",
+    "message": "Saved 26 Cursorrules",
+    "sessionId": "session-20250618-175916"
+  },
+  {
+    "timestamp": "2025-06-18T21:59:16.831Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250618-175916"
+  },
+  {
+    "timestamp": "2025-06-18T21:59:16.831Z",
+    "level": "info",
+    "message": "FailSafe extension activating...",
+    "sessionId": "session-20250618-175916"
+  },
+  {
+    "timestamp": "2025-06-18T21:59:16.834Z",
+    "level": "info",
+    "message": "All FailSafe commands registered successfully",
+    "sessionId": "session-20250618-175916"
+  },
+  {
+    "timestamp": "2025-06-18T21:59:29.612Z",
+    "level": "info",
+    "message": "Dashboard shown",
+    "sessionId": "session-20250618-175916"
+  },
+  {
+    "timestamp": "2025-06-18T21:59:57.789Z",
+    "level": "info",
+    "message": "Manage cursorrules command executed",
+    "sessionId": "session-20250618-175916"
+  },
+  {
+    "timestamp": "2025-06-18T22:00:01.292Z",
+    "level": "info",
+    "message": "Create cursorrule command executed",
+    "sessionId": "session-20250618-175916"
+  },
+  {
+    "timestamp": "2025-06-19T05:00:48.846Z",
+    "level": "info",
+    "message": "Create cursorrule command executed",
+    "sessionId": "session-20250618-175916"
+  },
+  {
+    "timestamp": "2025-06-19T05:00:50.508Z",
+    "level": "info",
+    "message": "Manage cursorrules command executed",
+    "sessionId": "session-20250618-175916"
+  }
+]

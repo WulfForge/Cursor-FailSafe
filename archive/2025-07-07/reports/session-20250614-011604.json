@@ -1,0 +1,98 @@
+[
+  {
+    "timestamp": "2025-06-14T05:16:04.023Z",
+    "level": "info",
+    "message": "Detected 104 installed extensions",
+    "sessionId": "session-20250614-011604"
+  },
+  {
+    "timestamp": "2025-06-14T05:16:04.025Z",
+    "level": "info",
+    "message": "Detected 104 installed extensions",
+    "sessionId": "session-20250614-011604"
+  },
+  {
+    "timestamp": "2025-06-14T05:16:04.026Z",
+    "level": "info",
+    "message": "FailSafe extension activating...",
+    "sessionId": "session-20250614-011604"
+  },
+  {
+    "timestamp": "2025-06-14T05:16:04.026Z",
+    "level": "info",
+    "message": "All FailSafe commands registered successfully",
+    "sessionId": "session-20250614-011604"
+  },
+  {
+    "timestamp": "2025-06-14T05:16:04.028Z",
+    "level": "info",
+    "message": "Timeout watchdog initializing...",
+    "sessionId": "session-20250614-011604"
+  },
+  {
+    "timestamp": "2025-06-14T05:16:04.029Z",
+    "level": "info",
+    "message": "Project loaded from file",
+    "data": {
+      "taskCount": 5
+    },
+    "sessionId": "session-20250614-011604"
+  },
+  {
+    "timestamp": "2025-06-14T05:16:04.030Z",
+    "level": "info",
+    "message": "Project plan initialized",
+    "data": {
+      "taskCount": 5
+    },
+    "sessionId": "session-20250614-011604"
+  },
+  {
+    "timestamp": "2025-06-14T05:16:04.031Z",
+    "level": "info",
+    "message": "Task engine initializing...",
+    "sessionId": "session-20250614-011604"
+  },
+  {
+    "timestamp": "2025-06-14T05:16:04.032Z",
+    "level": "info",
+    "message": "Project loaded from file",
+    "data": {
+      "taskCount": 5
+    },
+    "sessionId": "session-20250614-011604"
+  },
+  {
+    "timestamp": "2025-06-14T05:16:04.033Z",
+    "level": "info",
+    "message": "Project plan initialized",
+    "data": {
+      "taskCount": 5
+    },
+    "sessionId": "session-20250614-011604"
+  },
+  {
+    "timestamp": "2025-06-14T05:16:04.034Z",
+    "level": "info",
+    "message": "UI initialized successfully",
+    "sessionId": "session-20250614-011604"
+  },
+  {
+    "timestamp": "2025-06-14T05:16:04.034Z",
+    "level": "info",
+    "message": "All components initialized successfully",
+    "sessionId": "session-20250614-011604"
+  },
+  {
+    "timestamp": "2025-06-14T05:16:04.035Z",
+    "level": "info",
+    "message": "AI request interception set up",
+    "sessionId": "session-20250614-011604"
+  },
+  {
+    "timestamp": "2025-06-14T05:16:04.036Z",
+    "level": "info",
+    "message": "FailSafe extension activated successfully",
+    "sessionId": "session-20250614-011604"
+  }
+]

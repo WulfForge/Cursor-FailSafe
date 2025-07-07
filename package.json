@@ -736,11 +736,8 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./test/runTest.js",
-    "prepackage": "node scripts/check-icon.js",
     "package": "vsce package",
-    "publish": "vsce publish",
-    "spec-gate": "node scripts/spec-gate.js",
-    "preview": "node scripts/start-preview.js"
+    "publish": "vsce publish"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

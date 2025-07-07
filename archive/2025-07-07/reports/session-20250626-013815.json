@@ -1,0 +1,1362 @@
+[
+  {
+    "timestamp": "2025-06-26T05:38:15.722Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.725Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.729Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.735Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.738Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.744Z",
+    "level": "info",
+    "message": "Sprint data loaded",
+    "data": {
+      "currentSprint": "sprint-1750568125875-xc9rdf10g",
+      "historyCount": 0
+    },
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.750Z",
+    "level": "info",
+    "message": "Sprint templates loaded",
+    "data": {
+      "templateCount": 2
+    },
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.754Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.758Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.763Z",
+    "level": "info",
+    "message": "Sprint data loaded",
+    "data": {
+      "currentSprint": "sprint-1750568125875-xc9rdf10g",
+      "historyCount": 0
+    },
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.766Z",
+    "level": "info",
+    "message": "Sprint templates loaded",
+    "data": {
+      "templateCount": 2
+    },
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.768Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.772Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.776Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.778Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.779Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.781Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.786Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.787Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.789Z",
+    "level": "info",
+    "message": "Global AI response pipeline initialized",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.792Z",
+    "level": "info",
+    "message": "AI Response Hooks initialized",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.794Z",
+    "level": "info",
+    "message": "AI response hook registered: vscode-chat",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.795Z",
+    "level": "info",
+    "message": "AI response hook registered: github-copilot",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.797Z",
+    "level": "info",
+    "message": "AI response hook registered: cursor-ai",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.798Z",
+    "level": "info",
+    "message": "AI response hook registered: general-ai",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.800Z",
+    "level": "info",
+    "message": "AI response hooks initialized",
+    "data": {
+      "hookCount": 4,
+      "enabled": true
+    },
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.802Z",
+    "level": "info",
+    "message": "Global AI response hooks initialized",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.804Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.806Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.810Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.813Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.814Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.817Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.822Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.824Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.825Z",
+    "level": "info",
+    "message": "Chat Response Interceptor initialized",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.827Z",
+    "level": "info",
+    "message": "FailSafe Extension initialized with AI response pipeline, hooks, Chat Response Interceptor, and Design Document Manager",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.829Z",
+    "level": "info",
+    "message": "FailSafe extension activating...",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.831Z",
+    "level": "info",
+    "message": "Extension context: c:\\Users\\krkna\\.cursor\\extensions\\mythologiq.failsafe-cursor-2.5.2",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.832Z",
+    "level": "info",
+    "message": "Workspace folders: 1",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.834Z",
+    "level": "info",
+    "message": "Basic project plan initialized",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.836Z",
+    "level": "info",
+    "message": "Task engine initializing...",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.838Z",
+    "level": "info",
+    "message": "Basic project plan initialized",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.851Z",
+    "level": "info",
+    "message": "Version manager initialized successfully",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.852Z",
+    "level": "info",
+    "message": "All components initialized successfully",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.854Z",
+    "level": "info",
+    "message": "Initializing design document for workspace...",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.856Z",
+    "level": "info",
+    "message": "Design document initialization completed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.857Z",
+    "level": "info",
+    "message": "Registering commands...",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.860Z",
+    "level": "info",
+    "message": "All FailSafe commands registered successfully",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.861Z",
+    "level": "info",
+    "message": "Commands registered successfully",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.863Z",
+    "level": "info",
+    "message": "Registering sidebar provider...",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.865Z",
+    "level": "info",
+    "message": "Sidebar provider registered successfully",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.867Z",
+    "level": "info",
+    "message": "Setting up chat response interceptor...",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.868Z",
+    "level": "info",
+    "message": "Setting up chat response listeners...",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.870Z",
+    "level": "info",
+    "message": "Chat response listeners set up successfully",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.872Z",
+    "level": "info",
+    "message": "Chat response interceptor set up successfully",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.874Z",
+    "level": "info",
+    "message": "Version checking file watcher set up successfully",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:15.876Z",
+    "level": "info",
+    "message": "FailSafe extension activated successfully",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:16.890Z",
+    "level": "info",
+    "message": "Attempting to auto-open dashboard...",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:16.893Z",
+    "level": "error",
+    "message": "Failed to read recent logs",
+    "data": {},
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:16.895Z",
+    "level": "error",
+    "message": "Failed to read recent logs",
+    "data": {},
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:16.900Z",
+    "level": "info",
+    "message": "Dashboard auto-opened successfully",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T05:38:18.467Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T06:19:36.579Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T06:19:36.714Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T06:19:36.718Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T06:19:36.745Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T06:19:36.970Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T06:19:36.972Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T06:19:37.233Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T06:19:37.238Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T06:19:40.478Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T06:50:45.146Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T07:00:04.479Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T07:00:04.665Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T07:00:20.240Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:12:34.291Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:13:05.211Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:13:29.705Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:13:32.328Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:13:54.273Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:13:56.908Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:07.332Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.077Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.080Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.086Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.089Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.676Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.679Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.681Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.689Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.697Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.701Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.708Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.726Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.733Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.736Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.741Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.745Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.750Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.756Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.760Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.765Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.772Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.782Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.808Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.814Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.818Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.823Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.828Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.832Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.837Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.845Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:21.851Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.484Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.487Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.490Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.492Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.495Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.497Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.501Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.508Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.512Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.515Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.519Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.523Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.526Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.531Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.534Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.536Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.539Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.544Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.552Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.558Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.564Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.569Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.573Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.577Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.580Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.584Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.590Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.596Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.599Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.605Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.609Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.612Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.618Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.624Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.631Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.640Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.648Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.654Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.670Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.675Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.679Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.682Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.687Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.690Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:22.693Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:14:26.586Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:20:06.551Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T19:20:06.795Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T20:39:43.076Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T23:05:21.214Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T23:05:21.717Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T23:05:21.937Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-26T23:15:39.050Z",
+    "level": "info",
+    "message": "Version consistency check passed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:26.967Z",
+    "level": "info",
+    "message": "Version warning logged: CHANGELOG.md missing current version entry",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:26.971Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:26.972Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:26.974Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:26.976Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "CHANGELOG.md missing current version entry",
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:27.362Z",
+    "level": "info",
+    "message": "Version warning logged: CHANGELOG.md missing current version entry",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:27.363Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:27.365Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:27.369Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:27.370Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "CHANGELOG.md missing current version entry",
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:34.112Z",
+    "level": "info",
+    "message": "Version warning logged: CHANGELOG.md missing current version entry",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:34.115Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:34.119Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:34.125Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:34.131Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "CHANGELOG.md missing current version entry",
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:35.760Z",
+    "level": "info",
+    "message": "Version warning logged: CHANGELOG.md missing current version entry",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:35.762Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:35.765Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:35.769Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:35.772Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "CHANGELOG.md missing current version entry",
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:36.496Z",
+    "level": "info",
+    "message": "Version warning logged: CHANGELOG.md missing current version entry",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:36.498Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:36.501Z",
+    "level": "info",
+    "message": "Version warning logged: package.json badge version mismatch",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:36.504Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:36.507Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "CHANGELOG.md missing current version entry",
+      "README.md badge version mismatch",
+      "package.json badge version mismatch"
+    ],
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:52.519Z",
+    "level": "info",
+    "message": "Version warning logged: CHANGELOG.md missing current version entry",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:52.521Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:52.523Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:33:52.524Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "CHANGELOG.md missing current version entry",
+      "README.md badge version mismatch"
+    ],
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:37:41.764Z",
+    "level": "info",
+    "message": "Version warning logged: CHANGELOG.md missing current version entry",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:37:41.765Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:37:41.768Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:37:41.770Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "CHANGELOG.md missing current version entry",
+      "README.md badge version mismatch"
+    ],
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:37:41.834Z",
+    "level": "info",
+    "message": "Version warning logged: CHANGELOG.md missing current version entry",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:37:41.836Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:37:41.839Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:37:41.843Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "CHANGELOG.md missing current version entry",
+      "README.md badge version mismatch"
+    ],
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:37:42.332Z",
+    "level": "info",
+    "message": "Version warning logged: CHANGELOG.md missing current version entry",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:37:42.335Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:37:42.338Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:37:42.340Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "CHANGELOG.md missing current version entry",
+      "README.md badge version mismatch"
+    ],
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:38:14.713Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:38:14.714Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:38:14.716Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "README.md badge version mismatch"
+    ],
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:38:16.113Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:38:16.120Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:38:16.126Z",
+    "level": "warn",
+    "message": "Version consistency issues found:",
+    "data": [
+      "README.md badge version mismatch"
+    ],
+    "sessionId": "session-20250626-013815"
+  },
+  {
+    "timestamp": "2025-06-27T00:41:20.461Z",
+    "level": "error",
+    "message": "Failed to check version consistency:",
+    "data": {
+      "name": "Canceled"
+    },
+    "sessionId": "session-20250626-013815"
+  }
+]

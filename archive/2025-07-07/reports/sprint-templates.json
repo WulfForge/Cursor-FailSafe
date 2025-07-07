@@ -1,0 +1,82 @@
+[
+  {
+    "id": "standard-2-week",
+    "name": "Standard 2-Week Sprint",
+    "description": "Standard agile sprint with 2-week duration",
+    "duration": 14,
+    "velocity": 20,
+    "capacity": 8,
+    "teamSize": 4,
+    "defaultTasks": [
+      {
+        "name": "Sprint Planning",
+        "description": "Plan and estimate sprint tasks",
+        "storyPoints": 2,
+        "estimatedHours": 4,
+        "priority": "high",
+        "riskLevel": "low"
+      },
+      {
+        "name": "Daily Standups",
+        "description": "Daily team synchronization",
+        "storyPoints": 1,
+        "estimatedHours": 2,
+        "priority": "medium",
+        "riskLevel": "low"
+      },
+      {
+        "name": "Sprint Review",
+        "description": "Review completed work with stakeholders",
+        "storyPoints": 3,
+        "estimatedHours": 4,
+        "priority": "high",
+        "riskLevel": "medium"
+      },
+      {
+        "name": "Sprint Retrospective",
+        "description": "Team reflection and improvement planning",
+        "storyPoints": 2,
+        "estimatedHours": 3,
+        "priority": "medium",
+        "riskLevel": "low"
+      }
+    ],
+    "tags": [
+      "agile",
+      "standard",
+      "2-week"
+    ]
+  },
+  {
+    "id": "quick-1-week",
+    "name": "Quick 1-Week Sprint",
+    "description": "Fast-paced sprint for urgent projects",
+    "duration": 7,
+    "velocity": 10,
+    "capacity": 8,
+    "teamSize": 3,
+    "defaultTasks": [
+      {
+        "name": "Quick Planning",
+        "description": "Rapid task planning and estimation",
+        "storyPoints": 1,
+        "estimatedHours": 2,
+        "priority": "high",
+        "riskLevel": "medium"
+      },
+      {
+        "name": "Daily Sync",
+        "description": "Brief daily team synchronization",
+        "storyPoints": 1,
+        "estimatedHours": 1,
+        "priority": "medium",
+        "riskLevel": "low"
+      }
+    ],
+    "tags": [
+      "quick",
+      "urgent",
+      "1-week"
+    ]
+  }
+]

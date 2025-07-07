@@ -1,0 +1,421 @@
+[
+  {
+    "timestamp": "2025-06-14T01:46:12.034Z",
+    "level": "info",
+    "message": "Detected 104 installed extensions",
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T01:46:12.037Z",
+    "level": "info",
+    "message": "Detected 104 installed extensions",
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T01:46:12.038Z",
+    "level": "info",
+    "message": "FailSafe extension activating...",
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T01:46:12.040Z",
+    "level": "info",
+    "message": "All FailSafe commands registered successfully",
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T01:46:12.041Z",
+    "level": "info",
+    "message": "Timeout watchdog initializing...",
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T01:46:12.042Z",
+    "level": "info",
+    "message": "Project plan initialized",
+    "data": {
+      "taskCount": 5
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T01:46:12.043Z",
+    "level": "info",
+    "message": "Task engine initializing...",
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T01:46:12.044Z",
+    "level": "info",
+    "message": "Project plan initialized",
+    "data": {
+      "taskCount": 5
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T01:46:12.046Z",
+    "level": "info",
+    "message": "UI initialized successfully",
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T01:46:12.047Z",
+    "level": "info",
+    "message": "All components initialized successfully",
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T01:46:12.048Z",
+    "level": "info",
+    "message": "AI request interception set up",
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T01:46:12.049Z",
+    "level": "info",
+    "message": "FailSafe extension activated successfully",
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:31:52.055Z",
+    "level": "info",
+    "message": "Dashboard shown",
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:33:40.371Z",
+    "level": "info",
+    "message": "Project activity recorded",
+    "data": {
+      "activity": "Completed task: Project Setup",
+      "taskId": "setup",
+      "timestamp": "2025-06-14T02:33:40.371Z"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:33:40.372Z",
+    "level": "info",
+    "message": "Task completed",
+    "data": {
+      "taskId": "setup",
+      "taskName": "Project Setup"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:44:54.187Z",
+    "level": "info",
+    "message": "Project activity recorded",
+    "data": {
+      "activity": "Started task: Core Features Implementation",
+      "taskId": "core-features",
+      "timestamp": "2025-06-14T02:44:54.187Z"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:44:54.188Z",
+    "level": "info",
+    "message": "Task started",
+    "data": {
+      "taskId": "core-features",
+      "taskName": "Core Features Implementation"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:44:54.193Z",
+    "level": "info",
+    "message": "Project activity recorded",
+    "data": {
+      "activity": "Task execution started: Core Features Implementation",
+      "taskId": "core-features",
+      "timestamp": "2025-06-14T02:44:54.193Z"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:44:54.195Z",
+    "level": "info",
+    "message": "Auto-advanced to next task",
+    "data": {
+      "taskId": "core-features",
+      "taskName": "Core Features Implementation"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:03.520Z",
+    "level": "info",
+    "message": "Project activity recorded",
+    "data": {
+      "activity": "Completed task: Core Features Implementation",
+      "taskId": "core-features",
+      "timestamp": "2025-06-14T02:47:03.520Z"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:03.521Z",
+    "level": "info",
+    "message": "Task completed",
+    "data": {
+      "taskId": "core-features",
+      "taskName": "Core Features Implementation"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:03.523Z",
+    "level": "info",
+    "message": "Project activity recorded",
+    "data": {
+      "activity": "Task completed: Core Features Implementation",
+      "taskId": "core-features",
+      "timestamp": "2025-06-14T02:47:03.523Z"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:03.524Z",
+    "level": "info",
+    "message": "Next task ready",
+    "data": {
+      "nextTaskId": "ui-integration",
+      "nextTaskName": "UI Integration"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:03.525Z",
+    "level": "info",
+    "message": "Forced completion of current task",
+    "data": {
+      "taskId": "core-features",
+      "taskName": "Core Features Implementation"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:03.526Z",
+    "level": "info",
+    "message": "Project activity recorded",
+    "data": {
+      "activity": "Started task: UI Integration",
+      "taskId": "ui-integration",
+      "timestamp": "2025-06-14T02:47:03.526Z"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:03.527Z",
+    "level": "info",
+    "message": "Task started",
+    "data": {
+      "taskId": "ui-integration",
+      "taskName": "UI Integration"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:03.529Z",
+    "level": "info",
+    "message": "Project activity recorded",
+    "data": {
+      "activity": "Task execution started: UI Integration",
+      "taskId": "ui-integration",
+      "timestamp": "2025-06-14T02:47:03.529Z"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:03.529Z",
+    "level": "info",
+    "message": "Auto-advanced to next task",
+    "data": {
+      "taskId": "ui-integration",
+      "taskName": "UI Integration"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:23.058Z",
+    "level": "info",
+    "message": "Project activity recorded",
+    "data": {
+      "activity": "Completed task: UI Integration",
+      "taskId": "ui-integration",
+      "timestamp": "2025-06-14T02:47:23.058Z"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:23.059Z",
+    "level": "info",
+    "message": "Task completed",
+    "data": {
+      "taskId": "ui-integration",
+      "taskName": "UI Integration"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:23.061Z",
+    "level": "info",
+    "message": "Project activity recorded",
+    "data": {
+      "activity": "Task completed: UI Integration",
+      "taskId": "ui-integration",
+      "timestamp": "2025-06-14T02:47:23.061Z"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:23.062Z",
+    "level": "info",
+    "message": "Next task ready",
+    "data": {
+      "nextTaskId": "testing",
+      "nextTaskName": "Testing & QA"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:23.063Z",
+    "level": "info",
+    "message": "Forced completion of current task",
+    "data": {
+      "taskId": "ui-integration",
+      "taskName": "UI Integration"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:23.064Z",
+    "level": "info",
+    "message": "Project activity recorded",
+    "data": {
+      "activity": "Started task: Testing & QA",
+      "taskId": "testing",
+      "timestamp": "2025-06-14T02:47:23.064Z"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:23.066Z",
+    "level": "info",
+    "message": "Task started",
+    "data": {
+      "taskId": "testing",
+      "taskName": "Testing & QA"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:23.068Z",
+    "level": "info",
+    "message": "Project activity recorded",
+    "data": {
+      "activity": "Task execution started: Testing & QA",
+      "taskId": "testing",
+      "timestamp": "2025-06-14T02:47:23.068Z"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:23.069Z",
+    "level": "info",
+    "message": "Auto-advanced to next task",
+    "data": {
+      "taskId": "testing",
+      "taskName": "Testing & QA"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:32.355Z",
+    "level": "info",
+    "message": "Project activity recorded",
+    "data": {
+      "activity": "Completed task: Testing & QA",
+      "taskId": "testing",
+      "timestamp": "2025-06-14T02:47:32.355Z"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:32.356Z",
+    "level": "info",
+    "message": "Task completed",
+    "data": {
+      "taskId": "testing",
+      "taskName": "Testing & QA"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:44.489Z",
+    "level": "info",
+    "message": "Project activity recorded",
+    "data": {
+      "activity": "Started task: Deployment",
+      "taskId": "deployment",
+      "timestamp": "2025-06-14T02:47:44.489Z"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:44.490Z",
+    "level": "info",
+    "message": "Task started",
+    "data": {
+      "taskId": "deployment",
+      "taskName": "Deployment"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:44.492Z",
+    "level": "info",
+    "message": "Project activity recorded",
+    "data": {
+      "activity": "Task execution started: Deployment",
+      "taskId": "deployment",
+      "timestamp": "2025-06-14T02:47:44.492Z"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:44.494Z",
+    "level": "info",
+    "message": "Auto-advanced to next task",
+    "data": {
+      "taskId": "deployment",
+      "taskName": "Deployment"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:48.096Z",
+    "level": "info",
+    "message": "Project activity recorded",
+    "data": {
+      "activity": "Completed task: Deployment",
+      "taskId": "deployment",
+      "timestamp": "2025-06-14T02:47:48.096Z"
+    },
+    "sessionId": "session-20250613-214612"
+  },
+  {
+    "timestamp": "2025-06-14T02:47:48.097Z",
+    "level": "info",
+    "message": "Task completed",
+    "data": {
+      "taskId": "deployment",
+      "taskName": "Deployment"
+    },
+    "sessionId": "session-20250613-214612"
+  }
+]

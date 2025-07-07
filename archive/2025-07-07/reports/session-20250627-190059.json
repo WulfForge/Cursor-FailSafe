@@ -1,0 +1,420 @@
+[
+  {
+    "timestamp": "2025-06-27T23:00:59.012Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.015Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.020Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.025Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.028Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.031Z",
+    "level": "info",
+    "message": "Sprint data loaded",
+    "data": {
+      "currentSprint": "sprint-1750568125875-xc9rdf10g",
+      "historyCount": 0
+    },
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.032Z",
+    "level": "info",
+    "message": "Sprint templates loaded",
+    "data": {
+      "templateCount": 2
+    },
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.033Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.035Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.037Z",
+    "level": "info",
+    "message": "Sprint data loaded",
+    "data": {
+      "currentSprint": "sprint-1750568125875-xc9rdf10g",
+      "historyCount": 0
+    },
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.039Z",
+    "level": "info",
+    "message": "Sprint templates loaded",
+    "data": {
+      "templateCount": 2
+    },
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.040Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.042Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.043Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.045Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.047Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.048Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.050Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.051Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.052Z",
+    "level": "info",
+    "message": "Global AI response pipeline initialized",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.053Z",
+    "level": "info",
+    "message": "AI Response Hooks initialized",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.054Z",
+    "level": "info",
+    "message": "AI response hook registered: vscode-chat",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.055Z",
+    "level": "info",
+    "message": "AI response hook registered: github-copilot",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.057Z",
+    "level": "info",
+    "message": "AI response hook registered: cursor-ai",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.058Z",
+    "level": "info",
+    "message": "AI response hook registered: general-ai",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.059Z",
+    "level": "info",
+    "message": "AI response hooks initialized",
+    "data": {
+      "hookCount": 4,
+      "enabled": true
+    },
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.060Z",
+    "level": "info",
+    "message": "Global AI response hooks initialized",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.062Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.063Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.064Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.065Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.066Z",
+    "level": "info",
+    "message": "Loaded 28 Cursorrules",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.068Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.071Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.073Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.073Z",
+    "level": "info",
+    "message": "Chat Response Interceptor initialized",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.113Z",
+    "level": "info",
+    "message": "Initializing FailSafe server...",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.114Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.116Z",
+    "level": "info",
+    "message": "Initializing FailSafe Fastify server...",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.117Z",
+    "level": "info",
+    "message": "FailSafe Extension initialized with AI response pipeline, hooks, Chat Response Interceptor, Design Document Manager, and Fastify server",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.119Z",
+    "level": "info",
+    "message": "FailSafe extension activating...",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.120Z",
+    "level": "info",
+    "message": "Extension context: c:\\Users\\krkna\\.cursor\\extensions\\mythologiq.failsafe-cursor-2.0.0",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.121Z",
+    "level": "info",
+    "message": "Workspace folders: 1",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.122Z",
+    "level": "info",
+    "message": "Basic project plan initialized",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.124Z",
+    "level": "info",
+    "message": "Task engine initializing...",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.125Z",
+    "level": "info",
+    "message": "Basic project plan initialized",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.126Z",
+    "level": "info",
+    "message": "Found available port: 3000",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.133Z",
+    "level": "error",
+    "message": "Failed to register Fastify plugins:",
+    "data": {},
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.134Z",
+    "level": "error",
+    "message": "Failed to initialize FailSafe server:",
+    "data": {},
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.135Z",
+    "level": "error",
+    "message": "Failed to initialize FailSafe server:",
+    "data": {},
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.151Z",
+    "level": "info",
+    "message": "Version warning logged: README.md badge version mismatch",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.152Z",
+    "level": "info",
+    "message": "Version warning logged: Version consistency check failed",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.156Z",
+    "level": "warn",
+    "message": "Version consistency issues found",
+    "data": [
+      "README.md badge version mismatch"
+    ],
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.158Z",
+    "level": "info",
+    "message": "Version manager initialized successfully",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.160Z",
+    "level": "info",
+    "message": "All components initialized successfully",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:00:59.162Z",
+    "level": "info",
+    "message": "Initializing design document for workspace...",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:37:12.411Z",
+    "level": "info",
+    "message": "Design document initialization completed",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:37:12.413Z",
+    "level": "info",
+    "message": "Initializing FailSafe server...",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:37:12.415Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:37:12.424Z",
+    "level": "info",
+    "message": "Initializing FailSafe Fastify server...",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:37:12.429Z",
+    "level": "info",
+    "message": "Found available port: 3000",
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:37:12.434Z",
+    "level": "error",
+    "message": "Failed to register Fastify plugins:",
+    "data": {},
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:37:12.435Z",
+    "level": "error",
+    "message": "Failed to initialize FailSafe server:",
+    "data": {},
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:37:12.436Z",
+    "level": "error",
+    "message": "Failed to initialize FailSafe server:",
+    "data": {},
+    "sessionId": "session-20250627-190059"
+  },
+  {
+    "timestamp": "2025-06-27T23:37:12.438Z",
+    "level": "error",
+    "message": "Failed to activate FailSafe extension:",
+    "data": {},
+    "sessionId": "session-20250627-190059"
+  }
+]
