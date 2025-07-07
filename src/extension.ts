@@ -87,6 +87,7 @@ export class FailSafeExtension {
     }
 
     public async activate(): Promise<void> {
+        console.log('🚀 FailSafe Extension: ACTIVATE FUNCTION CALLED');
         this.logger.info('FailSafe extension activating...');
         
         try {

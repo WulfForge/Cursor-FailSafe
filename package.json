@@ -48,7 +48,8 @@
   },
   "main": "./out/extension.js",
   "activationEvents": [
-    "onStartupFinished"
+    "onStartupFinished",
+    "onCommand:failsafe.showDashboard"
   ],
   "contributes": {
     "viewsContainers": {

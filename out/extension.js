@@ -91,6 +91,7 @@ class FailSafeExtension {
         this.logger.info('FailSafe Extension initialized with AI response pipeline, hooks, Chat Response Interceptor, Design Document Manager, and Fastify server');
     }
     async activate() {
+        console.log('🚀 FailSafe Extension: ACTIVATE FUNCTION CALLED');
         this.logger.info('FailSafe extension activating...');
         try {
             // Validate extension environment first

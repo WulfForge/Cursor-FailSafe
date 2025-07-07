@@ -343,7 +343,8 @@ class UI {
         // Progress bar item
         this.progressBarItem.text = '📊 0%';
         this.progressBarItem.tooltip = 'Project Progress';
-        this.progressBarItem.command = 'failsafe.showProgress';
+        // Removed showProgress command to avoid conflicts
+        // this.progressBarItem.command = 'failsafe.showProgress';
         this.progressBarItem.show();
         // Accountability item
         this.accountabilityItem.text = '⏰ Active';
@@ -362,7 +363,7 @@ class UI {
     registerCommands() {
         // Register additional UI commands (showDashboard is registered in commands.ts)
         const commands = [
-            vscode.commands.registerCommand('failsafe.showProgress', () => this.showProgressDetails()),
+            // Removed failsafe.showProgress to avoid conflicts
             vscode.commands.registerCommand('failsafe.showAccountability', () => this.showAccountabilityReport()),
             vscode.commands.registerCommand('failsafe.showFeasibility', () => this.showFeasibilityAnalysis()),
             vscode.commands.registerCommand('failsafe.forceLinearProgression', () => this.forceLinearProgression()),
@@ -517,9 +518,10 @@ class UI {
     async executeDashboardCommand(commandId) {
         try {
             switch (commandId) {
-                case 'failsafe.showProgressDetails':
-                    await this.showProgressDetails();
-                    break;
+                // Removed showProgressDetails case to avoid conflicts
+                // case 'failsafe.showProgressDetails':
+                //     await this.showProgressDetails();
+                //     break;
                 case 'failsafe.showAccountabilityReport':
                     await this.showAccountabilityReport();
                     break;
@@ -800,9 +802,10 @@ class UI {
                     </div>
 
                     <div class="action-buttons">
-                        <button class="action-button" onclick="vscode.postMessage({command: 'showProgress'})">
+                        <!-- Removed showProgress button to avoid conflicts -->
+                        <!-- <button class="action-button" onclick="vscode.postMessage({command: 'showProgress'})">
                             📊 Progress Details
-                        </button>
+                        </button> -->
                         <button class="action-button" onclick="vscode.postMessage({command: 'showAccountability'})">
                             📋 Accountability Report
                         </button>

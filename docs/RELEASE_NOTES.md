@@ -241,6 +241,20 @@
 - **Bug Reports**: Issue reporting and tracking
 - **Performance Feedback**: Performance optimization suggestions
 
+## Dashboard Command Cleanup and Validation (2025-07-05)
+
+- **Intent:** Ensure there is only one canonical dashboard command (`failsafe.showDashboard`) for all UI, sidebar, and command palette interactions. Remove all references to the deprecated/duplicate `failsafe.openDashboard` command to prevent confusion and errors.
+- **Actions Taken:**
+  - Audited all source, compiled, and config files for references to both commands.
+  - Removed `failsafe.openDashboard` from `package.json`, command registration, and menu contributions.
+  - Verified sidebar and UI only reference `failsafe.showDashboard`.
+  - Performed a full clean build and extension reload.
+  - Committed and pushed all changes to GitHub for backup and traceability.
+- **Backup:**
+  - Full workspace backup and commit pushed to [WulfForge/Cursor-FailSafe](https://github.com/WulfForge/Cursor-FailSafe) prior to any further changes.
+- **Validation:**
+  - This documentation serves as a record of the intent, actions, and state for future audits or troubleshooting.
+
 ---
 
 **Thank you for using FailSafe!**

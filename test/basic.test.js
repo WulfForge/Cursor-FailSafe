@@ -48,7 +48,6 @@ describe('FailSafe Extension', () => {
             assert.ok(commands.length > 0, 'Should have at least one command');
             
             const commandIds = commands.map(cmd => cmd.command);
-            assert.ok(commandIds.includes('failsafe.openDashboard'), 'Should have openDashboard command');
             assert.ok(commandIds.includes('failsafe.showDashboard'), 'Should have showDashboard command');
             assert.ok(commandIds.includes('failsafe.validate'), 'Should have validate command');
         });

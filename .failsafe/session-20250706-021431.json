@@ -1,0 +1,51 @@
+[
+  {
+    "timestamp": "2025-07-06T06:14:31.975Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250706-021431"
+  },
+  {
+    "timestamp": "2025-07-06T06:14:31.983Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250706-021431"
+  },
+  {
+    "timestamp": "2025-07-06T06:14:32.009Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250706-021431"
+  },
+  {
+    "timestamp": "2025-07-06T06:14:32.040Z",
+    "level": "info",
+    "message": "Loaded 34 Cursorrules",
+    "sessionId": "session-20250706-021431"
+  },
+  {
+    "timestamp": "2025-07-06T06:14:32.062Z",
+    "level": "info",
+    "message": "Sprint data loaded",
+    "data": {
+      "currentSprint": "sprint-1750568125875-xc9rdf10g",
+      "historyCount": 0
+    },
+    "sessionId": "session-20250706-021431"
+  },
+  {
+    "timestamp": "2025-07-06T06:14:32.066Z",
+    "level": "info",
+    "message": "Sprint templates loaded",
+    "data": {
+      "templateCount": 2
+    },
+    "sessionId": "session-20250706-021431"
+  },
+  {
+    "timestamp": "2025-07-06T06:14:32.069Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250706-021431"
+  }
+]

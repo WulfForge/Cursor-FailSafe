@@ -1,0 +1,94 @@
+[
+  {
+    "timestamp": "2025-07-05T06:41:05.092Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250705-024105"
+  },
+  {
+    "timestamp": "2025-07-05T06:41:05.094Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250705-024105"
+  },
+  {
+    "timestamp": "2025-07-05T06:41:05.096Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250705-024105"
+  },
+  {
+    "timestamp": "2025-07-05T06:41:05.097Z",
+    "level": "info",
+    "message": "Detected 111 installed extensions",
+    "sessionId": "session-20250705-024105"
+  },
+  {
+    "timestamp": "2025-07-05T06:41:05.099Z",
+    "level": "info",
+    "message": "Loaded 34 Cursorrules",
+    "sessionId": "session-20250705-024105"
+  },
+  {
+    "timestamp": "2025-07-05T06:41:05.101Z",
+    "level": "info",
+    "message": "Sprint data loaded",
+    "data": {
+      "currentSprint": "sprint-1750568125875-xc9rdf10g",
+      "historyCount": 0
+    },
+    "sessionId": "session-20250705-024105"
+  },
+  {
+    "timestamp": "2025-07-05T06:41:05.102Z",
+    "level": "info",
+    "message": "Sprint templates loaded",
+    "data": {
+      "templateCount": 2
+    },
+    "sessionId": "session-20250705-024105"
+  },
+  {
+    "timestamp": "2025-07-05T06:41:05.103Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250705-024105"
+  },
+  {
+    "timestamp": "2025-07-05T06:41:05.105Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250705-024105"
+  },
+  {
+    "timestamp": "2025-07-05T06:41:05.109Z",
+    "level": "info",
+    "message": "No Project Management Extension found, using basic project tracking",
+    "sessionId": "session-20250705-024105"
+  },
+  {
+    "timestamp": "2025-07-05T06:41:05.111Z",
+    "level": "info",
+    "message": "Sprint data loaded",
+    "data": {
+      "currentSprint": "sprint-1750568125875-xc9rdf10g",
+      "historyCount": 0
+    },
+    "sessionId": "session-20250705-024105"
+  },
+  {
+    "timestamp": "2025-07-05T06:41:05.112Z",
+    "level": "info",
+    "message": "Sprint templates loaded",
+    "data": {
+      "templateCount": 2
+    },
+    "sessionId": "session-20250705-024105"
+  },
+  {
+    "timestamp": "2025-07-05T06:41:05.112Z",
+    "level": "info",
+    "message": "Sprint planner storage initialized",
+    "sessionId": "session-20250705-024105"
+  }
+]
